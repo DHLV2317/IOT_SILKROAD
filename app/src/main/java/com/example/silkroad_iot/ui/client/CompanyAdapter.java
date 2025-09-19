@@ -1,5 +1,7 @@
 package com.example.silkroad_iot.ui.client;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.*;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -57,6 +59,16 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.VH>{
         Glide.with(h.img.getContext())
                 .load(c.getImageUrl()) // o c.getImageUrl()
                 .into(h.img);
+
+        h.itemView.setOnClickListener(v -> {
+            Context ctx = v.getContext();
+            Intent intent = new Intent(ctx, ToursActivity.class);
+            intent.putExtra("company", c); // 'c' es la empresa actual
+            ctx.startActivity(intent);
+        });
+
+
+
     }
     @Override public int getItemCount(){ return data.size(); }
 }

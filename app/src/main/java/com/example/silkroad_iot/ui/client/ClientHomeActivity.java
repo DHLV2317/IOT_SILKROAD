@@ -38,11 +38,18 @@ public class ClientHomeActivity extends AppCompatActivity {
             // TODO: navegar a lista de tours filtrados por departamento
         }));
 
+
+        List<Tour> toursEmpresa1 = Arrays.asList(
+                new Tour("Tour Machu Picchu", 250.0, 20, "Un viaje inolvidable", "https://...", 4.8),
+                new Tour("City Tour Cusco", 60.0, 15, "Recorrido por la ciudad", "https://...", 4.6)
+        );
+
+
         // Mejores empresas (mock)
         List<Company> cos = Arrays.asList(
-                new Company("Empresa Pepe", 4.6,"https://camaranacional.org.pe/wp-content/uploads/2024/10/adm-de-em-turisticas.jpg"),
-                new Company("Empresa Tito", 4.4,"https://www.ceupe.com/images/easyblog_articles/1263/b2ap3_large_empresas-turisticas.jpg"),
-                new Company("Empresa jp", 4.8,"https://tecnosoluciones.com/wp-content/uploads/2023/03/empresas-turisticas.png")
+                new Company("Empresa Pepe", 4.6,"https://camaranacional.org.pe/wp-content/uploads/2024/10/adm-de-em-turisticas.jpg",toursEmpresa1),
+                new Company("Empresa Tito", 4.4,"https://www.ceupe.com/images/easyblog_articles/1263/b2ap3_large_empresas-turisticas.jpg",new ArrayList<>()),
+                new Company("Empresa jp", 4.8,"https://tecnosoluciones.com/wp-content/uploads/2023/03/empresas-turisticas.png",new ArrayList<>())
         );
         b.rvCompanies.setLayoutManager(new LinearLayoutManager(this));
         b.rvCompanies.setAdapter(new CompanyAdapter(cos));
