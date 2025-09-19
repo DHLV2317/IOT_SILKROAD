@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SILKROAD_IOT">
+        <activity
+            android:name=".ui.superadmin.SuperAdminHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.superadmin.SuperAdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.guide.GuideHomeActivity"
+            android:exported="false" /> <!-- Pantalla principal (Login) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="Login">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- Registro -->
+        <activity
+            android:name=".ui.auth.RegisterActivity"
+            android:exported="false"
+            android:label="Registro" /> <!-- Verificación de código de registro -->
+        <activity
+            android:name=".ui.auth.RegisterVerifyActivity"
+            android:exported="false"
+            android:label="Verificación de registro" /> <!-- Recuperación de contraseña -->
+        <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false"
+            android:label="Recuperar contraseña" /> <!-- Onboarding del cliente -->
+        <activity
+            android:name=".ui.client.ClientOnboardingActivity"
+            android:exported="false"
+            android:label="Verificación de datos" /> <!-- Pantalla principal del cliente -->
+        <activity
+            android:name=".ui.client.ClientHomeActivity"
+            android:exported="false"
+            android:label="Inicio Cliente" />
+    </application>
+
+</manifest>
