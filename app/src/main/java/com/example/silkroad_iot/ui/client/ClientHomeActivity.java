@@ -1,6 +1,9 @@
 package com.example.silkroad_iot.ui.client;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,6 +14,8 @@ import java.util.*;
 public class ClientHomeActivity extends AppCompatActivity {
     private ActivityClientHomeBinding b;
     private final UserStore store = UserStore.get();
+
+
 
     @Override protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -41,8 +46,22 @@ public class ClientHomeActivity extends AppCompatActivity {
         );
         b.rvCompanies.setLayoutManager(new LinearLayoutManager(this));
         b.rvCompanies.setAdapter(new CompanyAdapter(cos));
+        CompanyAdapter companyAdapter = new CompanyAdapter(cos); // Fuera del método
+        b.rvCompanies.setAdapter(companyAdapter);
 
-        // Buscador (de momento sólo muestra el texto)
-        // b.inputSearch.addTextChangedListener(...)
+
+        b.inputSearch.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                companyAdapter.filterList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 }

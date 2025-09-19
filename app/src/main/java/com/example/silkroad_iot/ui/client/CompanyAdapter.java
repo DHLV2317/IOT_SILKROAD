@@ -7,12 +7,33 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.Company;
+
+import java.util.ArrayList;
 import java.util.List;
 import com.bumptech.glide.Glide;
 
 public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.VH>{
     private final List<Company> data;
-    public CompanyAdapter(List<Company> data){ this.data=data; }
+    private final List<Company> fullList;
+    public CompanyAdapter(List<Company> data) {
+        this.data = new ArrayList<>(data);     // para poder modificarla
+        this.fullList = new ArrayList<>(data); // copia completa
+    }
+
+    public void filterList(String query) {
+        data.clear();
+        if (query.isEmpty()) {
+            data.addAll(fullList);
+        } else {
+            for (Company c : fullList) {
+                if (c.getN().toLowerCase().contains(query.toLowerCase())) {
+                    data.add(c);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     static class VH extends RecyclerView.ViewHolder {
         TextView t1, t2;
         ImageView img;
