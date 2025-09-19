@@ -35,9 +35,9 @@ public class ClientHomeActivity extends AppCompatActivity {
 
         // Mejores empresas (mock)
         List<Company> cos = Arrays.asList(
-                new Company("Empresa 1", 4.6),
-                new Company("Empresa 2", 4.4),
-                new Company("Empresa 3", 4.2)
+                new Company("Empresa Pepe", 4.6,"https://camaranacional.org.pe/wp-content/uploads/2024/10/adm-de-em-turisticas.jpg"),
+                new Company("Empresa Tito", 4.4,"https://www.ceupe.com/images/easyblog_articles/1263/b2ap3_large_empresas-turisticas.jpg"),
+                new Company("Empresa jp", 4.8,"https://tecnosoluciones.com/wp-content/uploads/2023/03/empresas-turisticas.png")
         );
         b.rvCompanies.setLayoutManager(new LinearLayoutManager(this));
         b.rvCompanies.setAdapter(new CompanyAdapter(cos));
