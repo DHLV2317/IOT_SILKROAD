@@ -25,7 +25,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView t1, t2, t3;
+        TextView t1, t2, t3,t4;
         ImageView img;
 
         public VH(View v) {
@@ -33,6 +33,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
             t1 = v.findViewById(R.id.tTourName);
             t2 = v.findViewById(R.id.tTourPrice);
             t3 = v.findViewById(R.id.tTourDescription);
+            t4 = v.findViewById(R.id.tFecha);
             img = v.findViewById(R.id.imgTour);
         }
     }
@@ -49,6 +50,7 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
         h.t1.setText(t.name);
         h.t2.setText("S/ " + t.price + " - " + t.people + " personas");
         h.t3.setText(t.description);
+        h.t4.setText((CharSequence) t.FechaTour);
         Glide.with(h.itemView).load(t.imageUrl).into(h.img);
 
         h.itemView.setOnClickListener(v -> {
