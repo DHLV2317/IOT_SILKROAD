@@ -57,6 +57,11 @@
             android:name=".ui.client.ToursActivity"
             android:exported="false"
             android:label="tours" />
+        <activity
+            android:name=".ui.client.TourDetailActivity"
+            android:exported="false"
+            android:label="tours" />
+
     </application>
 
 </manifest>

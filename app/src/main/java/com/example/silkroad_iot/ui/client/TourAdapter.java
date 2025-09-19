@@ -1,5 +1,7 @@
 package com.example.silkroad_iot.ui.client;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +50,15 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
         h.t2.setText("S/ " + t.price + " - " + t.people + " personas");
         h.t3.setText(t.description);
         Glide.with(h.itemView).load(t.imageUrl).into(h.img);
+
+        h.itemView.setOnClickListener(v -> {
+            Context ctx = v.getContext();
+            Intent intent = new Intent(ctx, TourDetailActivity.class);
+            intent.putExtra("tour", t);
+            ctx.startActivity(intent);
+        });
+
+
     }
 
     @Override

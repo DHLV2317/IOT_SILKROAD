@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="16dp"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imgTour"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:scaleType="centerCrop"
+        android:background="#DDD"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tTourName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tour 1"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tTourDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Descripción del tour"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tTourPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="S/. 100"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Agregar S/. 100"/>
+
+</LinearLayout>
