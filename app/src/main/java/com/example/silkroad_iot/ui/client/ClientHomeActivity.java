@@ -1,5 +1,8 @@
 package com.example.silkroad_iot.ui.client;
 
+import static java.time.MonthDay.now;
+import java.util.Calendar;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,10 +41,12 @@ public class ClientHomeActivity extends AppCompatActivity {
             // TODO: navegar a lista de tours filtrados por departamento
         }));
 
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, 1);
 
         List<Tour> toursEmpresa1 = Arrays.asList(
-                new Tour("Tour Machu Picchu", 250.0, 20, "Un viaje inolvidable", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Machu_Picchu%2C_Peru_%282018%29.jpg/500px-Machu_Picchu%2C_Peru_%282018%29.jpg", 4.8, null),
-                new Tour("City Tour Cusco", 60.0, 15, "Recorrido por la ciudad", "https://static1.eskypartners.com/travelguide/cuzco2.jpg", 4.6,null)
+                new Tour("Tour Machu Picchu", 250.0, 1, "Un viaje inolvidable", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Machu_Picchu%2C_Peru_%282018%29.jpg/500px-Machu_Picchu%2C_Peru_%282018%29.jpg", 4.8, cal.getTime()),
+                new Tour("City Tour Cusco", 60.0, 1, "Recorrido por la ciudad", "https://static1.eskypartners.com/travelguide/cuzco2.jpg", 4.6,cal.getTime())
         );
 
 

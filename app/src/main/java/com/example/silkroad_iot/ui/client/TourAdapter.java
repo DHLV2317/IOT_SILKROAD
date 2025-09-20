@@ -15,7 +15,9 @@ import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.Tour;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
     List<Tour> tours;
@@ -46,11 +48,15 @@ public class TourAdapter extends RecyclerView.Adapter<TourAdapter.VH> {
 
     @Override
     public void onBindViewHolder(@NonNull VH h, int i) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         Tour t = tours.get(i);
+        String fechaFormateada = sdf.format(t.FechaTour);
+
         h.t1.setText(t.name);
         h.t2.setText("S/ " + t.price + " - " + t.people + " personas");
         h.t3.setText(t.description);
-        h.t4.setText((CharSequence) t.FechaTour);
+        h.t4.setText("Fecha de Inicio: " + fechaFormateada);
         Glide.with(h.itemView).load(t.imageUrl).into(h.img);
 
         h.itemView.setOnClickListener(v -> {
