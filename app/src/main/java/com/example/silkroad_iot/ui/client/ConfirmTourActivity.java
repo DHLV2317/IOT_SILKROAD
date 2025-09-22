@@ -29,6 +29,7 @@ public class ConfirmTourActivity extends AppCompatActivity {
     private TextView tTotal, tSelectedDateTime;
     private NumberPicker npQuantity;
     private int quantity = 1;
+    private TourOrder.Status Status;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

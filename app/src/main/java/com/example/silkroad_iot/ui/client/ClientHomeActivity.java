@@ -3,13 +3,17 @@ package com.example.silkroad_iot.ui.client;
 import static java.time.MonthDay.now;
 import java.util.Calendar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.databinding.ActivityClientHomeBinding;
 import com.example.silkroad_iot.data.*;
 import java.util.*;
@@ -60,6 +64,12 @@ public class ClientHomeActivity extends AppCompatActivity {
         b.rvCompanies.setAdapter(new CompanyAdapter(cos));
         CompanyAdapter companyAdapter = new CompanyAdapter(cos); // Fuera del método
         b.rvCompanies.setAdapter(companyAdapter);
+
+        Button btnHistory = findViewById(R.id.btnHistory);
+        btnHistory.setOnClickListener(v -> {
+            Intent i = new Intent(this, TourHistoryActivity.class);
+            startActivity(i);
+        });
 
 
         b.inputSearch.addTextChangedListener(new TextWatcher() {

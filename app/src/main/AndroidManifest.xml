@@ -66,6 +66,10 @@
             android:name=".ui.client.ConfirmTourActivity"
             android:exported="false"
             android:label="tours" />
+        <activity
+            android:name=".ui.client.TourHistoryActivity"
+            android:exported="false"
+            android:label="tours" />
 
     </application>
 
