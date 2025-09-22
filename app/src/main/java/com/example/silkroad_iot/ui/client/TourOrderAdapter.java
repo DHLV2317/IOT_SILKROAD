@@ -1,5 +1,6 @@
 package com.example.silkroad_iot.ui.client;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,7 @@ public class TourOrderAdapter extends RecyclerView.Adapter<TourOrderAdapter.VH> 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvDate, tvStatus, tvOrderDate, tvTotalPrice;
 
-        VH(View v) {
+        public VH(@NonNull View v) {
             super(v);
             tvName = v.findViewById(R.id.tvCompanyName);
             tvDate = v.findViewById(R.id.tvTourDate);
@@ -47,16 +48,22 @@ public class TourOrderAdapter extends RecyclerView.Adapter<TourOrderAdapter.VH> 
     public void onBindViewHolder(@NonNull TourOrderAdapter.VH holder, int position) {
         TourOrder order = orders.get(position);
 
-        holder.tvName.setText(order.tour.name); // Nombre de la empresa
+        holder.tvName.setText(order.tour.name);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         holder.tvDate.setText("Tour: " + sdf.format(order.date));
         holder.tvStatus.setText(order.status != null ? order.status.name() : "RESERVADO");
-
         holder.tvOrderDate.setText("Reservado el: " + sdf.format(order.createdAt));
 
         double total = order.quantity * order.tour.price;
         holder.tvTotalPrice.setText("S/. " + String.format("%.2f", total));
+
+        // 🔗 Abrir vista de detalle al hacer click
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), OrderDetailActivity.class);
+            intent.putExtra("order", order);
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override
@@ -64,4 +71,3 @@ public class TourOrderAdapter extends RecyclerView.Adapter<TourOrderAdapter.VH> 
         return orders.size();
     }
 }
-
