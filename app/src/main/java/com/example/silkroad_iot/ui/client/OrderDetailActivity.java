@@ -1,6 +1,8 @@
 package com.example.silkroad_iot.ui.client;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -46,7 +48,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         tvDepartment.setText("Departamento por definir");
         tvTourDate.setText("Fecha: " + dateFormat.format(order.date));
         tvDuration.setText("Tiempo: Por definir"); // futuro: duración del tour
-        tvStatus.setText("Estado: " + (order.status != null ? order.status.name() : "Sin estado"));
+        tvStatus.setText("Estado: " + (order.status != null ? order.status.name() : "bug?"));
 
         // Mostrar hora si existe, si no: “Por definir”
         if (order.date != null) {
@@ -56,7 +58,32 @@ public class OrderDetailActivity extends AppCompatActivity {
         }
 
         // QR por ahora es imagen fija
-        imgQrCode.setImageResource(R.drawable.ic_person_24);
+        imgQrCode.setImageResource(R.drawable.qr_code_24);
+
+        Button btnPlaces = findViewById(R.id.btnPlaces);
+        btnPlaces.setOnClickListener(v -> {
+            Intent intent = new Intent(OrderDetailActivity.this, StopsActivity.class);
+            intent.putExtra("tour", order.tour);
+            startActivity(intent);
+        });
+
+        Button btnCancelar = findViewById(R.id.btnCancelar);
+        btnCancelar.setOnClickListener(v -> {
+            order.status = TourOrder.Status.CANCELADO;
+
+            // Actualizar el TextView
+            tvStatus.setText("Estado: " + order.status.name());
+
+            // Pasar el objeto actualizado de regreso
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("updatedOrder", order);
+            setResult(RESULT_OK, resultIntent);
+            finish(); // Regresa a la actividad anterior
+        });
+
+
+
+
     }
 
     private void bindViews() {

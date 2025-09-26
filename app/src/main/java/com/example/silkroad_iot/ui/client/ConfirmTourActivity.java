@@ -91,7 +91,8 @@ public class ConfirmTourActivity extends AppCompatActivity {
                     tour,
                     quantity,
                     selectedDateTime.getTime(),
-                    user.getEmail()
+                    user.getEmail(),
+                    TourOrder.Status.RESERVADO
             );
 
             OrderStore.addOrder(order);

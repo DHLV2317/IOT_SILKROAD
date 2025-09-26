@@ -20,14 +20,16 @@ public class TourOrder implements Serializable {
 
 
 
-    public Status status= Status.RESERVADO;
+    public Status status= null;
 
-    public TourOrder(Tour tour, int quantity, Date date, String userEmail) {
+    public TourOrder(Tour tour, int quantity, Date date, String userEmail, Status status) {
         this.tour = tour;
         this.quantity = quantity;
         this.date = date;
         this.userEmail = userEmail;
         this.createdAt = new Date();
+        this.status= status;
+
     }
 }
 

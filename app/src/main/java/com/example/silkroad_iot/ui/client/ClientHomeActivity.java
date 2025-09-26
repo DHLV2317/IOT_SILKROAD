@@ -49,8 +49,8 @@ public class ClientHomeActivity extends AppCompatActivity {
         cal.add(Calendar.DAY_OF_YEAR, 1);
 
         List<Tour> toursEmpresa1 = Arrays.asList(
-                new Tour("Tour Machu Picchu", 250.0, 1, "Un viaje inolvidable", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Machu_Picchu%2C_Peru_%282018%29.jpg/500px-Machu_Picchu%2C_Peru_%282018%29.jpg", 4.8, cal.getTime()),
-                new Tour("City Tour Cusco", 60.0, 1, "Recorrido por la ciudad", "https://static1.eskypartners.com/travelguide/cuzco2.jpg", 4.6,cal.getTime())
+                new Tour("Tour Machu Picchu", 250.0, 1, "Un viaje inolvidable", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Machu_Picchu%2C_Peru_%282018%29.jpg/500px-Machu_Picchu%2C_Peru_%282018%29.jpg", 4.8, cal.getTime(), null),
+                new Tour("City Tour Cusco", 60.0, 1, "Recorrido por la ciudad", "https://static1.eskypartners.com/travelguide/cuzco2.jpg", 4.6,cal.getTime(), null)
         );
 
 

@@ -19,9 +19,17 @@ import java.util.Locale;
 public class TourOrderAdapter extends RecyclerView.Adapter<TourOrderAdapter.VH> {
     private final List<TourOrder> orders;
 
-    public TourOrderAdapter(List<TourOrder> orders) {
-        this.orders = orders;
+    public interface OnOrderClickListener {
+        void onOrderClick(TourOrder order);
     }
+
+    private final OnOrderClickListener listener;
+
+    public TourOrderAdapter(List<TourOrder> orders, OnOrderClickListener listener) {
+        this.orders = orders;
+        this.listener = listener;
+    }
+
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvDate, tvStatus, tvOrderDate, tvTotalPrice;
@@ -52,7 +60,7 @@ public class TourOrderAdapter extends RecyclerView.Adapter<TourOrderAdapter.VH> 
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         holder.tvDate.setText("Tour: " + sdf.format(order.date));
-        holder.tvStatus.setText(order.status != null ? order.status.name() : "RESERVADO");
+        holder.tvStatus.setText(order.status != null ? order.status.name() : "bug?");
         holder.tvOrderDate.setText("Reservado el: " + sdf.format(order.createdAt));
 
         double total = order.quantity * order.tour.price;
@@ -64,10 +72,22 @@ public class TourOrderAdapter extends RecyclerView.Adapter<TourOrderAdapter.VH> 
             intent.putExtra("order", order);
             v.getContext().startActivity(intent);
         });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onOrderClick(order);
+            }
+        });
+
+
     }
 
     @Override
     public int getItemCount() {
         return orders.size();
+    }
+
+    public List<TourOrder> getOrders() {
+        return orders;
     }
 }

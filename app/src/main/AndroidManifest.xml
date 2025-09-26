@@ -74,6 +74,11 @@
             android:name=".ui.client.OrderDetailActivity"
             android:exported="false"
             android:label="tours" />
+        <activity
+            android:name=".ui.client.StopsActivity"
+            android:exported="false"
+            android:label="tours" />
+
 
     </application>
 
