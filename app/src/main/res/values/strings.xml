@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SILKROAD_IOT</string>
+    <string name="nav_open">Abrir menú</string>
+    <string name="nav_close">Cerrar menú</string>
 </resources>
