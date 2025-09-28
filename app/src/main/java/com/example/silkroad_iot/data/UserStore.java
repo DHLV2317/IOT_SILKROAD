@@ -20,8 +20,25 @@ public class UserStore {
         users.put("client@demo.com",
                 new User("Cliente Demo", "client@demo.com", "123456", User.Role.CLIENT));
 
-        users.put("guide@demo.com",
-                new User("Guide Demo", "guide@demo.com", "123456", User.Role.GUIDE));
+        // ✅ Guía aprobado (para demo rápida)
+        User approvedGuide = new User("Guide Demo", "guide@demo.com", "123456", User.Role.GUIDE);
+        approvedGuide.setGuideApproved(true);
+        approvedGuide.setGuideApprovalStatus("APPROVED");
+        users.put("guide@demo.com", approvedGuide);
+
+        // ✅ Guía PENDIENTE de aprobación (tu caso de uso)
+        User pendingGuide = new User("Carlos Mendoza", "carlos.guia@demo.com", "123456", User.Role.GUIDE);
+        pendingGuide.setLastName("Mendoza López");
+        pendingGuide.setDocumentType("DNI");
+        pendingGuide.setDocumentNumber("12345678");
+        pendingGuide.setBirthDate("15/08/1985");
+        pendingGuide.setPhone("+51 987 654 321");
+        pendingGuide.setAddress("Av. Arequipa 1234, Miraflores, Lima");
+        pendingGuide.setPhotoUri("content://fake/photo/carlos.jpg");
+        pendingGuide.setLanguages("Español, Inglés, Quechua");
+        pendingGuide.setGuideApproved(false); // ❌ NO APROBADO
+        pendingGuide.setGuideApprovalStatus("PENDING"); // ⏳ PENDIENTE
+        users.put("carlos.guia@demo.com", pendingGuide);
 
         users.put("admin@demo.com",
                 new User("Administrador Demo", "admin@demo.com", "123456", User.Role.ADMIN));
@@ -79,5 +96,54 @@ public class UserStore {
     public void updateLogged(User updated){
         users.put(updated.getEmail().toLowerCase(), updated);
         logged = updated;
+    }
+
+    // ===== MÉTODOS ESPECÍFICOS PARA GUÍAS =====
+    
+    /** Registra un guía con todos sus datos específicos (pendiente de aprobación) */
+    public boolean registerGuide(String names, String lastNames, String documentType, 
+                                String documentNumber, String birthDate, String email, 
+                                String phone, String address, String photoUri, String languages) {
+        
+        if (exists(email)) return false; // Email ya existe
+        
+        // Crear nuevo usuario guía con datos completos
+        User guide = new User(names, email, "123456", User.Role.GUIDE); // Password temporal
+        guide.setLastName(lastNames);
+        guide.setDocumentType(documentType);
+        guide.setDocumentNumber(documentNumber);
+        guide.setBirthDate(birthDate);
+        guide.setPhone(phone);
+        guide.setAddress(address);
+        guide.setPhotoUri(photoUri);
+        guide.setLanguages(languages);
+        guide.setGuideApproved(false); // Pendiente de aprobación
+        guide.setGuideApprovalStatus("PENDING");
+        
+        // Guardamos directamente (sin código de verificación para demo)
+        users.put(email.toLowerCase(), guide);
+        return true;
+    }
+    
+    /** Para que el SuperAdmin apruebe/rechace guías */
+    public boolean approveGuide(String email, boolean approved) {
+        User guide = users.get(email.toLowerCase());
+        if (guide == null || guide.getRole() != User.Role.GUIDE) return false;
+        
+        guide.setGuideApproved(approved);
+        guide.setGuideApprovalStatus(approved ? "APPROVED" : "REJECTED");
+        return true;
+    }
+    
+    /** Obtener todos los guías pendientes de aprobación */
+    public java.util.List<User> getPendingGuides() {
+        java.util.List<User> pendingGuides = new java.util.ArrayList<>();
+        for (User user : users.values()) {
+            if (user.getRole() == User.Role.GUIDE && 
+                "PENDING".equals(user.getGuideApprovalStatus())) {
+                pendingGuides.add(user);
+            }
+        }
+        return pendingGuides;
     }
 }

@@ -46,7 +46,13 @@ public class MainActivity extends AppCompatActivity {
                         next = new Intent(this, ClientOnboardingActivity.class);
                     }
                 } else if (u.getRole() == User.Role.GUIDE) {
-                    next = new Intent(this, GuideHomeActivity.class);
+                    // Verificar si el guía está aprobado
+                    if (u.isGuideApproved()) {
+                        next = new Intent(this, GuideHomeActivity.class);
+                    } else {
+                        // Redirigir a pantalla de estado pendiente
+                        next = new Intent(this, com.example.silkroad_iot.ui.guide.GuidePendingApprovalActivity.class);
+                    }
                 } else if (u.getRole() == User.Role.ADMIN) {
                     next = new Intent(this, AdminHomeActivity.class);
                 } else if (u.getRole() == User.Role.SUPERADMIN) {

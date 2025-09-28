@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -29,14 +32,18 @@
             android:label="Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity> <!-- Registro -->
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:exported="false"
-            android:label="Registro" /> <!-- Verificación de código de registro -->
+            android:label="Registro" />
+        <activity
+            android:name=".ui.auth.GuideRegisterActivity"
+            android:exported="false"
+            android:label="Registro Guía"
+            android:parentActivityName=".ui.auth.RegisterActivity" /> <!-- Verificación de código de registro -->
         <activity
             android:name=".ui.auth.RegisterVerifyActivity"
             android:exported="false"
@@ -78,8 +85,36 @@
             android:name=".ui.client.StopsActivity"
             android:exported="false"
             android:label="tours" />
-
-
+        
+        <!-- ACTIVIDADES DEL GUÍA -->
+        <activity
+            android:name=".ui.guide.GuideTourOffersActivity"
+            android:exported="false"
+            android:label="Ofertas de Tours"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuideLocationTrackingActivity"
+            android:exported="false"
+            android:label="Registrar Ubicación"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuideQRScannerActivity"
+            android:exported="false"
+            android:label="Escanear QR"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuidePendingApprovalActivity"
+            android:exported="false"
+            android:label="Cuenta Pendiente" />
+        <activity
+            android:name=".ui.guide.GuideProfileActivity"
+            android:exported="false"
+            android:label="Mi Perfil"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuideHistoryActivity"
+            android:exported="false"
+            android:label="Historial de Tours"
+            android:parentActivityName=".ui.guide.GuideProfileActivity" />
     </application>
-
 </manifest>

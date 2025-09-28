@@ -48,4 +48,10 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.15.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.15.1'
+    
+    // ✅ Para escaneo QR real (opcional - por ahora usamos simulación)
+    // implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+    
+    // ✅ Para ubicación y mapas (opcional)
+    // implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
