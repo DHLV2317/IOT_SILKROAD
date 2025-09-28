@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.Stop;
 import com.example.silkroad_iot.data.Tour;
+import com.example.silkroad_iot.databinding.ActivityStopsBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +18,23 @@ import java.util.List;
 public class StopsActivity extends AppCompatActivity {
     private RecyclerView rvStops;
     private TextView tvStopsTitle;
-
+    private ActivityStopsBinding b;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stops);
+
+        // Inicializar binding
+        b = ActivityStopsBinding.inflate(getLayoutInflater());
+        setContentView(b.getRoot());
+
+        // Configurar Toolbar usando binding
+        setSupportActionBar(b.toolbar);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("StopsActivity");
+            //getSupportActionBar().setDisplayHomeAsUpEnabled(true); // flecha atrás
+        }
 
         rvStops = findViewById(R.id.rvStops);
         tvStopsTitle = findViewById(R.id.tvStopsTitle);

@@ -51,6 +51,12 @@ public class TourHistoryActivity extends AppCompatActivity {
         b = ActivityTourHistoryBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        // Usar el toolbar del binding
+        setSupportActionBar(b.toolbar);
+
+        // Título (opcional: puedes ponerlo en XML o aquí)
+        getSupportActionBar().setTitle("TourHistory");
+
         User u = UserStore.get().getLogged();
         if (u == null) return;
 

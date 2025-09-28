@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.TourOrder;
+import com.example.silkroad_iot.databinding.ActivityOrderDetailBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -23,7 +24,16 @@ public class OrderDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_order_detail);
+
+        // Vincular el layout con ViewBinding
+        ActivityOrderDetailBinding b = ActivityOrderDetailBinding.inflate(getLayoutInflater());
+        setContentView(b.getRoot());
+
+        // Usar el toolbar del binding
+        setSupportActionBar(b.toolbar);
+
+        // Título (opcional: puedes ponerlo en XML o aquí)
+        getSupportActionBar().setTitle("OrderDetail");
 
         // Obtener el TourOrder enviado
         TourOrder order = (TourOrder) getIntent().getSerializableExtra("order");

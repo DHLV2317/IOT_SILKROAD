@@ -24,6 +24,12 @@ public class TourDetailActivity extends AppCompatActivity {
         b = ActivityTourDetailBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        // Usar el toolbar del binding
+        setSupportActionBar(b.toolbar);
+
+        // Título (opcional: puedes ponerlo en XML o aquí)
+        getSupportActionBar().setTitle("TourDetail");
+
         // Obtener el tour
         Tour tour = (Tour) getIntent().getSerializableExtra("tour");
 

@@ -17,6 +17,12 @@ public class ToursActivity extends AppCompatActivity {
         b = ActivityToursBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        // Usar el toolbar del binding
+        setSupportActionBar(b.toolbar);
+
+        // Título (opcional: puedes ponerlo en XML o aquí)
+        getSupportActionBar().setTitle("ToursActivity");
+
         // Obtener la empresa y tours desde el Intent
         Company company = (Company) getIntent().getSerializableExtra("company");
 

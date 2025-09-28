@@ -33,9 +33,13 @@ public class ConfirmTourActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         ActivityConfirmTourBinding b = ActivityConfirmTourBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
+
+        setSupportActionBar(b.toolbar);
+        b.toolbar.setTitle("ConfirmTour");
 
         tour = (Tour) getIntent().getSerializableExtra("tour");
         if (tour == null) finish();

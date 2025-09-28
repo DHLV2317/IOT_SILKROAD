@@ -1,6 +1,22 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Toolbar siempre fuera del Scroll -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/brand_celeste"
+        android:title="Detalle del Tour"
+        android:titleTextColor="@android:color/white" />
+
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
 
     <LinearLayout
         android:orientation="vertical"
@@ -70,10 +86,11 @@
 
         <Button
             android:id="@+id/btnPlaces"
-            android:text="Lugares a visitar"
+            android:layout_width="308dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:backgroundTint="@color/brand_celeste"
+            android:text="Lugares a visitar" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -130,8 +147,10 @@
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Cancelar" />
+            android:text="Cancelar"
+            android:backgroundTint="@color/brand_verde"/>
 
 
     </LinearLayout>
 </ScrollView>
+</LinearLayout>
