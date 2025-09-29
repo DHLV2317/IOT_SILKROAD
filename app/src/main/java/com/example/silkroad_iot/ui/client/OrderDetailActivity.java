@@ -1,6 +1,8 @@
 package com.example.silkroad_iot.ui.client;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -8,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.TourOrder;
+import com.example.silkroad_iot.databinding.ActivityOrderDetailBinding;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -21,7 +24,16 @@ public class OrderDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_order_detail);
+
+        // Vincular el layout con ViewBinding
+        ActivityOrderDetailBinding b = ActivityOrderDetailBinding.inflate(getLayoutInflater());
+        setContentView(b.getRoot());
+
+        // Usar el toolbar del binding
+        setSupportActionBar(b.toolbar);
+
+        // Título (opcional: puedes ponerlo en XML o aquí)
+        getSupportActionBar().setTitle("OrderDetail");
 
         // Obtener el TourOrder enviado
         TourOrder order = (TourOrder) getIntent().getSerializableExtra("order");
@@ -46,7 +58,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         tvDepartment.setText("Departamento por definir");
         tvTourDate.setText("Fecha: " + dateFormat.format(order.date));
         tvDuration.setText("Tiempo: Por definir"); // futuro: duración del tour
-        tvStatus.setText("Estado: " + (order.status != null ? order.status.name() : "Sin estado"));
+        tvStatus.setText("Estado: " + (order.status != null ? order.status.name() : "bug?"));
 
         // Mostrar hora si existe, si no: “Por definir”
         if (order.date != null) {
@@ -56,7 +68,32 @@ public class OrderDetailActivity extends AppCompatActivity {
         }
 
         // QR por ahora es imagen fija
-        imgQrCode.setImageResource(R.drawable.ic_person_24);
+        imgQrCode.setImageResource(R.drawable.qr_code_24);
+
+        Button btnPlaces = findViewById(R.id.btnPlaces);
+        btnPlaces.setOnClickListener(v -> {
+            Intent intent = new Intent(OrderDetailActivity.this, StopsActivity.class);
+            intent.putExtra("tour", order.tour);
+            startActivity(intent);
+        });
+
+        Button btnCancelar = findViewById(R.id.btnCancelar);
+        btnCancelar.setOnClickListener(v -> {
+            order.status = TourOrder.Status.CANCELADO;
+
+            // Actualizar el TextView
+            tvStatus.setText("Estado: " + order.status.name());
+
+            // Pasar el objeto actualizado de regreso
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("updatedOrder", order);
+            setResult(RESULT_OK, resultIntent);
+            finish(); // Regresa a la actividad anterior
+        });
+
+
+
+
     }
 
     private void bindViews() {

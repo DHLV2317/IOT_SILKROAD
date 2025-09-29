@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,7 +14,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SILKROAD_IOT">
 
-        <!--SP-->
+        <!-- ADMIN -->
+        <activity android:name=".ui.admin.AdminCompanyDetailActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminToursActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminTourDetailActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminTourWizardActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminTourDetailViewActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminReservationsActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminReservationDetailActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminGuidesActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminGuideDetailActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminReportsActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminHomeActivity" android:exported="false"/>
+
+        <!-- SUPERADMIN -->
         <activity
             android:name=".ui.superadmin.SuperAdminHomeActivity"
             android:exported="false" />
@@ -70,67 +85,47 @@
             android:name=".ui.superadmin.ReportesActivity"
             android:exported="false"/>
 
+        <!-- GUIDE -->
+        <activity android:name=".ui.guide.GuideHomeActivity" android:exported="false"/>
+        <activity android:name=".ui.guide.GuideTourOffersActivity" android:exported="false"
+            android:label="Ofertas de Tours" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
+        <activity android:name=".ui.guide.GuideLocationTrackingActivity" android:exported="false"
+            android:label="Registrar Ubicación" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
+        <activity android:name=".ui.guide.GuideQRScannerActivity" android:exported="false"
+            android:label="Escanear QR" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
+        <activity android:name=".ui.guide.GuidePendingApprovalActivity" android:exported="false"
+            android:label="Cuenta Pendiente"/>
+        <activity android:name=".ui.guide.GuideProfileActivity" android:exported="false"
+            android:label="Mi Perfil" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
+        <activity android:name=".ui.guide.GuideHistoryActivity" android:exported="false"
+            android:label="Historial de Tours" android:parentActivityName=".ui.guide.GuideProfileActivity"/>
 
+        <!-- CLIENT -->
+        <activity android:name=".ui.client.ClientHomeActivity" android:exported="false" android:label="Inicio Cliente"/>
+        <activity android:name=".ui.client.ClientOnboardingActivity" android:exported="false" android:label="Verificación de datos"/>
+        <activity android:name=".ui.client.ToursActivity" android:exported="false" android:label="tours"/>
+        <activity android:name=".ui.client.TourDetailActivity" android:exported="false" android:label="tours"/>
+        <activity android:name=".ui.client.ConfirmTourActivity" android:exported="false" android:label="tours"/>
+        <activity android:name=".ui.client.TourHistoryActivity" android:exported="false" android:label="tours"/>
+        <activity android:name=".ui.client.OrderDetailActivity" android:exported="false" android:label="tours"/>
+        <activity android:name=".ui.client.StopsActivity" android:exported="false" android:label="tours"/>
 
+        <!-- AUTH / MAIN -->
+        <activity android:name=".ui.auth.RegisterActivity" android:exported="false" android:label="Registro"/>
+        <activity android:name=".ui.auth.GuideRegisterActivity" android:exported="false" android:label="Registro Guía"
+            android:parentActivityName=".ui.auth.RegisterActivity"/>
+        <activity android:name=".ui.auth.RegisterVerifyActivity" android:exported="false" android:label="Verificación de registro"/>
+        <activity android:name=".ui.auth.ForgotPasswordActivity" android:exported="false" android:label="Recuperar contraseña"/>
 
-
-        <activity
-            android:name=".ui.admin.AdminHomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.guide.GuideHomeActivity"
-            android:exported="false" /> <!-- Pantalla principal (Login) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="Login">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity> <!-- Registro -->
-        <activity
-            android:name=".ui.auth.RegisterActivity"
-            android:exported="false"
-            android:label="Registro" /> <!-- Verificación de código de registro -->
-        <activity
-            android:name=".ui.auth.RegisterVerifyActivity"
-            android:exported="false"
-            android:label="Verificación de registro" /> <!-- Recuperación de contraseña -->
-        <activity
-            android:name=".ui.auth.ForgotPasswordActivity"
-            android:exported="false"
-            android:label="Recuperar contraseña" /> <!-- Onboarding del cliente -->
-        <activity
-            android:name=".ui.client.ClientOnboardingActivity"
-            android:exported="false"
-            android:label="Verificación de datos" /> <!-- Pantalla principal del cliente -->
-        <activity
-            android:name=".ui.client.ClientHomeActivity"
-            android:exported="false"
-            android:label="Inicio Cliente" />
-        <activity
-            android:name=".ui.client.ToursActivity"
-            android:exported="false"
-            android:label="tours" />
-        <activity
-            android:name=".ui.client.TourDetailActivity"
-            android:exported="false"
-            android:label="tours" />
-
-        <activity
-            android:name=".ui.client.ConfirmTourActivity"
-            android:exported="false"
-            android:label="tours" />
-        <activity
-            android:name=".ui.client.TourHistoryActivity"
-            android:exported="false"
-            android:label="tours" />
-        <activity
-            android:name=".ui.client.OrderDetailActivity"
-            android:exported="false"
-            android:label="tours" />
+        </activity>
 
     </application>
 

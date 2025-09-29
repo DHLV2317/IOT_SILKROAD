@@ -2,7 +2,15 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="brand_celeste">#26C6DA</color>   <!-- celeste -->
+
+    <!-- marca / UI -->
+    <color name="brand_celeste">#26C6DA</color>
+    <color name="brand_verde">#4CAF50</color>
+
+    <!-- auxiliares -->
+    <color name="pill_gray">#FFE0E0E0</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
 
     <!--Colores Superadmin-->
     <color name="seda">#FF2DAEBC</color>

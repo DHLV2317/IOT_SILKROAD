@@ -15,6 +15,14 @@ public class User {
     private String photoUri;
     private boolean clientProfileCompleted;
 
+    // Campos específicos para GUÍAS
+    private String documentType;
+    private String documentNumber;
+    private String birthDate;
+    private String languages;
+    private boolean guideApproved = false; // Por defecto no aprobado
+    private String guideApprovalStatus = "PENDING"; // PENDING, APPROVED, REJECTED
+
     // ✔️ Constructor de 3 args (se usa en RegisterActivity)
     public User(String name, String email, String password) {
         this(name, email, password, Role.CLIENT); // por defecto CLIENT
@@ -52,4 +60,23 @@ public class User {
 
     public boolean isClientProfileCompleted(){ return clientProfileCompleted; }
     public void setClientProfileCompleted(boolean v){ this.clientProfileCompleted = v; }
+
+    // Getters/Setters para campos de GUÍA
+    public String getDocumentType() { return documentType; }
+    public void setDocumentType(String documentType) { this.documentType = documentType; }
+
+    public String getDocumentNumber() { return documentNumber; }
+    public void setDocumentNumber(String documentNumber) { this.documentNumber = documentNumber; }
+
+    public String getBirthDate() { return birthDate; }
+    public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
+
+    public String getLanguages() { return languages; }
+    public void setLanguages(String languages) { this.languages = languages; }
+
+    public boolean isGuideApproved() { return guideApproved; }
+    public void setGuideApproved(boolean guideApproved) { this.guideApproved = guideApproved; }
+
+    public String getGuideApprovalStatus() { return guideApprovalStatus; }
+    public void setGuideApprovalStatus(String guideApprovalStatus) { this.guideApprovalStatus = guideApprovalStatus; }
 }

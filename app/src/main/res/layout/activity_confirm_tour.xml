@@ -1,31 +1,43 @@
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
     android:orientation="vertical"
     android:gravity="center_horizontal">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/brand_celeste"
+        android:title="Reservas"
+        android:titleTextColor="@android:color/white" />
 
     <TextView
         android:id="@+id/tTourName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:text="Tour 1"
         android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/btnSelectDate"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Seleccionar fecha"/>
+        android:text="Seleccionar fecha"
+        android:backgroundTint="@color/brand_celeste"/>
 
     <Button
         android:id="@+id/btnSelectTime"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="Seleccionar hora"
-        android:layout_marginTop="8dp"/>
+        android:backgroundTint="@color/brand_celeste"/>
 
     <TextView
         android:id="@+id/tSelectedDateTime"
@@ -57,7 +69,9 @@
 
     <Button
         android:id="@+id/btnConfirm"
-        android:layout_width="match_parent"
+        android:layout_width="214dp"
         android:layout_height="wrap_content"
-        android:text="Confirmar reserva"/>
+        android:text="Confirmar reserva"
+        android:backgroundTint="@color/brand_celeste"
+        />
 </LinearLayout>

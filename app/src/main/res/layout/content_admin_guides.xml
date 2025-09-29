@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootContent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- (Opcional) imagen de mapa de relleno -->
+    <ImageView
+        android:id="@+id/imgMap"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:layout_margin="12dp"
+        android:scaleType="centerCrop"
+        android:background="#EFEFEF"
+        android:src="@drawable/ic_map_placeholder" />
+
+    <!-- Buscador -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:hint="Buscar guía">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/inputSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Lista -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="12dp"
+        android:layout_weight="1" />
+
+    <!-- Ya NO hay botón + Asignar guía -->
+
+</LinearLayout>

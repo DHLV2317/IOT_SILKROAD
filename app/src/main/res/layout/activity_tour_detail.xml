@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:padding="16dp"
+    android:orientation="vertical"
     android:layout_width="match_parent" android:layout_height="match_parent">
+
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/brand_celeste"
+        android:title="Tours"
+        android:titleTextColor="@android:color/white" />
 
     <ImageView
         android:id="@+id/imgTour"
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:scaleType="centerCrop"
+        android:layout_marginTop="16dp"
         android:background="#DDD"
         android:layout_marginBottom="16dp"/>
 
@@ -17,6 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Tour 1"
+        android:padding="16dp"
         android:textStyle="bold"
         android:textSize="20sp"
         android:layout_marginBottom="8dp"/>
@@ -26,20 +37,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Descripción del tour"
+        android:padding="16dp"
         android:layout_marginBottom="8dp"/>
 
     <TextView
         android:id="@+id/tTourPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="16dp"
         android:text="S/. 100"
         android:textStyle="bold"
         android:layout_marginBottom="24dp"/>
 
     <Button
         android:id="@+id/btnAdd"
-        android:layout_width="match_parent"
+        android:layout_width="193dp"
         android:layout_height="wrap_content"
-        android:text="Agregar S/. 100"/>
+        android:text="Agregar S/. 100"
+        android:backgroundTint="@color/brand_celeste"/>
 
 </LinearLayout>

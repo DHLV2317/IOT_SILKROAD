@@ -43,7 +43,7 @@
 
         <TextView
             android:id="@+id/tvStatus"
-            android:text="Reservado"
+            android:text="Estado"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
