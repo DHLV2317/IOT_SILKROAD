@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         b.btnGoRegister.setOnClickListener(v ->
-                startActivity(new Intent(this, SuperAdminHomeActivity.class)));
+                startActivity(new Intent(this, RegisterActivity.class)));
 
         b.tvForgot.setOnClickListener(v ->
                 startActivity(new Intent(this, ForgotPasswordActivity.class)));
