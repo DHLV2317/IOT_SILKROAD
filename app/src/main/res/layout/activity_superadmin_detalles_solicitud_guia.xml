@@ -92,6 +92,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="Número de documento"
+                    android:inputType="number"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -127,6 +128,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="Correo electrónico"
+                    android:inputType="textEmailAddress"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -144,6 +146,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="Teléfono"
+                    android:inputType="phone"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 

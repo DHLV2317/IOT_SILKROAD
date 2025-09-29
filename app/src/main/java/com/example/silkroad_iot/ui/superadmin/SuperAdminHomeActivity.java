@@ -2,7 +2,6 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -19,6 +18,8 @@ import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
 import com.example.silkroad_iot.ui.superadmin.entity.Cliente;
 import com.example.silkroad_iot.ui.superadmin.entity.Global;
 import com.example.silkroad_iot.ui.superadmin.entity.Guia;
+import com.example.silkroad_iot.ui.superadmin.entity.Log;
+import com.example.silkroad_iot.ui.superadmin.entity.ReporteDTO;
 import com.google.android.material.navigation.NavigationView;
 
 import java.time.LocalDate;
@@ -39,12 +40,12 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
 
         if(Global.sc.equals("Init")){
             Administrador admin = new Administrador();
-            admin.setNombre("AAA");
-            admin.setNombreEmpresa("AAA");
-            admin.setUbicacion("AAA");
-            admin.setCorreo("AAA");
-            admin.setTelefono("AAA");
-            admin.setContrasena("AAA");
+            admin.setNombre("Nombre administrador");
+            admin.setNombreEmpresa("Empresa 1");
+            admin.setUbicacion("Ubicación 1");
+            admin.setCorreo("correo1@correo1");
+            admin.setTelefono("987654321");
+            admin.setContrasena("contrasenia");
             admin.setActivo(true);
             Global.listaAdministradores.add(admin);
             Guia guia = new Guia();
@@ -77,7 +78,20 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
             cliente.setActivo(true);
             cliente.setContrasena("AAA");
             Global.listaClientes.add(cliente);
-            Log.d("AAA","AAA");
+            ReporteDTO reporte = new ReporteDTO();
+            reporte.setDescripcion("Reporte 1");
+            Global.listaReportes.add(reporte);
+            Log log = new Log();
+            log.setNombre("Log 1");
+            log.setTipo("Tipo 1");
+            log.setFecha(new Date());
+            log.setHora("Hora 1");
+            log.setUsuario("Usuario 1");
+            log.setTipoUsuario("Superadmin");
+            log.setUsuarioAfectado("Usuario afectado 1");
+            log.setTipoUsuarioAfectado("Cliente");
+            log.setDescripcion("Log 1 descripcion");
+            Global.listaLogs.add(log);
             Global.sc="Done";
         }
         toolbar = findViewById(R.id.toolbar);

@@ -1,11 +1,12 @@
 package com.example.silkroad_iot.ui.superadmin.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class Log implements Serializable {
     private String nombre;
     private String tipo;
-    private String fecha;
+    private Date fecha;
     private String hora;
     private String usuario;
     private String tipoUsuario;
@@ -37,12 +38,28 @@ public class Log implements Serializable {
         this.tipo = tipo;
     }
 
-    public String getFecha() {
+    public Date getFecha() {
         return fecha;
     }
 
-    public void setFecha(String fecha) {
+    public void setFecha(Date fecha) {
         this.fecha = fecha;
+    }
+
+    public String getUsuarioAfectado() {
+        return usuarioAfectado;
+    }
+
+    public void setUsuarioAfectado(String usuarioAfectado) {
+        this.usuarioAfectado = usuarioAfectado;
+    }
+
+    public String getTipoUsuarioAfectado() {
+        return tipoUsuarioAfectado;
+    }
+
+    public void setTipoUsuarioAfectado(String tipoUsuarioAfectado) {
+        this.tipoUsuarioAfectado = tipoUsuarioAfectado;
     }
 
     public String getHora() {

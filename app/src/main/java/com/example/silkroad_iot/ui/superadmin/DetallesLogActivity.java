@@ -27,7 +27,7 @@ public class DetallesLogActivity extends AppCompatActivity {
         String g="Evento " +log.getTipo()+" de "+log.getTipoUsuario();
         binding.textView.setText(g);
         binding.textView1.setText(log.getNombre());
-        binding.textView12.setText(log.getFecha());
+        binding.textView12.setText(log.getFecha().toString());
         binding.textView13.setText(log.getHora());
         binding.textView14.setText(log.getUsuario());
         binding.textView15.setText(log.getDescripcion());

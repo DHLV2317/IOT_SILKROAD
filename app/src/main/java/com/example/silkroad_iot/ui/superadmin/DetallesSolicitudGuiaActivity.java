@@ -42,12 +42,9 @@ public class DetallesSolicitudGuiaActivity extends AppCompatActivity {
         binding.textInputLayout8.getEditText().setText(guia.getDomicilio());
         binding.textInputLayout9.getEditText().setText(guia.getIdiomas());
 
-        if(guia.isActivo()){
+        if(guia.isAprobado()){
             binding.en.setBackgroundColor(getResources().getColor(R.color.green, null));
             binding.di.setBackgroundColor(getResources().getColor(R.color.base, null));
-        }else{
-            binding.en.setBackgroundColor(getResources().getColor(R.color.base, null));
-            binding.di.setBackgroundColor(getResources().getColor(R.color.red, null));
         }
 
     }
