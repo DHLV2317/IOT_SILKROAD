@@ -1,5 +1,7 @@
 package com.example.silkroad_iot.ui.superadmin.entity;
 
+import static com.example.silkroad_iot.ui.superadmin.entity.Global.listaReportes;
+
 import android.content.Context;
 import android.content.Intent;
 
@@ -41,6 +43,11 @@ public class ListaAdministradoresAdapter
         holder.binding.getRoot().setOnClickListener(view -> {
             Intent intent = new Intent(context, DetallesAdministradorActivity.class);
             intent.putExtra("administrador", administrador);
+
+
+            ReporteDTO  reporte =listaReportes.get(position);
+            intent.putExtra("reporte", reporte);
+
             intent.putExtra("posicion", position);
             context.startActivity(intent);
         });

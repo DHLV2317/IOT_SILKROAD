@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.silkroad_iot.databinding.ActivitySuperadminReportesBinding;
 import com.example.silkroad_iot.ui.superadmin.entity.Global;
 
 import androidx.annotation.NonNull;
@@ -28,7 +29,7 @@ import java.util.List;
 
 public class ReportesActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
-    ActivitySuperadminAdministradoresBinding binding;
+    ActivitySuperadminReportesBinding binding;
     private List<Administrador> administradorList;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
@@ -38,7 +39,7 @@ public class ReportesActivity extends AppCompatActivity implements NavigationVie
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivitySuperadminAdministradoresBinding.inflate(getLayoutInflater());
+        binding = ActivitySuperadminReportesBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         toolbar = findViewById(R.id.toolbar);
@@ -91,14 +92,6 @@ public class ReportesActivity extends AppCompatActivity implements NavigationVie
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (toggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        //int itemId = item.getItemId();
-        return super.onOptionsItemSelected(item);
-    }
     public void cargarLista() {
         //List<Router> routerList = lista;
         administradorList = Global.listaAdministradores;
@@ -114,11 +107,6 @@ public class ReportesActivity extends AppCompatActivity implements NavigationVie
     protected void onStart() {
         super.onStart();
         cargarLista();
-    }
-
-    public void crearAdministrador(View view){
-        Intent intent = new Intent(this, CrearAdministradorActivity.class);
-        startActivity(intent);
     }
 
 

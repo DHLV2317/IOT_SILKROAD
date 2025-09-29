@@ -54,4 +54,8 @@ dependencies {
 
     // QR (ZXing core)
     implementation 'com.google.zxing:core:3.5.2'
+
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
 }
+

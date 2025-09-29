@@ -9,5 +9,6 @@ public class Global {
     public static List<Guia> listaGuiasAprobados = new ArrayList<>();
     public static List<Cliente> listaClientes = new ArrayList<>();
     public static List<Log> listaLogs = new ArrayList<>();
+    public static List<ReporteDTO> listaReportes = new ArrayList<>();
     public static String sc="Init";
 }
