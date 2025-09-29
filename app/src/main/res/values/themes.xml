@@ -6,4 +6,6 @@
     </style>
 
     <style name="Theme.SILKROAD_IOT" parent="Base.Theme.SILKROAD_IOT" />
+
+    <style name="Theme.SuperAdminTheme" parent="Theme.Material3.DayNight" />
 </resources>

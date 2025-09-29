@@ -2,31 +2,35 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.example.silkroad_iot.databinding.ActivitySuperadminGuiasBinding;
+import com.example.silkroad_iot.databinding.ActivitySuperadminSolicitudesGuiasBinding;
+import com.example.silkroad_iot.ui.superadmin.entity.Global;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
+
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
-import com.example.silkroad_iot.ui.superadmin.entity.Cliente;
-import com.example.silkroad_iot.ui.superadmin.entity.Global;
 import com.example.silkroad_iot.ui.superadmin.entity.Guia;
+import com.example.silkroad_iot.ui.superadmin.entity.ListaGuiasAdapter;
+import com.example.silkroad_iot.ui.superadmin.entity.ListaSolicitudesGuiasAdapter;
 import com.google.android.material.navigation.NavigationView;
 
-import java.time.LocalDate;
-import java.util.Date;
+import java.util.List;
 
+public class SolicitudesGuiasActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
-public class SuperAdminHomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
+    ActivitySuperadminSolicitudesGuiasBinding binding;
+    private List<Guia> guiaList;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
@@ -35,51 +39,9 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_super_admin_home);
+        binding = ActivitySuperadminSolicitudesGuiasBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        if(Global.sc.equals("Init")){
-            Administrador admin = new Administrador();
-            admin.setNombre("AAA");
-            admin.setNombreEmpresa("AAA");
-            admin.setUbicacion("AAA");
-            admin.setCorreo("AAA");
-            admin.setTelefono("AAA");
-            admin.setContrasena("AAA");
-            admin.setActivo(true);
-            Global.listaAdministradores.add(admin);
-            Guia guia = new Guia();
-            guia.setNombres("AAA");
-            guia.setApellidos("AAA");
-            guia.setCorreo("AAA");
-            guia.setTelefono("999999999");
-            guia.setDomicilio("AAA");
-            guia.setFechaNacimiento(new Date());
-            guia.setIdiomas("AAA");
-            guia.setNumeroDocumento("AAA");
-            guia.setTipoDocumento("AAA");
-            guia.setFoto1((byte) 1);
-            guia.setActivo(true);
-            guia.setContrasena("AAA");
-            guia.setAprobado(false);
-            Global.listaGuiasNoAprobados.add(guia);
-            guia.setAprobado(true);
-            Global.listaGuiasAprobados.add(guia);
-            Cliente cliente = new Cliente();
-            cliente.setNombres("AAA");
-            cliente.setApellidos("AAA");
-            cliente.setCorreo("AAA");
-            cliente.setTelefono("999999999");
-            cliente.setDomicilio("AAA");
-            cliente.setFechaNacimiento(new Date());
-            cliente.setNumeroDocumento("AAA");
-            cliente.setTipoDocumento("AAA");
-            cliente.setFoto((byte) 1);
-            cliente.setActivo(true);
-            cliente.setContrasena("AAA");
-            Global.listaClientes.add(cliente);
-            Log.d("AAA","AAA");
-            Global.sc="Done";
-        }
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -91,8 +53,6 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
-
-
     }
 
     @Override
@@ -139,6 +99,22 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
         }
         //int itemId = item.getItemId();
         return super.onOptionsItemSelected(item);
+    }
+    public void cargarLista() {
+        //List<Router> routerList = lista;
+        guiaList = Global.listaGuiasNoAprobados;
+        ListaSolicitudesGuiasAdapter listaSolicitudesGuiasAdapter = new ListaSolicitudesGuiasAdapter();
+        listaSolicitudesGuiasAdapter.setListaSolicitudesGuias(guiaList);
+        listaSolicitudesGuiasAdapter.setContext(SolicitudesGuiasActivity.this);
+        binding.recyclerView.setAdapter(listaSolicitudesGuiasAdapter);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(SolicitudesGuiasActivity.this));
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        cargarLista();
     }
 
 

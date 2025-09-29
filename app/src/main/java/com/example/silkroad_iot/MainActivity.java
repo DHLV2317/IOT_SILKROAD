@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Ir a registro
         b.btnGoRegister.setOnClickListener(v ->
-                startActivity(new Intent(this, RegisterActivity.class)));
+                startActivity(new Intent(this, SuperAdminHomeActivity.class)));
 
         // Forgot password
         b.tvForgot.setOnClickListener(v ->

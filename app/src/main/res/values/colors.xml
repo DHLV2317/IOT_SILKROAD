@@ -3,4 +3,13 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="brand_celeste">#26C6DA</color>   <!-- celeste -->
+
+    <!--Colores Superadmin-->
+    <color name="seda">#FF2DAEBC</color>
+    <color name="gris">#FF808080</color>
+    <color name="base">#FFEFEEFE</color>
+    <color name="base2">#FFEFEEFF</color>
+    <color name="green">#FF00FF00</color>
+    <color name="red">#FFFF0000</color>
+    <color name="ab">#FFAABBEE</color>
 </resources>

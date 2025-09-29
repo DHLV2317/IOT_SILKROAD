@@ -11,12 +11,69 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SILKROAD_IOT">
+
+        <!--SP-->
         <activity
             android:name=".ui.superadmin.SuperAdminHomeActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.superadmin.SuperAdminActivity"
-            android:exported="false" />
+            android:name=".ui.superadmin.AdministradoresActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.superadmin.CrearAdministradorActivity"
+            android:exported="false"
+            android:label="Crear Administrador"
+            android:parentActivityName=".ui.superadmin.AdministradoresActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.DetallesAdministradorActivity"
+            android:exported="false"
+            android:label="Editar Administrador"
+            android:parentActivityName=".ui.superadmin.AdministradoresActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.GuiasActivity"
+            android:exported="false"/>
+        <activity android:name=".ui.superadmin.DetallesGuiaActivity"
+            android:exported="false"
+            android:label="Editar Guia"
+            android:parentActivityName=".ui.superadmin.GuiasActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.SolicitudesGuiasActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.superadmin.DetallesSolicitudGuiaActivity"
+            android:exported="false"
+            android:label="Solicitud de guía"
+            android:parentActivityName=".ui.superadmin.SolicitudesGuiasActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.ClientesActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.superadmin.DetallesClienteActivity"
+            android:exported="false"
+            android:label="Editar Cliente"
+            android:parentActivityName=".ui.superadmin.ClientesActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.LogsActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".ui.superadmin.DetallesLogActivity"
+            android:exported="false"
+            android:label="Evento"
+            android:parentActivityName=".ui.superadmin.LogsActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.ReportesActivity"
+            android:exported="false"/>
+
+
+
+
+
         <activity
             android:name=".ui.admin.AdminHomeActivity"
             android:exported="false" />
