@@ -23,6 +23,7 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="336dp"
+        android:contentDescription="Phone"
         app:layout_constraintEnd_toStartOf="@+id/textInputLayout5"
         app:layout_constraintHorizontal_bias="0.6"
         app:layout_constraintStart_toStartOf="parent"

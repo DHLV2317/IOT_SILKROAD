@@ -3,16 +3,11 @@ package com.example.silkroad_iot.ui.superadmin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesAdministradorBinding;
 import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesLogBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
-import com.example.silkroad_iot.ui.superadmin.entity.Global;
 import com.example.silkroad_iot.ui.superadmin.entity.Log;
 
 public class DetallesLogActivity extends AppCompatActivity {
@@ -29,8 +24,8 @@ public class DetallesLogActivity extends AppCompatActivity {
 
         posicion = intent.getIntExtra("posicion", -1);
         Log log = (Log) intent.getSerializableExtra("log");
-
-        binding.textView.setText("Evento " +log.getTipo()+" de "+log.getTipoUsuario());
+        String g="Evento " +log.getTipo()+" de "+log.getTipoUsuario();
+        binding.textView.setText(g);
         binding.textView1.setText(log.getNombre());
         binding.textView12.setText(log.getFecha());
         binding.textView13.setText(log.getHora());

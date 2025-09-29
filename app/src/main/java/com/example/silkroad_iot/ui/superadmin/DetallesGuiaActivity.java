@@ -19,7 +19,7 @@ import java.sql.Date;
 public class DetallesGuiaActivity extends AppCompatActivity {
 
     ActivitySuperadminDetallesGuiaBinding binding;
-    private int posicion;;
+    private int posicion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
