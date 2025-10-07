@@ -1,15 +1,27 @@
 package com.example.silkroad_iot.ui.client;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.silkroad_iot.data.Company;
+import com.example.silkroad_iot.data.EmpresaFb;
+import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.databinding.ActivityToursBinding;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ToursActivity extends AppCompatActivity {
-    ActivityToursBinding b;
+
+    private ActivityToursBinding b;
+    private FirebaseFirestore db;
+    private List<TourFB> tourList;
+    private TourAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,20 +29,63 @@ public class ToursActivity extends AppCompatActivity {
         b = ActivityToursBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
-        // Usar el toolbar del binding
+        // 🔧 Configuración base
+        db = FirebaseFirestore.getInstance();
+        tourList = new ArrayList<>();
+        adapter = new TourAdapter(tourList);
+
+        // Toolbar
         setSupportActionBar(b.toolbar);
+        getSupportActionBar().setTitle("Tours Disponibles");
 
-        // Título (opcional: puedes ponerlo en XML o aquí)
-        getSupportActionBar().setTitle("ToursActivity");
+        // RecyclerView
+        b.rvTours.setLayoutManager(new LinearLayoutManager(this));
+        b.rvTours.setAdapter(adapter);
 
-        // Obtener la empresa y tours desde el Intent
-        Company company = (Company) getIntent().getSerializableExtra("company");
-
-        if (company != null) {
-            setTitle("Tours de " + company.getN());
-            b.rvTours.setLayoutManager(new LinearLayoutManager(this));
-            b.rvTours.setAdapter(new TourAdapter(company.tours));
+        // 📦 Recibir datos de la empresa seleccionada
+        EmpresaFb empresa = (EmpresaFb) getIntent().getSerializableExtra("company");
+        if (empresa == null) {
+            Toast.makeText(this, "No se recibió la empresa", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
-    }
-}
 
+        Log.d("TOURS_ACTIVITY", "Cargando tours de empresa: " + empresa.getNombre());
+
+        // 🔥 Cargar tours desde Firebase
+        cargarToursDesdeFirebase(empresa.getId());
+    }
+
+    private void cargarToursDesdeFirebase(String empresaId) {
+        db.collection("tours")
+                .whereEqualTo("empresaId", empresaId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    Log.d("TOURS_FIREBASE", "✅ id de la empresa: " + empresaId);
+                    tourList.clear();
+
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        TourFB tour = doc.toObject(TourFB.class);
+                        if (tour != null) {
+                            tour.setId(doc.getId());
+                            tourList.add(tour);
+                            Log.d("TOURS_FIREBASE", "✅ Tour cargado: " + tour.getNombre() + " / Empresa: " + tour.getEmpresaId());
+                        }
+                    }
+
+                    Log.d("TOURS_FIREBASE", "✅ Total tours encontrados: " + tourList.size());
+                    Log.d("TOURS_FIREBASE", "✅ tourList.hash=" + tourList.hashCode());
+
+                    // Aquí ya no pases otra lista, solo notifica el cambio
+                    adapter.notifyDataSetChanged();
+
+                    Log.d("TOURS_FIREBASE", "✅ Adapter notificado. tours.size=" + adapter.getItemCount());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("TOURS_FIREBASE", "❌ Error al cargar tours", e);
+                    Toast.makeText(this, "Error al cargar tours", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+
+}

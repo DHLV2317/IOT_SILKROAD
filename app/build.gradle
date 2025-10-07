@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -43,6 +44,8 @@ dependencies {
 
     // RecyclerView
     implementation "androidx.recyclerview:recyclerview:1.3.2"
+    implementation libs.firebase.common
+    implementation libs.firebase.firestore
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
@@ -56,6 +59,9 @@ dependencies {
     implementation 'com.google.zxing:core:3.5.2'
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
+    //Firebase
+    implementation libs.firebase.bom
 
 }
 

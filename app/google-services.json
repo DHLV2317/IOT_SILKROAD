@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "109695199773",
+    "project_id": "bd-iot-silkroad",
+    "storage_bucket": "bd-iot-silkroad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109695199773:android:62c935c5b6a872de0df4f4",
+        "android_client_info": {
+          "package_name": "com.example.silkroad_iot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzbWYjaXxthmiC6Fq_zxOzRfdwimKg7ho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

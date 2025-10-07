@@ -2,6 +2,7 @@ package com.example.silkroad_iot.ui.client;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.*;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -13,13 +14,25 @@ import com.example.silkroad_iot.data.Company;
 import java.util.ArrayList;
 import java.util.List;
 import com.bumptech.glide.Glide;
+import com.example.silkroad_iot.data.EmpresaFb;
 
 public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.VH>{
-    private final List<Company> data;
-    private final List<Company> fullList;
-    public CompanyAdapter(List<Company> data) {
-        this.data = new ArrayList<>(data);     // para poder modificarla
-        this.fullList = new ArrayList<>(data); // copia completa
+    private final List<EmpresaFb> data;
+    private final List<EmpresaFb> fullList;
+
+    public CompanyAdapter(List<EmpresaFb> data) {
+        this.data = data; // 👉 usa la misma lista
+        this.fullList = new ArrayList<>(data);
+    }
+
+    public void updateData(List<EmpresaFb> newList) {
+        data.clear();
+        data.addAll(newList);
+
+        fullList.clear();
+        fullList.addAll(newList);
+
+        notifyDataSetChanged();
     }
 
     public void filterList(String query) {
@@ -27,8 +40,8 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.VH>{
         if (query.isEmpty()) {
             data.addAll(fullList);
         } else {
-            for (Company c : fullList) {
-                if (c.getN().toLowerCase().contains(query.toLowerCase())) {
+            for (EmpresaFb c : fullList) {
+                if (c.getNombre().toLowerCase().contains(query.toLowerCase())) {
                     data.add(c);
                 }
             }
@@ -44,31 +57,43 @@ public class CompanyAdapter extends RecyclerView.Adapter<CompanyAdapter.VH>{
             super(v);
             t1 = v.findViewById(R.id.tTitle);
             t2 = v.findViewById(R.id.tRating);
-            img = v.findViewById(R.id.imgCompany); // Este es el nuevo
+            img = v.findViewById(R.id.imgCompany);
         }
     }
-    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p,int v){
-        return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_company,p,false));
+
+    @NonNull
+    @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new VH(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_company, parent, false));
     }
+
     @Override
     public void onBindViewHolder(@NonNull VH h, int i) {
-        Company c = data.get(i);
-        h.t1.setText(c.getN());  // o c.getName()
-        h.t2.setText("* " + c.getR());  // o c.getRating()
+        EmpresaFb c = data.get(i);
+
+        Log.d("ADAPTER_BIND", "Dibujando empresa: " + c.getNombre());
+
+        h.t1.setText(c.getNombre());
+        h.t2.setText("* 4.5"); // Simulación de rating si no lo tienes aún en Firestore
+
+
 
         Glide.with(h.img.getContext())
-                .load(c.getImageUrl()) // o c.getImageUrl()
+                .load(c.getImagen())
                 .into(h.img);
 
         h.itemView.setOnClickListener(v -> {
             Context ctx = v.getContext();
             Intent intent = new Intent(ctx, ToursActivity.class);
-            intent.putExtra("company", c); // 'c' es la empresa actual
+            intent.putExtra("company", c); // Puedes pasar solo el nombre y luego cargar tours
             ctx.startActivity(intent);
         });
-
-
-
     }
-    @Override public int getItemCount(){ return data.size(); }
+
+    @Override
+    public int getItemCount() {
+        return data.size();
+    }
+
+
 }

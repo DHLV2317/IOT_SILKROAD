@@ -22,6 +22,8 @@ import com.example.silkroad_iot.ui.guide.GuidePendingApprovalActivity;
 import com.example.silkroad_iot.ui.superadmin.SuperAdminHomeActivity;
 import com.google.android.material.snackbar.Snackbar;
 
+import com.google.firebase.FirebaseApp;
+
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding b;
     private final UserStore store = UserStore.get();
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         b = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
         setSupportActionBar(b.toolbar);
+        FirebaseApp.initializeApp(this);
 
         b.btnLogin.setOnClickListener(v -> {
             String email = b.inputEmail.getText().toString().trim();
