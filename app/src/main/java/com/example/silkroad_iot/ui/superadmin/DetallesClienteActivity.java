@@ -10,85 +10,47 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesClienteBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Cliente;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class DetallesClienteActivity extends AppCompatActivity {
 
     private ActivitySuperadminDetallesClienteBinding binding;
     private FirebaseFirestore db;
-    private String correoDoc;
+    private String docId;
 
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySuperadminDetallesClienteBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
 
-        Intent intent = getIntent();
-<<<<<<< Updated upstream
+        Intent i = getIntent();
+        User cliente = (User) i.getSerializableExtra("cliente");
+        if (cliente == null) { Toast.makeText(this, "Cliente no encontrado", Toast.LENGTH_SHORT).show(); finish(); return; }
 
-        posicion = intent.getIntExtra("posicion", -1);
-        Cliente cliente= (Cliente) intent.getSerializableExtra("cliente");
+        docId = cliente.getEmail();
 
-        binding.textInputLayout.getEditText().setText(cliente.getNombres());
-        binding.textInputLayout2.getEditText().setText(cliente.getApellidos());
-        binding.textInputLayout3.getEditText().setText(cliente.getTipoDocumento());
-        binding.textInputLayout4.getEditText().setText(cliente.getNumeroDocumento());
-        binding.textInputLayout5.getEditText().setText(cliente.getFechaNacimiento().toString());
-        binding.textInputLayout6.getEditText().setText(cliente.getCorreo());
-        binding.textInputLayout7.getEditText().setText(cliente.getTelefono());
-        binding.textInputLayout8.getEditText().setText(cliente.getDomicilio());
-        binding.textInputLayout10.getEditText().setText(cliente.getContrasena());
-        binding.textInputLayout11.getEditText().setText(cliente.getContrasena());
+        binding.inputNames.setText(cliente.getName());
+        binding.inputLastNames.setText(cliente.getLastName());
+        binding.inputDocType.setText(cliente.getDocumentType());
+        binding.inputDocNumber.setText(cliente.getDocumentNumber());
+        binding.inputBirthDate.setText(cliente.getBirthDate() == null ? "" : cliente.getBirthDate()); // guardas string
+        binding.inputEmail.setText(cliente.getEmail());
+        binding.inputPhone.setText(cliente.getPhone());
+        binding.inputAddress.setText(cliente.getAddress());
+        binding.inputPassword.setText(cliente.getPassword());
+        binding.inputPasswordRepeat.setText(cliente.getPassword());
 
-        if(cliente.isActivo()){
-            binding.en.setBackgroundColor(getResources().getColor(R.color.green, null));
-            binding.di.setBackgroundColor(getResources().getColor(R.color.base, null));
-        }else{
-            binding.en.setBackgroundColor(getResources().getColor(R.color.base, null));
-            binding.di.setBackgroundColor(getResources().getColor(R.color.red, null));
-=======
-        Cliente cliente = (Cliente) intent.getSerializableExtra("cliente");
-        if (cliente == null) {
-            Toast.makeText(this, "Error: cliente no encontrado", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
->>>>>>> Stashed changes
-        }
+        updateEstadoUI(true); // si usas un campo 'active' puedes leerlo y reflejarlo
 
-        correoDoc = cliente.getCorreo();
-
-        // Llenar campos
-        binding.inputNames.setText(cliente.getNombres());
-        binding.inputLastNames.setText(cliente.getApellidos());
-        binding.inputDocType.setText(cliente.getTipoDocumento());
-        binding.inputDocNumber.setText(cliente.getNumeroDocumento());
-
-        // ✅ Formatear Date a String
-        String fechaNac = (cliente.getFechaNacimiento() != null) ? SDF.format(cliente.getFechaNacimiento()) : "";
-        binding.inputBirthDate.setText(fechaNac);
-
-        binding.inputEmail.setText(cliente.getCorreo());
-        binding.inputPhone.setText(cliente.getTelefono());
-        binding.inputAddress.setText(cliente.getDomicilio());
-        binding.inputPassword.setText(cliente.getContrasena());
-        binding.inputPasswordRepeat.setText(cliente.getContrasena());
-
-        updateEstadoUI(cliente.isActivo());
-
-        binding.en.setOnClickListener(v -> setActivo(true));
-        binding.di.setOnClickListener(v -> setActivo(false));
+        binding.en.setOnClickListener(v -> setActive(true));
+        binding.di.setOnClickListener(v -> setActive(false));
         binding.button.setOnClickListener(this::guardar);
     }
 
@@ -96,25 +58,15 @@ public class DetallesClienteActivity extends AppCompatActivity {
         int verde = ContextCompat.getColor(this, R.color.brand_verde);
         int rojo  = ContextCompat.getColor(this, R.color.red);
         int base  = ContextCompat.getColor(this, R.color.brand_celeste);
-
-        if (activo) {
-            binding.en.setBackgroundColor(verde);
-            binding.di.setBackgroundColor(base);
-        } else {
-            binding.en.setBackgroundColor(base);
-            binding.di.setBackgroundColor(rojo);
-        }
+        binding.en.setBackgroundColor(activo ? verde : base);
+        binding.di.setBackgroundColor(activo ? base  : rojo);
     }
 
-    private void setActivo(boolean activo) {
-        db.collection("clientes").document(correoDoc)
-                .update("activo", activo)
-                .addOnSuccessListener(v -> {
-                    updateEstadoUI(activo);
-                    Toast.makeText(this, "Estado actualizado correctamente", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+    private void setActive(boolean active){
+        db.collection("users").document(docId)
+                .update("active", active)
+                .addOnSuccessListener(v -> { updateEstadoUI(active); Toast.makeText(this, "Estado actualizado", Toast.LENGTH_SHORT).show(); })
+                .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void guardar(View view) {
@@ -122,51 +74,50 @@ public class DetallesClienteActivity extends AppCompatActivity {
         String apellidos       = binding.inputLastNames.getText().toString().trim();
         String tipoDocumento   = binding.inputDocType.getText().toString().trim();
         String numeroDocumento = binding.inputDocNumber.getText().toString().trim();
-        String fechaNacimiento = binding.inputBirthDate.getText().toString().trim(); // guardado como string
+        String fechaNacimiento = binding.inputBirthDate.getText().toString().trim();
         String correo          = binding.inputEmail.getText().toString().trim();
         String telefono        = binding.inputPhone.getText().toString().trim();
         String domicilio       = binding.inputAddress.getText().toString().trim();
-        String contrasena      = binding.inputPassword.getText().toString().trim();
-        String contrasenaRep   = binding.inputPasswordRepeat.getText().toString().trim();
+        String pass            = binding.inputPassword.getText().toString().trim();
+        String passRep         = binding.inputPasswordRepeat.getText().toString().trim();
 
         if (nombres.isEmpty() || apellidos.isEmpty() || tipoDocumento.isEmpty() || numeroDocumento.isEmpty()
                 || correo.isEmpty() || telefono.isEmpty() || domicilio.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        if (!contrasena.equals(contrasenaRep)) {
+        if (!pass.equals(passRep)) {
             Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Map<String, Object> update = new HashMap<>();
-        update.put("nombres", nombres);
-        update.put("apellidos", apellidos);
-        update.put("tipoDocumento", tipoDocumento);
-        update.put("numeroDocumento", numeroDocumento);
-        update.put("fechaNacimiento", fechaNacimiento);
-        update.put("correo", correo);
-        update.put("telefono", telefono);
-        update.put("domicilio", domicilio);
-        update.put("contrasena", contrasena);
+        Map<String, Object> up = new HashMap<>();
+        up.put("name", nombres);
+        up.put("lastName", apellidos);
+        up.put("documentType", tipoDocumento);
+        up.put("documentNumber", numeroDocumento);
+        up.put("birthDate", fechaNacimiento);
+        up.put("email", correo);
+        up.put("phone", telefono);
+        up.put("address", domicilio);
+        up.put("password", pass);
+        up.put("role", User.Role.CLIENT.name());
 
-        boolean correoCambio = !correo.equals(correoDoc);
-        if (correoCambio) {
-            db.collection("clientes").document(correoDoc).delete()
-                    .addOnSuccessListener(v1 -> db.collection("clientes").document(correo).set(update)
-                            .addOnSuccessListener(v2 -> { Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show(); finish(); })
+        boolean emailChange = !correo.equals(docId);
+        if (emailChange) {
+            db.collection("users").document(docId).delete()
+                    .addOnSuccessListener(v1 -> db.collection("users").document(correo).set(up)
+                            .addOnSuccessListener(v2 -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                             .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()))
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         } else {
-            db.collection("clientes").document(correoDoc).update(update)
-                    .addOnSuccessListener(v2 -> { Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show(); finish(); })
+            db.collection("users").document(docId).update(up)
+                    .addOnSuccessListener(v -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
