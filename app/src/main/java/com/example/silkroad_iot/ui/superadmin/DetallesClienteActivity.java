@@ -31,20 +31,20 @@ public class DetallesClienteActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         posicion = intent.getIntExtra("posicion", -1);
-        Guia guia = (Guia) intent.getSerializableExtra("cliente");
+        Cliente cliente= (Cliente) intent.getSerializableExtra("cliente");
 
-        binding.textInputLayout.getEditText().setText(guia.getNombres());
-        binding.textInputLayout2.getEditText().setText(guia.getApellidos());
-        binding.textInputLayout3.getEditText().setText(guia.getTipoDocumento());
-        binding.textInputLayout4.getEditText().setText(guia.getNumeroDocumento());
-        binding.textInputLayout5.getEditText().setText(guia.getFechaNacimiento().toString());
-        binding.textInputLayout6.getEditText().setText(guia.getCorreo());
-        binding.textInputLayout7.getEditText().setText(guia.getTelefono());
-        binding.textInputLayout8.getEditText().setText(guia.getDomicilio());
-        binding.textInputLayout10.getEditText().setText(guia.getContrasena());
-        binding.textInputLayout11.getEditText().setText(guia.getContrasena());
+        binding.textInputLayout.getEditText().setText(cliente.getNombres());
+        binding.textInputLayout2.getEditText().setText(cliente.getApellidos());
+        binding.textInputLayout3.getEditText().setText(cliente.getTipoDocumento());
+        binding.textInputLayout4.getEditText().setText(cliente.getNumeroDocumento());
+        binding.textInputLayout5.getEditText().setText(cliente.getFechaNacimiento().toString());
+        binding.textInputLayout6.getEditText().setText(cliente.getCorreo());
+        binding.textInputLayout7.getEditText().setText(cliente.getTelefono());
+        binding.textInputLayout8.getEditText().setText(cliente.getDomicilio());
+        binding.textInputLayout10.getEditText().setText(cliente.getContrasena());
+        binding.textInputLayout11.getEditText().setText(cliente.getContrasena());
 
-        if(guia.isActivo()){
+        if(cliente.isActivo()){
             binding.en.setBackgroundColor(getResources().getColor(R.color.green, null));
             binding.di.setBackgroundColor(getResources().getColor(R.color.base, null));
         }else{

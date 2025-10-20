@@ -30,10 +30,12 @@
         <!-- SUPERADMIN -->
         <activity
             android:name=".ui.superadmin.SuperAdminHomeActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.AdministradoresActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.CrearAdministradorActivity"
             android:exported="false"
@@ -48,7 +50,8 @@
             android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.GuiasActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
         <activity android:name=".ui.superadmin.DetallesGuiaActivity"
             android:exported="false"
             android:label="Editar Guia"
@@ -56,7 +59,8 @@
             android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.SolicitudesGuiasActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.DetallesSolicitudGuiaActivity"
             android:exported="false"
@@ -65,7 +69,8 @@
             android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.ClientesActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.DetallesClienteActivity"
             android:exported="false"
@@ -74,7 +79,8 @@
             android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.LogsActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.DetallesLogActivity"
             android:exported="false"
@@ -83,7 +89,14 @@
             android:theme="@style/Theme.SuperAdminTheme"/>
         <activity
             android:name=".ui.superadmin.ReportesActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.SuperAdminTheme"/>
+        <activity
+            android:name=".ui.superadmin.DetallesReporteActivity"
+            android:exported="false"
+            android:label="Reporte"
+            android:parentActivityName=".ui.superadmin.ReportesActivity"
+            android:theme="@style/Theme.SuperAdminTheme"/>
 
         <!-- GUIDE -->
         <activity android:name=".ui.guide.GuideHomeActivity" android:exported="false"/>

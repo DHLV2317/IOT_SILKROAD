@@ -23,6 +23,7 @@ import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBinding;
 import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
 import com.example.silkroad_iot.ui.superadmin.entity.ListaAdministradoresAdapter;
+import com.example.silkroad_iot.ui.superadmin.entity.ListaEmpresasAdapter;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
@@ -95,7 +96,7 @@ public class ReportesActivity extends AppCompatActivity implements NavigationVie
     public void cargarLista() {
         //List<Router> routerList = lista;
         administradorList = Global.listaAdministradores;
-        ListaAdministradoresAdapter listaAdministradoresAdapter = new ListaAdministradoresAdapter();
+        ListaEmpresasAdapter listaAdministradoresAdapter = new ListaEmpresasAdapter();
         listaAdministradoresAdapter.setListaAdministradores(administradorList);
         listaAdministradoresAdapter.setContext(ReportesActivity.this);
         binding.recyclerView.setAdapter(listaAdministradoresAdapter);

@@ -2,6 +2,7 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,17 +24,22 @@ import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBin
 import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
 import com.example.silkroad_iot.ui.superadmin.entity.ListaAdministradoresAdapter;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdministradoresActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
-
+    private FirebaseFirestore db;
     ActivitySuperadminAdministradoresBinding binding;
     private List<Administrador> administradorList;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
     private NavigationView navigationView;
+
+    private ListaAdministradoresAdapter listaAdministradoresAdapter = new ListaAdministradoresAdapter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +58,11 @@ public class AdministradoresActivity extends AppCompatActivity implements Naviga
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        listaAdministradoresAdapter.setListaAdministradores(administradorList);
+        listaAdministradoresAdapter.setContext(AdministradoresActivity.this);
+        binding.recyclerView.setAdapter(listaAdministradoresAdapter);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(AdministradoresActivity.this));
     }
 
     @Override
@@ -99,7 +110,8 @@ public class AdministradoresActivity extends AppCompatActivity implements Naviga
         //int itemId = item.getItemId();
         return super.onOptionsItemSelected(item);
     }
-    public void cargarLista() {
+
+    /*public void cargarLista() {
         //List<Router> routerList = lista;
         administradorList = Global.listaAdministradores;
         ListaAdministradoresAdapter listaAdministradoresAdapter = new ListaAdministradoresAdapter();
@@ -108,12 +120,36 @@ public class AdministradoresActivity extends AppCompatActivity implements Naviga
         binding.recyclerView.setAdapter(listaAdministradoresAdapter);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(AdministradoresActivity.this));
 
-    }
+    }*/
 
+    private void cargarAdministradoresDesdeFirebase() {
+        //Log.d("ADMINISTRADORES_FIREBASE", "Iniciando carga desde Firestore...");
+        db.collection("administradores")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Administrador> administradorList = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Administrador adm = doc.toObject(Administrador.class);
+                        adm.setId(doc.getId());  // ✅ guardar el ID del documento
+                        if (adm != null) {
+                            administradorList.add(adm);
+                            Log.d("EMPRESAS_FIREBASE", "Administrador cargado: " + adm.getNombre());
+                        }
+                    }
+
+
+                    // ✅ Actualizar adapter con los nuevos datos
+                    runOnUiThread(() -> {
+                        listaAdministradoresAdapter.setListaAdministradores(administradorList);
+                    });
+                })
+                .addOnFailureListener(e -> Log.e("EMPRESAS_FIREBASE", "Error al cargar empresas", e));
+    }
     @Override
     protected void onStart() {
         super.onStart();
-        cargarLista();
+        //cargarLista();
     }
 
     public void crearAdministrador(View view){

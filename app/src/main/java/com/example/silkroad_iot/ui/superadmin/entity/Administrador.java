@@ -1,15 +1,45 @@
 package com.example.silkroad_iot.ui.superadmin.entity;
 
 import java.io.Serializable;
+import com.google.firebase.firestore.PropertyName;
+
 public class Administrador implements Serializable{
+    private String id; //id documento de firebase
     private String nombre;
     //private Empresa empresa;
     private String nombreEmpresa;
     private String ubicacion;
     private String correo;
     private String telefono;
-    private Byte foto1;
-    private Byte foto2;
+    //private Byte foto1;
+    //private Byte foto2;
+
+    private String foto1;
+    private String foto2;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getFoto1() {
+        return foto1;
+    }
+
+    public String getFoto2() {
+        return foto2;
+    }
+
+    public void setFoto1(String foto1) {
+        this.foto1 = foto1;
+    }
+
+    public void setFoto2(String foto2) {
+        this.foto2 = foto2;
+    }
 
     private String contrasena;
 
@@ -70,7 +100,7 @@ public class Administrador implements Serializable{
         this.telefono = telefono;
     }
 
-    public Byte getFoto1() {
+    /*public Byte getFoto1() {
         return foto1;
     }
 
@@ -84,5 +114,5 @@ public class Administrador implements Serializable{
 
     public void setFoto2(Byte foto2) {
         this.foto2 = foto2;
-    }
+    }*/
 }

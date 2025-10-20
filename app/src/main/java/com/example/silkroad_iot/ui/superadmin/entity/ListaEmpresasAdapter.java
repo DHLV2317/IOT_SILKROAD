@@ -16,9 +16,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.silkroad_iot.databinding.SpAdministradorRvBinding;
 import com.example.silkroad_iot.ui.superadmin.DetallesAdministradorActivity;
+import com.example.silkroad_iot.ui.superadmin.DetallesReporteActivity;
 
-public class ListaAdministradoresAdapter
-        extends RecyclerView.Adapter<ListaAdministradoresAdapter.AdministradorViewHolder>{
+public class ListaEmpresasAdapter
+        extends RecyclerView.Adapter<ListaEmpresasAdapter.AdministradorViewHolder>{
     private List<Administrador> lAdministradores;
     private Context context;
 
@@ -41,7 +42,7 @@ public class ListaAdministradoresAdapter
         tvNombreEmpresa.setText(administrador.getNombreEmpresa());
 
         holder.binding.getRoot().setOnClickListener(view -> {
-            Intent intent = new Intent(context, DetallesAdministradorActivity.class);
+            Intent intent = new Intent(context, DetallesReporteActivity.class);
             intent.putExtra("administrador", administrador);
 
 
@@ -78,12 +79,4 @@ public class ListaAdministradoresAdapter
             this.binding = binding;
         }
     }
-
-    /*public void updateData(List<Administrador> newList) {
-        lAdministradores.clear();
-        lAdministradores.addAll(newList);
-        fullList.clear();
-        fullList.addAll(newList);
-        notifyDataSetChanged();
-    }*/
 }

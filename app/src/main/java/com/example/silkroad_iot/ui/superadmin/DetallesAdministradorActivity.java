@@ -1,3 +1,4 @@
+
 package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
@@ -79,6 +80,7 @@ public class DetallesAdministradorActivity extends AppCompatActivity {
                     administrador.setTelefono(telefono);
                     administrador.setUbicacion(ubicacion);
                     administrador.setContrasena(contrasena);
+                    administrador.setActivo(true);
                     Global.listaAdministradores.set(posicion, administrador);
                     Intent intent = new Intent(this, AdministradoresActivity.class);
                     startActivity(intent);
