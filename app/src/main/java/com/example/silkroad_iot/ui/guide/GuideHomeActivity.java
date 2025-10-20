@@ -1,6 +1,5 @@
 package com.example.silkroad_iot.ui.guide;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,27 +29,37 @@ public class GuideHomeActivity extends AppCompatActivity {
 
     private void loadGuideFromFirestore() {
         User local = UserStore.get().getLogged();
-        final String guideEmail = (local != null ? local.getEmail() : null);
-        if (guideEmail == null || guideEmail.trim().isEmpty()) {
+        final String email = (local != null ? local.getEmail() : null);
+        if (email == null || email.trim().isEmpty()) {
             b.txtWelcomeGuide.setText("Bienvenido");
             b.txtGuideStatus.setText("Estado: —");
             return;
         }
 
         db.collection("guias")
-                .whereEqualTo("email", guideEmail)
+                .whereEqualTo("email", email)
                 .limit(1)
                 .get()
                 .addOnSuccessListener(snap -> {
-                    if (snap.isEmpty()) {
-                        b.txtWelcomeGuide.setText("Bienvenido");
-                        b.txtGuideStatus.setText("Estado: (no encontrado)");
+                    if (!snap.isEmpty()) {
+                        bindGuideDoc(snap.getDocuments().get(0));
                     } else {
-                        DocumentSnapshot d = snap.getDocuments().get(0);
-                        String nombre = d.getString("nombre");
-                        String estado = d.getString("estado");
-                        b.txtWelcomeGuide.setText("¡Bienvenido, " + (nombre==null?"Guía":nombre) + "!");
-                        b.txtGuideStatus.setText("Estado: " + (estado==null?"—":estado));
+                        // Fallback si la colección guarda 'correo'
+                        db.collection("guias")
+                                .whereEqualTo("correo", email)
+                                .limit(1)
+                                .get()
+                                .addOnSuccessListener(snap2 -> {
+                                    if (!snap2.isEmpty()) bindGuideDoc(snap2.getDocuments().get(0));
+                                    else {
+                                        b.txtWelcomeGuide.setText("Bienvenido");
+                                        b.txtGuideStatus.setText("Estado: (no encontrado)");
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    b.txtWelcomeGuide.setText("Bienvenido");
+                                    b.txtGuideStatus.setText("Estado: error");
+                                });
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -59,14 +68,23 @@ public class GuideHomeActivity extends AppCompatActivity {
                 });
     }
 
+    private void bindGuideDoc(DocumentSnapshot d) {
+        String nombre = d.getString("nombre");
+        if (nombre == null) nombre = d.getString("nombres"); // por si usaste 'nombres'
+        String estado = d.getString("estado");
+
+        b.txtWelcomeGuide.setText("¡Bienvenido, " + (nombre == null ? "Guía" : nombre) + "!");
+        b.txtGuideStatus.setText("Estado: " + (estado == null ? "—" : estado));
+    }
+
     private void setupClickListeners() {
         b.cardTourOffers.setOnClickListener(v ->
-                startActivity(new Intent(this, GuideTourOffersActivity.class)));
+                startActivity(new android.content.Intent(this, GuideTourOffersActivity.class)));
         b.cardLocationTracking.setOnClickListener(v ->
-                startActivity(new Intent(this, GuideLocationTrackingActivity.class)));
+                startActivity(new android.content.Intent(this, GuideLocationTrackingActivity.class)));
         b.cardQRScanner.setOnClickListener(v ->
-                startActivity(new Intent(this, GuideQRScannerActivity.class)));
+                startActivity(new android.content.Intent(this, GuideQRScannerActivity.class)));
         b.cardProfile.setOnClickListener(v ->
-                startActivity(new Intent(this, GuideProfileActivity.class)));
+                startActivity(new android.content.Intent(this, GuideProfileActivity.class)));
     }
 }

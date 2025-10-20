@@ -55,7 +55,7 @@ public class GuideLocationTrackingActivity extends AppCompatActivity {
 
     private void resolveGuideDocIdAndInit() {
         User u = UserStore.get().getLogged();
-        String email = (u!=null? u.getEmail(): null);
+        String email = (u != null ? u.getEmail() : null);
         if (email == null || email.isEmpty()) { setupViews(); return; }
 
         db.collection("guias")
@@ -63,8 +63,20 @@ public class GuideLocationTrackingActivity extends AppCompatActivity {
                 .limit(1)
                 .get()
                 .addOnSuccessListener(snap -> {
-                    guideDocId = snap.isEmpty()? null : snap.getDocuments().get(0).getId();
-                    setupViews();
+                    if (!snap.isEmpty()) {
+                        guideDocId = snap.getDocuments().get(0).getId();
+                        setupViews();
+                    } else {
+                        db.collection("guias")
+                                .whereEqualTo("correo", email)
+                                .limit(1)
+                                .get()
+                                .addOnSuccessListener(snap2 -> {
+                                    guideDocId = snap2.isEmpty() ? null : snap2.getDocuments().get(0).getId();
+                                    setupViews();
+                                })
+                                .addOnFailureListener(e -> setupViews());
+                    }
                 })
                 .addOnFailureListener(e -> setupViews());
     }
