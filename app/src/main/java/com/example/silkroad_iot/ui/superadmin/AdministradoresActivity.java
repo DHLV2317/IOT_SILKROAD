@@ -2,11 +2,8 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
-<<<<<<< Updated upstream
 import android.util.Log;
 import android.view.Menu;
-=======
->>>>>>> Stashed changes
 import android.view.MenuItem;
 
 import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
@@ -24,13 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBinding;
 import com.google.android.material.navigation.NavigationView;
-<<<<<<< Updated upstream
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-=======
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
->>>>>>> Stashed changes
 
 import java.util.ArrayList;
 import java.util.List;

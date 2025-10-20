@@ -25,6 +25,8 @@ public class TourFB implements Serializable {
     private String assignedGuideName;  // guía asignado
     private Double paymentProposal;    // propuesta de pago
 
+
+
     public TourFB() {}
 
     public TourFB(String id, String nombre, String imagen, double precio,
