@@ -2,7 +2,6 @@ package com.example.silkroad_iot.ui.guide;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,81 +12,95 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.silkroad_iot.data.User;
+import com.example.silkroad_iot.data.UserStore;
 import com.example.silkroad_iot.databinding.ActivityGuideLocationTrackingBinding;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class GuideLocationTrackingActivity extends AppCompatActivity {
 
-    private ActivityGuideLocationTrackingBinding binding;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
-    
-    // Coordenadas estáticas simuladas para demo
+    private ActivityGuideLocationTrackingBinding b;
+    private static final int REQ = 1001;
+
     private final double[] demoLatitudes = {-12.0464, -12.0431, -12.0397, -12.0375};
     private final double[] demoLongitudes = {-77.0428, -77.0282, -77.0351, -77.0624};
     private final String[] demoStops = {
-        "Plaza de Armas - Lima Centro",
-        "Catedral de Lima", 
-        "Palacio de Gobierno",
-        "Museo Larco"
+            "Plaza de Armas - Lima Centro",
+            "Catedral de Lima",
+            "Palacio de Gobierno",
+            "Museo Larco"
     };
     private int currentStopIndex = 0;
+    private FirebaseFirestore db;
+    private String guideDocId;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityGuideLocationTrackingBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        b = ActivityGuideLocationTrackingBinding.inflate(getLayoutInflater());
+        setContentView(b.getRoot());
 
-        setSupportActionBar(binding.toolbar);
+        setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Registrar Ubicación");
         }
 
-        setupViews();
-        checkLocationPermission();
+        db = FirebaseFirestore.getInstance();
+        resolveGuideDocIdAndInit();
+    }
+
+    private void resolveGuideDocIdAndInit() {
+        User u = UserStore.get().getLogged();
+        String email = (u!=null? u.getEmail(): null);
+        if (email == null || email.isEmpty()) { setupViews(); return; }
+
+        db.collection("guias")
+                .whereEqualTo("email", email)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    guideDocId = snap.isEmpty()? null : snap.getDocuments().get(0).getId();
+                    setupViews();
+                })
+                .addOnFailureListener(e -> setupViews());
     }
 
     private void setupViews() {
-        // Mostrar primera parada
         updateCurrentStop();
-        
-        // Configurar botones
-        binding.btnRegisterLocation.setOnClickListener(v -> registerCurrentLocation());
-        binding.btnNextStop.setOnClickListener(v -> goToNextStop());
-        binding.btnFinishTour.setOnClickListener(v -> finishTour());
+        b.btnRegisterLocation.setOnClickListener(v -> registerCurrentLocation());
+        b.btnNextStop.setOnClickListener(v -> goToNextStop());
+        b.btnFinishTour.setOnClickListener(v -> finishTour());
+        checkLocationPermission();
     }
 
     private void updateCurrentStop() {
         if (currentStopIndex < demoStops.length) {
-            binding.txtCurrentStop.setText("Parada actual: " + demoStops[currentStopIndex]);
-            binding.txtStopCounter.setText("Parada " + (currentStopIndex + 1) + " de " + demoStops.length);
-            
-            // Mostrar coordenadas de demo
-            binding.txtDemoCoordinates.setText(
-                String.format("Coord. Demo: %.4f, %.4f", 
-                demoLatitudes[currentStopIndex], 
-                demoLongitudes[currentStopIndex])
-            );
-            
-            binding.btnNextStop.setVisibility(View.VISIBLE);
-            binding.btnFinishTour.setVisibility(currentStopIndex == demoStops.length - 1 ? View.VISIBLE : View.GONE);
+            b.txtCurrentStop.setText("Parada actual: " + demoStops[currentStopIndex]);
+            b.txtStopCounter.setText("Parada " + (currentStopIndex + 1) + " de " + demoStops.length);
+            b.txtDemoCoordinates.setText(
+                    String.format("Coord. Demo: %.4f, %.4f",
+                            demoLatitudes[currentStopIndex],
+                            demoLongitudes[currentStopIndex]));
+            b.btnNextStop.setVisibility(View.VISIBLE);
+            b.btnFinishTour.setVisibility(currentStopIndex == demoStops.length - 1 ? View.VISIBLE : View.GONE);
         } else {
-            binding.txtCurrentStop.setText("¡Tour completado!");
-            binding.btnNextStop.setVisibility(View.GONE);
-            binding.btnFinishTour.setVisibility(View.VISIBLE);
+            b.txtCurrentStop.setText("¡Tour completado!");
+            b.btnNextStop.setVisibility(View.GONE);
+            b.btnFinishTour.setVisibility(View.VISIBLE);
         }
     }
 
     private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) 
-            != PackageManager.PERMISSION_GRANTED) {
-            
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                LOCATION_PERMISSION_REQUEST_CODE);
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQ);
         } else {
-            binding.txtGpsStatus.setText("GPS: Habilitado ✓");
+            b.txtGpsStatus.setText("GPS: Habilitado ✓");
         }
     }
 
@@ -96,71 +109,55 @@ public class GuideLocationTrackingActivity extends AppCompatActivity {
             Toast.makeText(this, "Tour ya completado", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Para demo, usamos coordenadas estáticas
         double lat = demoLatitudes[currentStopIndex];
         double lng = demoLongitudes[currentStopIndex];
-        String timestamp = java.text.DateFormat.getDateTimeInstance().format(new java.util.Date());
-        
-        // Simular registro de ubicación
-        String locationInfo = String.format(
-            "📍 Ubicación registrada:\n" +
-            "Parada: %s\n" +
-            "Lat: %.6f\n" +
-            "Lng: %.6f\n" +
-            "Hora: %s",
-            demoStops[currentStopIndex], lat, lng, timestamp
-        );
-        
-        binding.txtLocationHistory.append(locationInfo + "\n\n");
-        
-        Snackbar.make(binding.getRoot(), 
-            "✓ Ubicación registrada en " + demoStops[currentStopIndex], 
-            Snackbar.LENGTH_LONG).show();
-        
-        // Habilitar botón siguiente parada
-        binding.btnNextStop.setEnabled(true);
+        String stop = demoStops[currentStopIndex];
+        long ts = System.currentTimeMillis();
+
+        b.txtLocationHistory.append("📍 " + stop + "  ("+lat+", "+lng+")\n");
+
+        if (guideDocId != null) {
+            Map<String,Object> m = new HashMap<>();
+            m.put("stop", stop);
+            m.put("lat", lat);
+            m.put("lng", lng);
+            m.put("timestamp", ts);
+            db.collection("guias").document(guideDocId)
+                    .collection("ubicaciones")
+                    .add(m);
+        }
+
+        Snackbar.make(b.getRoot(), "✓ Ubicación registrada en " + stop, Snackbar.LENGTH_LONG).show();
+        b.btnNextStop.setEnabled(true);
     }
 
     private void goToNextStop() {
         if (currentStopIndex < demoStops.length - 1) {
             currentStopIndex++;
             updateCurrentStop();
-            binding.btnNextStop.setEnabled(false); // Requiere registrar ubicación primero
+            b.btnNextStop.setEnabled(false);
         }
     }
 
     private void finishTour() {
-        Snackbar.make(binding.getRoot(), 
-            "🎉 ¡Tour finalizado! Proceda con el escaneo QR del cliente.", 
-            Snackbar.LENGTH_LONG).show();
-            
-        // En una implementación real, aquí guardarías toda la información del tour
-        new android.os.Handler().postDelayed(() -> finish(), 2000);
+        Snackbar.make(b.getRoot(), "🎉 ¡Tour finalizado!", Snackbar.LENGTH_LONG).show();
+        new android.os.Handler().postDelayed(this::finish, 1500);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+        if (requestCode == REQ) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                binding.txtGpsStatus.setText("GPS: Habilitado ✓");
+                b.txtGpsStatus.setText("GPS: Habilitado ✓");
             } else {
-                binding.txtGpsStatus.setText("GPS: Permiso denegado ❌");
-                Snackbar.make(binding.getRoot(), 
-                    "Permiso de ubicación necesario para registrar paradas", 
-                    Snackbar.LENGTH_LONG).show();
+                b.txtGpsStatus.setText("GPS: Permiso denegado ❌");
+                Snackbar.make(b.getRoot(), "Permiso de ubicación requerido", Snackbar.LENGTH_LONG).show();
             }
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
+    @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) { onBackPressed(); return true; }
         return super.onOptionsItemSelected(item);
     }
 }

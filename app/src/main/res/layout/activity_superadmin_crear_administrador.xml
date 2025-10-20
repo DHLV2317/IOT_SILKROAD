@@ -7,8 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.superadmin.CrearAdministradorActivity">
 
-
-
     <ImageView
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -162,13 +160,13 @@
             android:singleLine="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- ✅ Botón corregido -->
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnCrear"
         android:layout_width="160dp"
         android:layout_height="56dp"
         android:layout_marginBottom="40dp"
         android:backgroundTint="@color/seda"
-        android:onClick="crearSuperAdminEmpresa"
         android:text="Crear"
         android:textAllCaps="true"
         android:textColor="@color/white"
@@ -176,9 +174,8 @@
         app:cornerRadius="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.876"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout7"
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout7"
         app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

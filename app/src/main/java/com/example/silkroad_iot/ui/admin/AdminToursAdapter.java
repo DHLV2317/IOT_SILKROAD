@@ -29,6 +29,7 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
     public AdminToursAdapter(List<?> items){
         this.all  = new ArrayList<>(items);
         this.data = new ArrayList<>(items);
+        setHasStableIds(true);
     }
 
     static class VH extends RecyclerView.ViewHolder {
@@ -44,6 +45,8 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
         }
     }
 
+    @Override public long getItemId(int position) { return position; }
+
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
         View v = LayoutInflater.from(p.getContext())
@@ -57,10 +60,8 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
 
         String name   = str(t, "name");
         Double price  = dbl(t, "price");
-        // tu modelo usa "people" (no capacity)
         Integer ppl   = integer(t, "people");
 
-        // fecha: primero rango dateFrom/dateTo; si no, tu "FechaTour"; si no, "date"
         Date df = date(t, "dateFrom");
         Date dt = date(t, "dateTo");
         Date single = date(t, "FechaTour");
@@ -121,8 +122,8 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
         try { Field f=o.getClass().getDeclaredField(n); f.setAccessible(true); return f.get(o); }
         catch (Throwable ignore){ return null; }
     }
-    private static String str(Object o, String n){ Object v=f(o,n); return v==null? "" : String.valueOf(v); }
-    private static Double dbl(Object o, String n){ Object v=f(o,n); return (v instanceof Number)? ((Number)v).doubleValue() : null; }
+    private static String  str(Object o, String n){ Object v=f(o,n); return v==null? "" : String.valueOf(v); }
+    private static Double  dbl(Object o, String n){ Object v=f(o,n); return (v instanceof Number)? ((Number)v).doubleValue() : null; }
     private static Integer integer(Object o, String n){ Object v=f(o,n); return (v instanceof Number)? ((Number)v).intValue() : null; }
-    private static Date date(Object o, String n){ Object v=f(o,n); return (v instanceof Date)? (Date)v : null; }
+    private static Date    date(Object o, String n){ Object v=f(o,n); return (v instanceof Date)? (Date)v : null; }
 }

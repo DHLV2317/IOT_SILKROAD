@@ -44,12 +44,15 @@
                         android:layout_height="96dp"
                         android:background="@android:color/white"
                         android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:layout_marginEnd="16dp">
 
                         <ImageView
                             android:id="@+id/imgLogo"
                             android:src="@android:drawable/ic_menu_gallery"
                             android:tint="@color/brand_celeste"
+                            android:contentDescription="@string/app_name"
                             android:layout_gravity="center"
                             android:layout_width="40dp"
                             android:layout_height="40dp" />
@@ -60,12 +63,15 @@
                         android:layout_width="96dp"
                         android:layout_height="96dp"
                         android:background="@android:color/white"
-                        android:foreground="?attr/selectableItemBackgroundBorderless">
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <ImageView
                             android:id="@+id/imgBanner"
                             android:src="@android:drawable/ic_menu_gallery"
                             android:tint="@color/brand_celeste"
+                            android:contentDescription="@string/app_name"
                             android:layout_gravity="center"
                             android:layout_width="40dp"
                             android:layout_height="40dp" />
@@ -165,7 +171,7 @@
                 android:layout_marginTop="12dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/brand_celeste"
+                app:backgroundTint="@color/brand_celeste"
                 android:textColor="@android:color/white" />
         </LinearLayout>
     </ScrollView>

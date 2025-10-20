@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -18,93 +17,88 @@ import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.data.UserStore;
 import com.example.silkroad_iot.databinding.ActivityGuideProfileBinding;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class GuideProfileActivity extends AppCompatActivity {
 
-    private ActivityGuideProfileBinding binding;
+    private ActivityGuideProfileBinding b;
     private Uri newImageUri;
-    
-    // Para seleccionar nueva foto
+    private FirebaseFirestore db;
+    private String guideDocId; // doc id en "guias"
+
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null && result.getData().getData() != null) {
                     newImageUri = result.getData().getData();
-                    binding.imgProfilePhoto.setImageURI(newImageUri);
-                    binding.btnSaveChanges.setEnabled(true);
+                    b.imgProfilePhoto.setImageURI(newImageUri);
+                    b.btnSaveChanges.setEnabled(true);
                 }
             });
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityGuideProfileBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        b = ActivityGuideProfileBinding.inflate(getLayoutInflater());
+        setContentView(b.getRoot());
 
-        setSupportActionBar(binding.toolbar);
+        setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Mi Perfil");
         }
 
-        loadUserData();
+        db = FirebaseFirestore.getInstance();
         setupClickListeners();
-        generateFakeHistory();
+        fetchGuide();
     }
 
-    private void loadUserData() {
-        User guide = UserStore.get().getLogged();
-        if (guide == null) return;
+    private void fetchGuide() {
+        User u = UserStore.get().getLogged();
+        String email = (u!=null ? u.getEmail() : null);
+        if (email == null || email.isEmpty()) return;
 
-        // Datos personales
-        binding.txtProfileName.setText(guide.getName() + " " + (guide.getLastName() != null ? guide.getLastName() : ""));
-        binding.inputNames.setText(guide.getName());
-        binding.inputLastNames.setText(guide.getLastName() != null ? guide.getLastName() : "");
-        binding.inputEmail.setText(guide.getEmail());
-        binding.inputPhone.setText(guide.getPhone() != null ? guide.getPhone() : "");
-        binding.inputAddress.setText(guide.getAddress() != null ? guide.getAddress() : "");
-        binding.inputLanguages.setText(guide.getLanguages() != null ? guide.getLanguages() : "");
+        db.collection("guias")
+                .whereEqualTo("email", email)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap.isEmpty()) return;
+                    DocumentSnapshot d = snap.getDocuments().get(0);
+                    guideDocId = d.getId();
 
-        // Información de documento
-        if (guide.getDocumentType() != null && guide.getDocumentNumber() != null) {
-            binding.txtDocumentInfo.setText(guide.getDocumentType() + ": " + guide.getDocumentNumber());
-        }
-        
-        if (guide.getBirthDate() != null) {
-            binding.txtBirthDate.setText("Nacimiento: " + guide.getBirthDate());
-        }
+                    String nombre   = d.getString("nombre");
+                    String apellidos= d.getString("apellidos"); // si lo tienes
+                    String telefono = d.getString("telefono");
+                    String direccion= d.getString("direccion");
+                    String langs    = d.getString("langs");
+                    String foto     = d.getString("fotoUrl");
 
-        // Estado de aprobación
-        String status = "⏳ Pendiente";
-        if (guide.isGuideApproved()) {
-            status = "✅ Aprobado";
-        } else if ("REJECTED".equals(guide.getGuideApprovalStatus())) {
-            status = "❌ Rechazado";
-        }
-        binding.txtApprovalStatus.setText("Estado: " + status);
+                    b.txtProfileName.setText((nombre==null?"":nombre) + (apellidos==null?"":" "+apellidos));
+                    b.inputNames.setText(nombre==null?"":nombre);
+                    b.inputLastNames.setText(apellidos==null?"":apellidos);
+                    b.inputEmail.setText(email);
+                    b.inputPhone.setText(telefono==null?"":telefono);
+                    b.inputAddress.setText(direccion==null?"":direccion);
+                    b.inputLanguages.setText(langs==null?"":langs);
 
-        // Estadísticas simuladas
-        binding.txtTotalTours.setText("Tours realizados: 23");
-        binding.txtTotalEarnings.setText("Ingresos totales: S/ 4,850");
-        binding.txtAverageRating.setText("Calificación: ⭐ 4.8/5.0");
+                    if (foto != null && !foto.isEmpty()) {
+                        try { b.imgProfilePhoto.setImageURI(Uri.parse(foto)); } catch (Exception ignore){}
+                    }
+                });
     }
 
     private void setupClickListeners() {
-        // Cambiar foto de perfil
-        binding.btnChangePhoto.setOnClickListener(v -> {
+        b.btnChangePhoto.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             pickImageLauncher.launch(intent);
         });
 
-        // Guardar cambios
-        binding.btnSaveChanges.setOnClickListener(v -> saveProfileChanges());
+        b.btnSaveChanges.setOnClickListener(v -> saveProfileChanges());
 
-        // Ver historial completo
-        binding.btnViewFullHistory.setOnClickListener(v -> {
-            startActivity(new Intent(this, GuideHistoryActivity.class));
-        });
+        b.btnViewFullHistory.setOnClickListener(v ->
+                startActivity(new Intent(this, GuideHistoryActivity.class)));
 
-        // Cerrar sesión
-        binding.btnLogout.setOnClickListener(v -> {
+        b.btnLogout.setOnClickListener(v -> {
             UserStore.get().logout();
             Intent intent = new Intent(this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -114,50 +108,30 @@ public class GuideProfileActivity extends AppCompatActivity {
     }
 
     private void saveProfileChanges() {
-        User guide = UserStore.get().getLogged();
-        if (guide == null) return;
-
-        // Actualizar datos básicos (solo los editables)
-        guide.setName(binding.inputNames.getText().toString().trim());
-        guide.setLastName(binding.inputLastNames.getText().toString().trim());
-        guide.setPhone(binding.inputPhone.getText().toString().trim());
-        guide.setAddress(binding.inputAddress.getText().toString().trim());
-        guide.setLanguages(binding.inputLanguages.getText().toString().trim());
-
-        // Actualizar foto si hay una nueva
-        if (newImageUri != null) {
-            guide.setPhotoUri(newImageUri.toString());
+        if (guideDocId == null) {
+            Snackbar.make(b.getRoot(), "No se encontró el documento del guía", Snackbar.LENGTH_LONG).show();
+            return;
         }
 
-        // Guardar cambios
-        UserStore.get().updateLogged(guide);
-        
-        Snackbar.make(binding.getRoot(), "✅ Perfil actualizado correctamente", Snackbar.LENGTH_LONG).show();
-        binding.btnSaveChanges.setEnabled(false);
-        
-        // Recargar datos para mostrar cambios
-        loadUserData();
+        db.collection("guias").document(guideDocId)
+                .update(
+                        "nombre", b.inputNames.getText()==null?"":b.inputNames.getText().toString().trim(),
+                        "apellidos", b.inputLastNames.getText()==null?"":b.inputLastNames.getText().toString().trim(),
+                        "telefono", b.inputPhone.getText()==null?"":b.inputPhone.getText().toString().trim(),
+                        "direccion", b.inputAddress.getText()==null?"":b.inputAddress.getText().toString().trim(),
+                        "langs", b.inputLanguages.getText()==null?"":b.inputLanguages.getText().toString().trim(),
+                        "fotoUrl", (newImageUri!=null? newImageUri.toString() : null)
+                )
+                .addOnSuccessListener(unused -> {
+                    Snackbar.make(b.getRoot(), "✅ Perfil actualizado", Snackbar.LENGTH_LONG).show();
+                    b.btnSaveChanges.setEnabled(false);
+                })
+                .addOnFailureListener(e ->
+                        Snackbar.make(b.getRoot(), "Error: " + e.getMessage(), Snackbar.LENGTH_LONG).show());
     }
 
-    private void generateFakeHistory() {
-        // Historial simulado de tours recientes
-        String recentHistory = 
-            "📅 25 Sep 2025 - City Tour Lima Colonial - ⭐ 5.0\n" +
-            "📅 23 Sep 2025 - Tour Gastronómico Barranco - ⭐ 4.5\n" +
-            "📅 20 Sep 2025 - Machu Picchu Full Day - ⭐ 5.0\n" +
-            "📅 18 Sep 2025 - Valle Sagrado - ⭐ 4.8\n" +
-            "📅 15 Sep 2025 - Líneas de Nazca - ⭐ 4.9\n\n" +
-            "Toca 'Ver Historial Completo' para más detalles...";
-            
-        binding.txtRecentHistory.setText(recentHistory);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
+    @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) { onBackPressed(); return true; }
         return super.onOptionsItemSelected(item);
     }
 }

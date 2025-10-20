@@ -37,16 +37,16 @@ public class AdminTourDetailViewActivity extends AppCompatActivity {
         setTitle("Detalle del tour");
 
         int index = getIntent().getIntExtra("index", -1);
-        final Tour tour = repo.getTourAt(index);   // ✅ sin getTours().get(index)
+        final Tour tour = repo.getTourAt(index);   // ✅ acceso seguro
         if (tour == null) { finish(); return; }
 
         // --- Datos básicos ---
-        b.tName.setText(nullSafe(tour.name));
-        b.tDesc.setText(nullSafe(tour.description));
-        b.tDuration.setText("Duración: " + nullSafe(getStringField(tour, "duration")));
-        b.tLangs.setText("Idiomas: " + nullSafe(getStringField(tour, "langs")));
+        b.tName.setText(nz(tour.name));
+        b.tDesc.setText(nz(tour.description));
+        b.tDuration.setText("Duración: " + nz(getStringField(tour, "duration")));
+        b.tLangs.setText("Idiomas: " + nz(getStringField(tour, "langs")));
 
-        Date df = getDateField(tour, "dateFrom"); // suele ser null; usamos FechaTour más abajo
+        Date df = getDateField(tour, "dateFrom");
         Date dt = getDateField(tour, "dateTo");
         String rango = (df != null && dt != null)
                 ? (sdf.format(df) + " - " + sdf.format(dt))
@@ -62,6 +62,7 @@ public class AdminTourDetailViewActivity extends AppCompatActivity {
         } else {
             Glide.with(this).load(tour.imageUrl)
                     .placeholder(R.drawable.ic_menu_24)
+                    .error(R.drawable.ic_menu_24)
                     .into(b.img);
         }
 
@@ -70,7 +71,7 @@ public class AdminTourDetailViewActivity extends AppCompatActivity {
         List<?> stops = getListField(tour, "stops");
         if (stops != null) {
             for (Object s : stops) {
-                String address = nullSafe(getStringField(s, "address"));
+                String address = nz(getStringField(s, "address"));
                 Number minutes = getNumberField(s, "minutes");
                 String m = minutes == null ? "0" : String.valueOf(minutes);
                 Chip chip = new Chip(this);
@@ -87,7 +88,7 @@ public class AdminTourDetailViewActivity extends AppCompatActivity {
         List<?> services = getListField(tour, "services");
         if (services != null) {
             for (Object sv : services) {
-                String name = nullSafe(getStringField(sv, "name"));
+                String name = nz(getStringField(sv, "name"));
                 Boolean included = getBooleanField(sv, "included");
                 Number price = getNumberField(sv, "price");
                 String label = name + (included != null && included
@@ -105,30 +106,25 @@ public class AdminTourDetailViewActivity extends AppCompatActivity {
         // --- Guía / Pago ---
         String guideName = getStringField(tour, "assignedGuideName");
         b.tGuide.setText(TextUtils.isEmpty(guideName) ? "—" : guideName);
-
         Number proposal = getNumberField(tour, "paymentProposal");
         b.tPayment.setText(proposal != null && proposal.doubleValue() > 0 ? "S/ " + proposal : "—");
 
         // --- Botones ---
         b.btnEdit.setOnClickListener(v -> {
-            // Abrir el WIZARD en modo edición
             Intent it = new Intent(this, AdminTourWizardActivity.class);
             it.putExtra("editIndex", index);
             startActivity(it);
         });
 
         b.btnDelete.setOnClickListener(v -> {
-            // Eliminamos desde la lista interna
             AdminRepository.Tour toRemove = repo.getTourAt(index);
-            if (toRemove != null) {
-                repo.getTours().remove(toRemove);  // aquí sí podemos usar remove
-            }
+            if (toRemove != null) repo.getTours().remove(toRemove);
             finish();
         });
     }
 
     // ---------- Helpers reflexión segura ----------
-    private static String nullSafe(String s) { return s == null ? "" : s; }
+    private static String nz(String s) { return s == null ? "" : s; }
     private static String getStringField(Object obj, String field) {
         Object v = getFieldValue(obj, field); return v == null ? "" : String.valueOf(v);
     }

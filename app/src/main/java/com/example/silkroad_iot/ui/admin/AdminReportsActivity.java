@@ -17,6 +17,7 @@ import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,10 +38,8 @@ public class AdminReportsActivity extends BaseDrawerActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Monta el content dentro del drawer
         setupDrawer(R.layout.content_admin_reports, R.menu.menu_drawer_admin, "Reportes");
 
-        // Bind
         rootReports   = findViewById(R.id.rootReports);
         tIncome       = findViewById(R.id.tIncome);
         tReservations = findViewById(R.id.tReservations);
@@ -51,39 +50,39 @@ public class AdminReportsActivity extends BaseDrawerActivity {
         barFill3 = findViewById(R.id.barFill3); barFill4 = findViewById(R.id.barFill4);
         boxTopTours   = findViewById(R.id.boxTopTours);
 
-        // Datos base (mock/derivados)
         AdminRepository.ReportSummary s = repo.getReportSummary();
         tIncome.setText("Ingresos: S/ " + new DecimalFormat("#,##0.00").format(s.totalRevenue));
         tReservations.setText("Reservas: " + s.reservations);
         tTopService.setText("Servicio top: " + s.topService);
 
-        // Construir ranking por tour a partir de reservas reales
+        // Ranking a partir de reservas con nombres alternativos
         List<AdminRepository.Reservation> rs = repo.getReservations();
         HashMap<String, Agg> map = new HashMap<>();
         for (AdminRepository.Reservation r : rs) {
-            String tourName = (r.tour == null || r.tour.name == null) ? "(Sin tour)" : r.tour.name;
+            String tourName = safeStr(obj(r, "tour"), "name", "nombre", "(Sin tour)");
+            double tourPrice = safeNum(obj(r, "tour"), 0d, "price", "precio").doubleValue();
+            int pax = safeNum(r, 1, "people", "cantidad_personas").intValue();
+
             Agg a = map.getOrDefault(tourName, new Agg());
             a.count += 1;
-            a.revenue += (r.tour == null ? 0 : (r.tour.price * r.people));
+            a.revenue += (tourPrice * pax);
             map.put(tourName, a);
         }
-        // Pasar a lista ordenada
+
         List<Row> rows = new ArrayList<>();
         for (String k : map.keySet()) rows.add(new Row(k, map.get(k).revenue, map.get(k).count));
         Collections.sort(rows, Comparator.comparingDouble((Row r) -> r.revenue).reversed());
 
-        // Pintar barras (top 4 como porcentaje del total)
         double total = 0;
         for (Row r : rows) total += r.revenue;
         List<Row> top4 = rows.size() > 4 ? rows.subList(0, 4) : rows;
-        while (top4.size() < 4) top4.add(new Row("—", 0, 0)); // completar 4
+        while (top4.size() < 4) top4.add(new Row("—", 0, 0));
 
-        setBar(top4.get(3), total, barFill1, tBar1); // menor → mayor
+        setBar(top4.get(3), total, barFill1, tBar1);
         setBar(top4.get(2), total, barFill2, tBar2);
         setBar(top4.get(1), total, barFill3, tBar3);
         setBar(top4.get(0), total, barFill4, tBar4);
 
-        // Lista top (máx 5)
         boxTopTours.removeAllViews();
         int max = Math.min(5, rows.size());
         for (int i = 0; i < max; i++) {
@@ -96,15 +95,13 @@ public class AdminReportsActivity extends BaseDrawerActivity {
             boxTopTours.addView(item);
         }
 
-        // Exportar a PDF
         findViewById(R.id.btnExportPdf).setOnClickListener(v -> exportToPdf(rootReports));
     }
 
     @Override protected int defaultMenuId() { return R.id.m_reports; }
 
-    // ===== Helpers =====
     private void setBar(Row r, double total, View barFill, TextView label){
-        int chartHeight = dp(160);  // alto máx de barra
+        int chartHeight = dp(160);
         double pct = (total <= 0) ? 0 : (r.revenue * 100.0 / total);
         int h = (int) Math.round(chartHeight * pct / 100.0);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -115,18 +112,14 @@ public class AdminReportsActivity extends BaseDrawerActivity {
 
     private void exportToPdf(View content){
         try {
-            // 1) Renderizar el ScrollView a bitmap
             Bitmap bmp = getBitmapFromView(content);
-            // 2) Crear documento
             PdfDocument doc = new PdfDocument();
             PdfDocument.PageInfo info = new PdfDocument.PageInfo.Builder(bmp.getWidth(), bmp.getHeight(), 1).create();
             PdfDocument.Page page = doc.startPage(info);
             page.getCanvas().drawBitmap(bmp, 0, 0, null);
             doc.finishPage(page);
 
-            // 3) Guardar (carpeta privada de la app)
-            File out = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS),
-                    "reporte_admin.pdf");
+            File out = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "reporte_admin.pdf");
             FileOutputStream fos = new FileOutputStream(out);
             doc.writeTo(fos);
             fos.flush(); fos.close();
@@ -143,7 +136,6 @@ public class AdminReportsActivity extends BaseDrawerActivity {
         int w = v.getWidth();
         int h = v.getHeight();
         if (w == 0 || h == 0) {
-            // forzar medida si aún no está layouted
             int specW = View.MeasureSpec.makeMeasureSpec(getResources().getDisplayMetrics().widthPixels, View.MeasureSpec.EXACTLY);
             int specH = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
             v.measure(specW, specH);
@@ -159,10 +151,34 @@ public class AdminReportsActivity extends BaseDrawerActivity {
 
     private int dp(int v){ return Math.round(getResources().getDisplayMetrics().density * v); }
 
-    // structs simples
-    private static class Agg { double revenue = 0; int count = 0; }
-    private static class Row {
-        String name; double revenue; int count;
-        Row(String n, double r, int c){ name=n; revenue=r; count=c; }
+    // ===== Helpers reflexión / fallbacks =====
+    private static Object f(Object o, String n){
+        if (o==null) return null;
+        try { Field f=o.getClass().getDeclaredField(n); f.setAccessible(true); return f.get(o); }
+        catch (Throwable ignore){ return null; }
     }
+    private static Object obj(Object o, String n){ return f(o,n); }
+
+    private static String str(Object o, String n){ Object v=f(o,n); return v==null? "": String.valueOf(v); }
+    private static String safeStr(Object o, String primary, String alt, String def){
+        String v1 = str(o, primary);
+        if (!v1.isEmpty()) return v1;
+        String v2 = str(o, alt);
+        return v2.isEmpty()? def : v2;
+    }
+
+    private static Number safeNum(Object o, Number def, String... names){
+        for (String n : names){
+            Object v = f(o, n);
+            if (v instanceof Number) return (Number) v;
+            if (v != null){
+                try { return Double.parseDouble(String.valueOf(v)); }
+                catch (Exception ignored) {}
+            }
+        }
+        return def;
+    }
+
+    private static class Agg { double revenue = 0; int count = 0; }
+    private static class Row { String name; double revenue; int count; Row(String n, double r, int c){ name=n; revenue=r; count=c; } }
 }

@@ -1,6 +1,5 @@
 package com.example.silkroad_iot.ui.admin;
 
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.AdminRepository;
+import com.example.silkroad_iot.data.GuideFb;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -21,12 +20,33 @@ import java.util.Locale;
 
 public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.VH> {
 
-    private final List<AdminRepository.Guide> all;
-    private final List<AdminRepository.Guide> data;
+    /** Callbacks hacia la Activity (asignar tour / ver detalle). */
+    public interface Callbacks {
+        void onAssignClicked(int position);
+        void onDetailClicked(int position);
+    }
 
-    public AdminGuidesAdapter(List<AdminRepository.Guide> items){
-        this.all  = new ArrayList<>(items);
-        this.data = new ArrayList<>(items);
+    private final List<GuideFb> all = new ArrayList<>();
+    private final List<GuideFb> data = new ArrayList<>();
+    private final Callbacks callbacks;
+
+    public AdminGuidesAdapter(List<GuideFb> items, Callbacks callbacks) {
+        if (items != null) {
+            all.addAll(items);
+            data.addAll(items);
+        }
+        this.callbacks = callbacks;
+    }
+
+    /** Reemplaza los datos al recargar desde Firestore. */
+    public void updateData(List<GuideFb> items) {
+        all.clear();
+        data.clear();
+        if (items != null) {
+            all.addAll(items);
+            data.addAll(items);
+        }
+        notifyDataSetChanged();
     }
 
     static class VH extends RecyclerView.ViewHolder {
@@ -45,51 +65,81 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         }
     }
 
-    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
+    @NonNull
+    @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
         View v = LayoutInflater.from(p.getContext())
                 .inflate(R.layout.item_admin_guide, p, false);
         return new VH(v);
     }
 
-    @Override public void onBindViewHolder(@NonNull VH h, int i){
-        AdminRepository.Guide g = data.get(i);
+    @Override
+    public void onBindViewHolder(@NonNull VH h, int i){
+        GuideFb g = data.get(i);
 
-        Glide.with(h.itemView).load(R.drawable.ic_person_24).into(h.img);
-        h.tTitle.setText(g.name == null ? "(Sin nombre)" : g.name);
-        h.tSubtitle.setText(g.langs == null ? "—" : g.langs);
-        h.tStatus.setText(g.state == null ? "—" : g.state);
-        h.tExtra.setText((g.history == null ? 0 : g.history.size()) + " tours");
+        // Imagen (usa fotoUrl si existe)
+        String photo = g.getFotoUrl();
+        Glide.with(h.itemView)
+                .load(photo == null || photo.trim().isEmpty() ? R.drawable.ic_person_24 : photo)
+                .into(h.img);
 
-        // Asignar tour (lo que ya tenías)
+        // Nombre
+        String name = safe(g.getNombre());
+        h.tTitle.setText(name.isEmpty() ? "(Sin nombre)" : name);
+
+        // Idiomas
+        String langs = safe(g.getLangs());
+        h.tSubtitle.setText(langs.isEmpty() ? "—" : langs);
+
+        // Estado
+        String state = safe(g.getEstado());
+        h.tStatus.setText(state.isEmpty() ? "—" : state);
+
+        // Historial + tour actual
+        int historyCount = (g.getHistorial() == null) ? 0 : g.getHistorial().size();
+        String currentTour = safe(g.getTourActual());
+        if (currentTour.isEmpty()) {
+            h.tExtra.setText(historyCount + " tours");
+        } else {
+            h.tExtra.setText(historyCount + " tours • Actual: " + currentTour);
+        }
+
+        // Botones
         h.btnAssign.setOnClickListener(v -> {
-            if (h.itemView.getContext() instanceof AdminGuidesActivity) {
-                ((AdminGuidesActivity) h.itemView.getContext())
-                        .showAssignTourDialog(h.getBindingAdapterPosition());
+            int pos = h.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && callbacks != null) {
+                callbacks.onAssignClicked(pos);
             }
         });
 
-        // NUEVO: abrir detalle del guía
         h.btnDetail.setOnClickListener(v -> {
-            Intent it = new Intent(v.getContext(), AdminGuideDetailActivity.class);
-            it.putExtra("index", h.getBindingAdapterPosition());
-            v.getContext().startActivity(it);
+            int pos = h.getBindingAdapterPosition();
+            if (pos != RecyclerView.NO_POSITION && callbacks != null) {
+                callbacks.onDetailClicked(pos);
+            }
         });
     }
 
     @Override public int getItemCount(){ return data.size(); }
 
+    /** Filtro por nombre / idiomas / estado. */
     public void filter(String q){
         String s = q == null ? "" : q.trim().toLowerCase(Locale.getDefault());
         data.clear();
         if (s.isEmpty()){
             data.addAll(all);
         } else {
-            for (AdminRepository.Guide g : all){
-                String name = g.name == null ? "" : g.name.toLowerCase(Locale.getDefault());
-                String langs= g.langs== null ? "" : g.langs.toLowerCase(Locale.getDefault());
-                if (name.contains(s) || langs.contains(s)) data.add(g);
+            for (GuideFb g : all){
+                String name  = safe(g.getNombre()).toLowerCase(Locale.getDefault());
+                String langs = safe(g.getLangs()).toLowerCase(Locale.getDefault());
+                String state = safe(g.getEstado()).toLowerCase(Locale.getDefault());
+                if (name.contains(s) || langs.contains(s) || state.contains(s)) {
+                    data.add(g);
+                }
             }
         }
         notifyDataSetChanged();
     }
+
+    private static String safe(String s){ return s == null ? "" : s; }
 }

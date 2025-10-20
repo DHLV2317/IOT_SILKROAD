@@ -3,50 +3,50 @@ package com.example.silkroad_iot.ui.superadmin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesGuiaBinding;
 import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesSolicitudGuiaBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Global;
 import com.example.silkroad_iot.ui.superadmin.entity.Guia;
-
-import java.sql.Date;
-
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class DetallesSolicitudGuiaActivity extends AppCompatActivity {
 
     ActivitySuperadminDetallesSolicitudGuiaBinding binding;
-    private int posicion;;
+    private String correoDoc;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySuperadminDetallesSolicitudGuiaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        Intent intent = getIntent();
+        db = FirebaseFirestore.getInstance();
 
-        posicion = intent.getIntExtra("posicion", -1);
+        Intent intent = getIntent();
         Guia guia = (Guia) intent.getSerializableExtra("guia");
+        correoDoc = guia.getCorreo();
 
         binding.textInputLayout.getEditText().setText(guia.getNombres());
         binding.textInputLayout2.getEditText().setText(guia.getApellidos());
         binding.textInputLayout3.getEditText().setText(guia.getTipoDocumento());
         binding.textInputLayout4.getEditText().setText(guia.getNumeroDocumento());
-        binding.textInputLayout5.getEditText().setText(guia.getFechaNacimiento().toString());
+        binding.textInputLayout5.getEditText().setText(guia.getFechaNacimiento() != null ? guia.getFechaNacimiento().toString() : "");
         binding.textInputLayout6.getEditText().setText(guia.getCorreo());
         binding.textInputLayout7.getEditText().setText(guia.getTelefono());
         binding.textInputLayout8.getEditText().setText(guia.getDomicilio());
         binding.textInputLayout9.getEditText().setText(guia.getIdiomas());
 
-        if(guia.isAprobado()){
-            binding.en.setBackgroundColor(getResources().getColor(R.color.green, null));
-            binding.di.setBackgroundColor(getResources().getColor(R.color.base, null));
-        }
+        binding.en.setOnClickListener(v -> setAprobado(true));
+        binding.di.setOnClickListener(v -> setAprobado(false));
+    }
 
+    private void setAprobado(boolean aprobado){
+        db.collection("guias").document(correoDoc)
+                .update("aprobado", aprobado)
+                .addOnSuccessListener(v -> finish())
+                .addOnFailureListener(e -> {});
     }
 
     @Override
@@ -54,21 +54,4 @@ public class DetallesSolicitudGuiaActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
-
-    public void spaceptarGuia(View view){
-        Global.listaGuiasAprobados.get(posicion).setAprobado(true);
-        Intent intent = new Intent(this, SolicitudesGuiasActivity.class);
-        intent.putExtra("posicion", posicion);
-        intent.putExtra("guia", Global.listaGuiasAprobados.get(posicion));
-        startActivity(intent);
-    }
-
-    public void spdenegarGuia(View view){
-        Global.listaGuiasAprobados.get(posicion).setAprobado(false);
-        Intent intent = new Intent(this, SolicitudesGuiasActivity.class);
-        intent.putExtra("posicion", posicion);
-        intent.putExtra("guia", Global.listaGuiasAprobados.get(posicion));
-        startActivity(intent);
-    }
-
 }

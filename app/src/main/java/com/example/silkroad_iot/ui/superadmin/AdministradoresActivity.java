@@ -2,13 +2,15 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
+<<<<<<< Updated upstream
 import android.util.Log;
 import android.view.Menu;
+=======
+>>>>>>> Stashed changes
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
 
-import com.example.silkroad_iot.ui.superadmin.entity.Global;
+import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
+import com.example.silkroad_iot.ui.superadmin.entity.ListaAdministradoresAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -21,11 +23,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Administrador;
-import com.example.silkroad_iot.ui.superadmin.entity.ListaAdministradoresAdapter;
 import com.google.android.material.navigation.NavigationView;
+<<<<<<< Updated upstream
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+=======
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+>>>>>>> Stashed changes
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +38,14 @@ import java.util.List;
 public class AdministradoresActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     private FirebaseFirestore db;
     ActivitySuperadminAdministradoresBinding binding;
-    private List<Administrador> administradorList;
+    private final List<Administrador> administradorList = new ArrayList<>();
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
     private NavigationView navigationView;
+    private ListaAdministradoresAdapter adapter;
+
+    private FirebaseFirestore db;
 
     private ListaAdministradoresAdapter listaAdministradoresAdapter = new ListaAdministradoresAdapter();
 
@@ -58,6 +66,7 @@ public class AdministradoresActivity extends AppCompatActivity implements Naviga
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+<<<<<<< Updated upstream
 
         listaAdministradoresAdapter.setListaAdministradores(administradorList);
         listaAdministradoresAdapter.setContext(AdministradoresActivity.this);
@@ -121,6 +130,17 @@ public class AdministradoresActivity extends AppCompatActivity implements Naviga
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(AdministradoresActivity.this));
 
     }*/
+=======
+
+        adapter = new ListaAdministradoresAdapter();
+        adapter.setListaAdministradores(administradorList);
+        adapter.setContext(this);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerView.setAdapter(adapter);
+
+        db = FirebaseFirestore.getInstance();
+    }
+>>>>>>> Stashed changes
 
     private void cargarAdministradoresDesdeFirebase() {
         //Log.d("ADMINISTRADORES_FIREBASE", "Iniciando carga desde Firestore...");
@@ -152,10 +172,45 @@ public class AdministradoresActivity extends AppCompatActivity implements Naviga
         //cargarLista();
     }
 
-    public void crearAdministrador(View view){
-        Intent intent = new Intent(this, CrearAdministradorActivity.class);
-        startActivity(intent);
+    private void cargarLista() {
+        administradorList.clear();
+        db.collection("administradores")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    for (QueryDocumentSnapshot d : snap) {
+                        Administrador a = d.toObject(Administrador.class);
+                        // asegura docId si lo necesitas luego
+                        if (a.getCorreo() == null || a.getCorreo().isEmpty()) {
+                            a.setCorreo(d.getId());
+                        }
+                        administradorList.add(a);
+                    }
+                    adapter.notifyDataSetChanged();
+                });
     }
 
+    public void crearAdministrador(android.view.View view){
+        startActivity(new Intent(this, CrearAdministradorActivity.class));
+    }
 
+    @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.nav_inicio) {
+            startActivity(new Intent(this, SuperAdminHomeActivity.class));
+        } else if (id == R.id.nav_administradores) {
+            // ya estás aquí
+        } else if (id == R.id.nav_solicitudes_guias) {
+            startActivity(new Intent(this, SolicitudesGuiasActivity.class));
+        } else if (id == R.id.nav_guias) {
+            startActivity(new Intent(this, GuiasActivity.class));
+        } else if (id == R.id.nav_clientes) {
+            startActivity(new Intent(this, ClientesActivity.class));
+        } else if (id == R.id.nav_reportes) {
+            startActivity(new Intent(this, ReportesActivity.class));
+        } else if (id == R.id.nav_logs) {
+            startActivity(new Intent(this, LogsActivity.class));
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
 }

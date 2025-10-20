@@ -1,42 +1,63 @@
 package com.example.silkroad_iot.ui.admin;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.AdminRepository;
+import com.example.silkroad_iot.data.TourFB;
+import com.example.silkroad_iot.data.GuideFb;
 import com.example.silkroad_iot.databinding.ContentAdminGuidesBinding;
 import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Lista de guías (Firestore) con filtro y asignación de tour.
+ * - Colección "guias" -> GuideFb
+ * - Colección "tours" -> TourFB
+ */
 public class AdminGuidesActivity extends BaseDrawerActivity {
 
     private ContentAdminGuidesBinding b;
-    private final AdminRepository repo = AdminRepository.get();
+
+    // Firestore
+    private FirebaseFirestore db;
+    private final List<GuideFb> guides = new ArrayList<>();
+    private final List<TourFB> toursCache = new ArrayList<>();
+
     private AdminGuidesAdapter adapter;
 
-    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Monta el "content" dentro del drawer. El título lo pone el toolbar del drawer.
+        // Monta el "content" dentro del drawer
         setupDrawer(R.layout.content_admin_guides, R.menu.menu_drawer_admin, "Guías");
-
-        // Binding del content
         b = ContentAdminGuidesBinding.bind(findViewById(R.id.rootContent));
 
-        // Recycler
-        adapter = new AdminGuidesAdapter(repo.getGuides());
+        db = FirebaseFirestore.getInstance();
+
+        // RecyclerView
+        adapter = new AdminGuidesAdapter(guides, new AdminGuidesAdapter.Callbacks() {
+            @Override public void onAssignClicked(int position) { showAssignTourDialog(position); }
+            @Override public void onDetailClicked(int position) { showGuideDetail(position); }
+        });
+
         b.list.setLayoutManager(new LinearLayoutManager(this));
         b.list.setAdapter(adapter);
 
-        // Buscar
+        // Filtro de búsqueda
         b.inputSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -45,23 +66,72 @@ public class AdminGuidesActivity extends BaseDrawerActivity {
             }
         });
 
-        // No hay botón +Asignar guía (el requerimiento fue eliminarlo).
+        // Cargar datos iniciales
+        loadGuides();
+        preloadTours();
     }
 
     @Override protected int defaultMenuId() { return R.id.m_guides; }
 
     /* ============================
-     *  Llamadas desde el Adapter
+     *        CARGAS FIRESTORE
      * ============================ */
 
-    /** Abre un selector de tours y asigna el elegido al guía indicado. */
-    public void showAssignTourDialog(int guideIndex) {
-        // Guía
-        AdminRepository.Guide g = repo.getGuides().get(guideIndex);
+    private void loadGuides() {
+        db.collection("guias").get()
+                .addOnSuccessListener(snap -> {
+                    List<GuideFb> list = new ArrayList<>();
+                    for (DocumentSnapshot d : snap) {
+                        GuideFb g = d.toObject(GuideFb.class);
+                        if (g != null) {
+                            g.setId(d.getId());
+                            list.add(g);
+                        }
+                    }
+                    guides.clear();
+                    guides.addAll(list);
+                    adapter.updateData(list);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error al cargar guías: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
 
-        // Lista de tours disponibles
-        List<AdminRepository.Tour> tours = repo.getTours();
-        if (tours == null || tours.isEmpty()) {
+    private void preloadTours() {
+        db.collection("tours").get()
+                .addOnSuccessListener(snap -> {
+                    toursCache.clear();
+                    for (DocumentSnapshot d : snap) {
+                        TourFB t = d.toObject(TourFB.class);
+                        if (t != null) {
+                            if (t.getId() == null || t.getId().trim().isEmpty()) t.setId(d.getId());
+                            toursCache.add(t);
+                        }
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "No se pudieron precargar tours: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    /* ============================
+     *      ACCIONES DEL ADAPTER
+     * ============================ */
+
+    /** Abre selector y asigna tour actualizando Firestore. */
+    public void showAssignTourDialog(int guideIndex) {
+        if (guideIndex < 0 || guideIndex >= guides.size()) return;
+        GuideFb g = guides.get(guideIndex);
+
+        if (toursCache.isEmpty()) {
+            preloadTours();
+            Toast.makeText(this, "Cargando tours disponibles...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        openAssignDialogInternal(g, guideIndex);
+    }
+
+    private void openAssignDialogInternal(GuideFb g, int guideIndex) {
+        if (toursCache.isEmpty()) {
             new AlertDialog.Builder(this)
                     .setMessage("No hay tours disponibles para asignar.")
                     .setPositiveButton("OK", null)
@@ -69,36 +139,51 @@ public class AdminGuidesActivity extends BaseDrawerActivity {
             return;
         }
 
-        String[] names = new String[tours.size()];
-        for (int i = 0; i < tours.size(); i++) {
-            String n = tours.get(i).name;
+        String[] names = new String[toursCache.size()];
+        for (int i = 0; i < toursCache.size(); i++) {
+            String n = toursCache.get(i).getNombre();
             names[i] = (n == null || n.trim().isEmpty()) ? "(Sin nombre)" : n;
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Asignar tour a " + (g.name == null ? "guía" : g.name))
+                .setTitle("Asignar tour a " + (g.getNombre() == null ? "guía" : g.getNombre()))
                 .setItems(names, (dialog, which) -> {
-                    AdminRepository.Tour chosen = tours.get(which);
-
-                    // Actualiza guía
-                    g.currentTour = chosen.name;
-                    g.state = "Ocupado";
-                    if (g.history != null) g.history.add("Asignado a: " + chosen.name);
-
-                    // Marca en el tour opcionalmente
-                    chosen.assignedGuideName = g.name;
-
-                    // Refresca solo ese ítem
-                    if (adapter != null) adapter.notifyItemChanged(guideIndex);
+                    TourFB chosen = toursCache.get(which);
+                    assignTourToGuide(g, chosen, guideIndex);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    /** Navega a detalle del guía (si lo vuelves a usar en el adapter). */
+    private void assignTourToGuide(GuideFb guide, TourFB tour, int guideIndex) {
+        String newState = "Ocupado";
+        String newCurrentTour = tour.getNombre() == null ? "" : tour.getNombre();
+
+        DocumentReference guideRef = db.collection("guias").document(guide.getId());
+        DocumentReference tourRef  = db.collection("tours").document(tour.getId());
+
+        Tasks.whenAll(
+                guideRef.update(
+                        "estado", newState,
+                        "tourActual", newCurrentTour
+                ),
+                tourRef.update(
+                        "assignedGuideName", guide.getNombre() == null ? "" : guide.getNombre()
+                )
+        ).addOnSuccessListener(unused -> {
+            guide.setEstado(newState);
+            guide.setTourActual(newCurrentTour);
+            if (guide.getHistorial() != null) {
+                guide.getHistorial().add("Asignado a: " + newCurrentTour);
+            }
+            adapter.notifyItemChanged(guideIndex);
+            Toast.makeText(this, "Tour asignado correctamente", Toast.LENGTH_SHORT).show();
+        }).addOnFailureListener(e ->
+                Toast.makeText(this, "Error al asignar tour: " + e.getMessage(), Toast.LENGTH_LONG).show());
+    }
+
+    /** Abre detalle del guía (si lo usas). */
     public void showGuideDetail(int guideIndex) {
-        Intent it = new Intent(this, AdminGuideDetailActivity.class);
-        it.putExtra("index", guideIndex);
-        startActivity(it);
+        Toast.makeText(this, "Detalle guía idx=" + guideIndex, Toast.LENGTH_SHORT).show();
     }
 }

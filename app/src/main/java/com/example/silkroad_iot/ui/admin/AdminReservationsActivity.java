@@ -33,7 +33,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
         b.list.setLayoutManager(new LinearLayoutManager(this));
         b.list.setAdapter(adapter);
 
-        // Búsqueda
+        // Búsqueda por texto
         b.inputSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
@@ -42,21 +42,24 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
             }
         });
 
-        // Filtro por estado
+        // Filtro por estado (dropdown)
         String[] estados = new String[]{"Todos", "pendiente", "check-in", "check-out", "finalizada", "cancelada"};
         ArrayAdapter<String> stAdapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, estados);
+                new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, estados);
         b.inputStatus.setAdapter(stAdapter);
         b.inputStatus.setText("Todos", false);
         b.inputStatus.setOnItemClickListener((parent, view, position, id) -> {
             String sel = estados[position];
             adapter.setStatusFilter(sel);
-            adapter.filter(b.inputSearch.getText() == null ? "" : b.inputSearch.getText().toString(), sel);
+            String q = b.inputSearch.getText() == null ? "" : b.inputSearch.getText().toString();
+            adapter.filter(q, sel);
         });
 
-        // Generar PDF (engancha tu generador aquí)
+        // Hook para generar reporte con la lista filtrada actual
         b.btnReport.setOnClickListener(v -> {
-            // TODO: usa adapter.getCurrentItems() para armar el PDF
+            // Ejemplo:
+            // List<Object> items = adapter.getCurrentItems();
+            // TODO: Generar PDF/Share con 'items'
         });
     }
 

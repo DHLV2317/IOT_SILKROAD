@@ -37,12 +37,10 @@ public class AdminToursActivity extends BaseDrawerActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // (+) → Wizard
         c.btnAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminTourWizardActivity.class)));
     }
 
-    // Vuelve del wizard y recarga lista
     @Override protected void onResume() {
         super.onResume();
         adapter = new AdminToursAdapter(repo.getTours());

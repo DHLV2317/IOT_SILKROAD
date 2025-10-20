@@ -14,7 +14,7 @@ public class AdminProfileActivity extends BaseDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Carga tu layout dentro del drawer
+        // Inserta tu layout dentro del drawer y usa el toolbar del drawer
         setupDrawer(R.layout.activity_admin_profile, R.menu.menu_drawer_admin, "Perfil");
 
         ImageView img = findViewById(R.id.imgProfile);
@@ -22,11 +22,14 @@ public class AdminProfileActivity extends BaseDrawerActivity {
 
         Glide.with(this).load(R.drawable.ic_launcher_foreground).into(img);
 
-        Runnable goCompany = () -> startActivity(new Intent(this, AdminCompanyDetailActivity.class));
+        // Abre la pantalla de edición de empresa que YA tienes
+        Runnable goCompany = () ->
+                startActivity(new Intent(this, AdminCompanyDetailActivity.class));
+
         img.setOnClickListener(v -> goCompany.run());
         if (btn != null) btn.setOnClickListener(v -> goCompany.run());
     }
 
-    // Ya no hay item "Perfil" en el menú, así que no marques nada.
+    // No hay item "Perfil" en el menú; no marcamos ninguno
     @Override protected int defaultMenuId() { return 0; }
 }

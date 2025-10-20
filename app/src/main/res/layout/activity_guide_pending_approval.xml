@@ -13,6 +13,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:title="Cuenta Pendiente"
             app:backgroundTint="@android:color/holo_orange_dark"
             app:titleTextColor="@color/white" />
 
@@ -32,6 +33,7 @@
                 android:background="@drawable/bg_chip"
                 android:backgroundTint="@color/white"
                 android:padding="16dp"
+                android:contentDescription="@string/app_name"
                 android:layout_marginBottom="16dp"/>
 
             <TextView
@@ -143,14 +145,29 @@
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="16dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRefreshStatus"
+            <!-- Botón + loader -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🔄 Verificar Estado"
-                android:textSize="16sp"
-                android:layout_marginBottom="12dp"
-                app:backgroundTint="@color/brand_celeste" />
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRefreshStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔄 Verificar Estado"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="12dp"
+                    app:backgroundTint="@color/brand_celeste" />
+
+                <ProgressBar
+                    android:id="@+id/progress"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:layout_marginEnd="16dp"
+                    android:visibility="gone"/>
+            </FrameLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnBackToLogin"

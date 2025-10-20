@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.superadmin.DetallesAdministradorActivity">
 
-
     <ImageView
         android:layout_width="30dp"
         android:layout_height="30dp"
@@ -46,7 +45,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -63,7 +61,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout">
 
@@ -80,7 +77,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout2">
 
@@ -98,7 +94,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout3">
 
@@ -115,7 +110,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout4">
 
@@ -132,7 +126,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout5">
 
@@ -150,7 +143,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.72"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout6">
 
@@ -162,7 +154,6 @@
             android:singleLine="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
-
     <Button
         android:id="@+id/en"
         android:layout_width="150dp"
@@ -170,14 +161,13 @@
         android:layout_marginStart="80dp"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/green"
-        android:onClick="sphabilitarAdmin"
         android:text="Habilitar"
         android:textAllCaps="true"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:cornerRadius="14dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout7" />
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout7" />
 
     <Button
         android:id="@+id/di"
@@ -186,31 +176,28 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="28dp"
         android:backgroundTint="@color/base"
-        android:onClick="spdeshabilitarAdmin"
         android:text="Deshabilitar"
         android:textAllCaps="true"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:cornerRadius="14dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout7" />
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout7" />
 
+    <!-- ✅ Botón principal corregido -->
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnGuardar"
         android:layout_width="300dp"
         android:layout_height="56dp"
-
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/seda"
-        android:onClick="speditarAdmin"
-        android:text="Editar"
+        android:text="Guardar cambios"
         android:textAllCaps="true"
         android:textColor="@color/white"
         android:textSize="14sp"
         app:cornerRadius="14dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.747"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/di" />
+        app:layout_constraintTop_toBottomOf="@id/di" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

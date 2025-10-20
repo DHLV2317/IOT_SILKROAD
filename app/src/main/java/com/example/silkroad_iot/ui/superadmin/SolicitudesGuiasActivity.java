@@ -2,13 +2,7 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
-import com.example.silkroad_iot.databinding.ActivitySuperadminGuiasBinding;
-import com.example.silkroad_iot.databinding.ActivitySuperadminSolicitudesGuiasBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Global;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -20,21 +14,27 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.databinding.ActivitySuperadminSolicitudesGuiasBinding;
 import com.example.silkroad_iot.ui.superadmin.entity.Guia;
-import com.example.silkroad_iot.ui.superadmin.entity.ListaGuiasAdapter;
 import com.example.silkroad_iot.ui.superadmin.entity.ListaSolicitudesGuiasAdapter;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SolicitudesGuiasActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     ActivitySuperadminSolicitudesGuiasBinding binding;
-    private List<Guia> guiaList;
+    private final List<Guia> guiaList = new ArrayList<>();
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private Toolbar toolbar;
     private NavigationView navigationView;
+    private ListaSolicitudesGuiasAdapter adapter;
+
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,69 +53,56 @@ public class SolicitudesGuiasActivity extends AppCompatActivity implements Navig
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        adapter = new ListaSolicitudesGuiasAdapter();
+        adapter.setListaSolicitudesGuias(guiaList);
+        adapter.setContext(this);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerView.setAdapter(adapter);
+
+        db = FirebaseFirestore.getInstance();
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-
-        if (itemId == R.id.nav_inicio) {
-            Intent intent = new Intent(this, SuperAdminHomeActivity.class);
-            startActivity(intent);
-        } else if (itemId == R.id.nav_administradores) {
-            Intent intent = new Intent(this, AdministradoresActivity.class);
-            startActivity(intent);
-        } else if (itemId == R.id.nav_solicitudes_guias) {
-            Intent intent = new Intent(this, SolicitudesGuiasActivity.class);
-            startActivity(intent);
-        } else if (itemId == R.id.nav_guias) {
-            Intent intent = new Intent(this, GuiasActivity.class);
-            startActivity(intent);
-        } else if (itemId == R.id.nav_clientes) {
-            Intent intent = new Intent(this, ClientesActivity.class);
-            startActivity(intent);
-        } else if (itemId == R.id.nav_reportes) {
-            Intent intent = new Intent(this, ReportesActivity.class);
-            startActivity(intent);
-        } else if (itemId == R.id.nav_logs) {
-            Intent intent = new Intent(this, LogsActivity.class);
-            startActivity(intent);
-        }
-        //else if (itemId == R.id.nav_grupo_iot_item) {}
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (toggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        //int itemId = item.getItemId();
-        return super.onOptionsItemSelected(item);
-    }
-    public void cargarLista() {
-        //List<Router> routerList = lista;
-        guiaList = Global.listaGuiasNoAprobados;
-        ListaSolicitudesGuiasAdapter listaSolicitudesGuiasAdapter = new ListaSolicitudesGuiasAdapter();
-        listaSolicitudesGuiasAdapter.setListaSolicitudesGuias(guiaList);
-        listaSolicitudesGuiasAdapter.setContext(SolicitudesGuiasActivity.this);
-        binding.recyclerView.setAdapter(listaSolicitudesGuiasAdapter);
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(SolicitudesGuiasActivity.this));
-
-    }
-
-    @Override
-    protected void onStart() {
+    @Override protected void onStart() {
         super.onStart();
         cargarLista();
     }
 
+    private void cargarLista() {
+        guiaList.clear();
+        db.collection("guias")
+                .whereEqualTo("aprobado", false)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    for (QueryDocumentSnapshot d : snap) {
+                        Guia g = d.toObject(Guia.class);
+                        if (g.getCorreo() == null || g.getCorreo().isEmpty()) {
+                            g.setCorreo(d.getId());
+                        }
+                        guiaList.add(g);
+                    }
+                    adapter.notifyDataSetChanged();
+                });
+    }
 
+    @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.nav_inicio) {
+            startActivity(new Intent(this, SuperAdminHomeActivity.class));
+        } else if (id == R.id.nav_administradores) {
+            startActivity(new Intent(this, AdministradoresActivity.class));
+        } else if (id == R.id.nav_solicitudes_guias) {
+            // aquí
+        } else if (id == R.id.nav_guias) {
+            startActivity(new Intent(this, GuiasActivity.class));
+        } else if (id == R.id.nav_clientes) {
+            startActivity(new Intent(this, ClientesActivity.class));
+        } else if (id == R.id.nav_reportes) {
+            startActivity(new Intent(this, ReportesActivity.class));
+        } else if (id == R.id.nav_logs) {
+            startActivity(new Intent(this, LogsActivity.class));
+        }
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
 }

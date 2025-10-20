@@ -39,20 +39,19 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         if (index < 0 || index >= repo.getReservations().size()) { finish(); return; }
         Object r = repo.getReservations().get(index);
 
-        String tourName    = str(r, "tourName");
+        String tourName    = firstNonEmpty(str(r, "tourName"), str(obj(r, "tour"), "name"), str(obj(r, "tour"), "nombre"));
         String clientName  = str(r, "clientName");
         String clientEmail = str(r, "clientEmail");
         String clientPhone = str(r, "clientPhone");
         String clientDni   = str(r, "clientDni");
 
-        Number people      = num(r, "people");
-        Number total       = num(r, "total");
+        Number people      = firstNum(num(r, "people"), num(r, "cantidad_personas"));
+        Number total       = firstNum(num(r, "total"), num(r, "precio"));
         String status      = str(r, "status");
 
         Date date          = date(r, "date");
         if (date == null) { Number ts = num(r, "date"); if (ts != null) date = new Date(ts.longValue()); }
 
-        // --- Setear UI con IDs del layout nuevo ---
         b.tTourName.setText(TextUtils.isEmpty(tourName) ? "(Sin tour)" : tourName);
         b.tDate.setText(date == null ? "—" : sdf.format(date));
         b.tAmount.setText("S/ " + (total == null ? 0 : total.doubleValue()));
@@ -63,7 +62,6 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         b.tPhone.setText(clientPhone.isEmpty()? "—" : clientPhone);
         b.tDni.setText(clientDni.isEmpty()? "—" : clientDni);
 
-        // Badge de estado con colorcito simple
         int bg = R.color.pill_gray;
         String st = (status == null ? "" : status).toLowerCase(Locale.getDefault());
         if (st.contains("pend"))          bg = R.color.pill_gray;
@@ -73,18 +71,16 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         else if (st.contains("cancel"))   bg = android.R.color.holo_red_light;
         b.tStatus.setBackgroundResource(bg);
 
-        // QR con mensaje
         String qrText = "RESERVA|" + (clientName.isEmpty()? "-" : clientName) + "|" +
                 (tourName.isEmpty()? "(Sin tour)": tourName) + "|" +
                 (date==null? "-" : sdf.format(date)) + "|PAX:" + (people==null?1:people.intValue());
         b.imgQr.setImageBitmap(makeQr(qrText));
         b.tQrMessage.setText("Muestra este QR en el punto de encuentro para hacer check-in.");
 
-        // Valoración (visible solo si estado contiene "final")
         boolean isFinalizada = st.contains("final");
         b.cardRating.setVisibility(isFinalizada ? View.VISIBLE : View.GONE);
         if (isFinalizada) {
-            Number stars = num(r, "rating"); // 0..5
+            Number stars = num(r, "rating");
             String comment = str(r, "comment");
             RatingBar rb = b.tRating;
             if (rb != null) rb.setRating(stars == null ? 5f : stars.floatValue());
@@ -92,7 +88,6 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         }
 
         b.btnBack.setOnClickListener(v -> finish());
-        // Importante: NO hay botones aprobar/rechazar (los quitaste del layout y del flujo)
     }
 
     private Bitmap makeQr(String text){
@@ -108,9 +103,12 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         } catch (WriterException e) { return null; }
     }
 
-    // ------- helpers reflexión -------
+    // ------- helpers reflexión / fallbacks -------
     private static Object f(Object o, String n){ if(o==null) return null; try{Field f=o.getClass().getDeclaredField(n); f.setAccessible(true); return f.get(o);} catch(Throwable ignore){return null;} }
+    private static Object obj(Object o, String n){ return f(o,n); }
     private static String str(Object o, String n){ Object v=f(o,n); return v==null? "": String.valueOf(v); }
     private static Number num(Object o, String n){ Object v=f(o,n); return (v instanceof Number)? (Number)v : null; }
     private static Date date(Object o, String n){ Object v=f(o,n); return (v instanceof Date)? (Date)v : null; }
+    private static String firstNonEmpty(String... vs){ for(String s:vs){ if(s!=null && !s.trim().isEmpty()) return s; } return ""; }
+    private static Number firstNum(Number... ns){ for(Number n:ns){ if(n!=null) return n; } return null; }
 }

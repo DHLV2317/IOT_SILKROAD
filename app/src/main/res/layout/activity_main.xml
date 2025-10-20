@@ -13,12 +13,12 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             android:title="Iniciar sesión"
             app:backgroundTint="@color/brand_celeste"
             app:titleTextColor="@color/white" />
 
-        <!-- LOGO más grande -->
+        <!-- LOGO -->
         <ImageView
             android:id="@+id/imgLogo"
             android:layout_width="180dp"
@@ -28,22 +28,23 @@
             android:src="@drawable/logo_silkroad"
             android:contentDescription="@string/app_name" />
 
-        <!-- Título Hola! arriba del correo -->
+        <!-- Título Hola! -->
         <TextView
             android:id="@+id/tvHola"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hola !"
+            android:text="¡Hola!"
             android:textStyle="bold"
             android:textSize="22sp"
             android:layout_marginTop="16dp"
             android:textColor="@color/brand_celeste" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:hint="Correo Electronico"
+            android:hint="Correo electrónico"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputEmail"
                 android:inputType="textEmailAddress"
@@ -56,6 +57,7 @@
             app:endIconMode="password_toggle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputPass"
                 android:inputType="textPassword"
@@ -63,36 +65,45 @@
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Forgot (link) -->
+        <!-- Olvidaste tu contraseña -->
         <TextView
             android:id="@+id/tvForgot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Olvidaste tu contraseña?"
+            android:text="¿Olvidaste tu contraseña?"
             android:textStyle="bold"
             android:textColor="@color/brand_celeste"
             android:clickable="true"
             android:focusable="true"
             android:layout_marginTop="8dp" />
 
-        <!-- Login en celeste -->
+        <!-- Botón Login -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogin"
-            android:text="Login"
+            android:text="Iniciar sesión"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:backgroundTint="@color/brand_celeste"
             android:textColor="@color/white" />
 
-        <!-- Registrarse -->
+        <!-- Botón Registrarse -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGoRegister"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:text="Registrate"
+            android:text="Regístrate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
+        <!-- Loader para el estado de carga del login -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>
