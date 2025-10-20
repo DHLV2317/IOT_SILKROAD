@@ -2,6 +2,7 @@ package com.example.silkroad_iot.data;
 
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Modelo Firestore para historial de tours realizados.
@@ -12,11 +13,11 @@ public class TourHistorialFB implements Serializable {
     private String id;               // ID del documento en Firestore
     private String id_tour;         // Referencia al tour original
     private String id_usuario;      // Usuario que realizó el tour
-    private String fecha_realizado; // Fecha de realización (formato texto o timestamp ISO)
+    private Date fecha_realizado; // Fecha de realización (formato texto o timestamp ISO)
 
     public TourHistorialFB() {}
 
-    public TourHistorialFB(String id, String id_tour, String id_usuario, String fecha_realizado) {
+    public TourHistorialFB(String id, String id_tour, String id_usuario, Date fecha_realizado) {
         this.id = id;
         this.id_tour = id_tour;
         this.id_usuario = id_usuario;
@@ -39,9 +40,9 @@ public class TourHistorialFB implements Serializable {
     public void setIdUsuario(String id_usuario) { this.id_usuario = id_usuario; }
 
     @PropertyName("fecha_realizado")
-    public String getFechaRealizado() { return fecha_realizado; }
+    public Date getFechaRealizado() { return fecha_realizado; }
     @PropertyName("fecha_realizado")
-    public void setFechaRealizado(String fecha_realizado) { this.fecha_realizado = fecha_realizado; }
+    public void setFechaRealizado(Date fecha_realizado) { this.fecha_realizado = fecha_realizado; }
 
     @Override
     public String toString() {

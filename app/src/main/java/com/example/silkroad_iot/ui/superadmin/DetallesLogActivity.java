@@ -8,37 +8,35 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesLogBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Log;
 
 public class DetallesLogActivity extends AppCompatActivity {
 
-    ActivitySuperadminDetallesLogBinding binding;
-    private int posicion;
+    private ActivitySuperadminDetallesLogBinding binding;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySuperadminDetallesLogBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        Intent intent = getIntent();
 
-        posicion = intent.getIntExtra("posicion", -1);
-        Log log = (Log) intent.getSerializableExtra("log");
-        String g="Evento " +log.getTipo()+" de "+log.getTipoUsuario();
-        binding.textView.setText(g);
-        binding.textView1.setText(log.getNombre());
-        binding.textView12.setText(log.getFecha().toString());
-        binding.textView13.setText(log.getHora());
-        binding.textView14.setText(log.getUsuario());
-        binding.textView15.setText(log.getDescripcion());
+        Intent i = getIntent();
+        String tipo = i.getStringExtra("tipo");
+        String tipoUsuario = i.getStringExtra("tipoUsuario");
+        String nombre = i.getStringExtra("nombre");
+        String fecha = i.getStringExtra("fecha");
+        String hora = i.getStringExtra("hora");
+        String usuario = i.getStringExtra("usuario");
+        String descripcion = i.getStringExtra("descripcion");
 
+        binding.textView.setText("Evento " + tipo + " de " + tipoUsuario);
+        binding.textView1.setText(nombre);
+        binding.textView12.setText(String.valueOf(fecha));
+        binding.textView13.setText(String.valueOf(hora));
+        binding.textView14.setText(String.valueOf(usuario));
+        binding.textView15.setText(String.valueOf(descripcion));
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
-
-
 }

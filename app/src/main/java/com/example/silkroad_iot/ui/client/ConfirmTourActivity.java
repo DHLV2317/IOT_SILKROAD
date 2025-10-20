@@ -12,6 +12,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.data.Tour;
+import com.example.silkroad_iot.data.TourFB;
+import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.data.TourOrder;
 import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.data.UserStore;
@@ -24,7 +26,7 @@ import java.util.Locale;
 
 public class ConfirmTourActivity extends AppCompatActivity {
 
-    private Tour tour;
+    private TourFB tour;
     private Calendar selectedDateTime;
     private TextView tTotal, tSelectedDateTime;
     private NumberPicker npQuantity;
@@ -41,10 +43,10 @@ public class ConfirmTourActivity extends AppCompatActivity {
         setSupportActionBar(b.toolbar);
         b.toolbar.setTitle("ConfirmTour");
 
-        tour = (Tour) getIntent().getSerializableExtra("tour");
+        tour = (TourFB) getIntent().getSerializableExtra("tour");
         if (tour == null) finish();
 
-        b.tTourName.setText(tour.name);
+        b.tTourName.setText(tour.getNombre());
 
         selectedDateTime = Calendar.getInstance();
 
@@ -91,22 +93,24 @@ public class ConfirmTourActivity extends AppCompatActivity {
             User user = UserStore.get().getLogged();
             if (user == null) return;
 
-            TourOrder order = new TourOrder(
-                    tour,
-                    quantity,
-                    selectedDateTime.getTime(),
-                    user.getEmail(),
-                    TourOrder.Status.RESERVADO
+            String tourId = tour.getId(); // El ID del tour (desde TourFB)
+            String userId = user.getEmail(); // El ID del usuario (puede ser email o ID real del usuario)
+
+            TourHistorialFB historial = new TourHistorialFB(
+                    null,            // ID será generado por Firestore, así que pon null o "" por ahora
+                    tourId,          // ID del tour original
+                    userId,          // ID del usuario
+                    selectedDateTime.getTime()  // Fecha como string
             );
 
-            OrderStore.addOrder(order);
+            OrderStore.addOrder(historial);
             Toast.makeText(this, "Tour reservado con éxito", Toast.LENGTH_SHORT).show();
             finish();
         });
     }
 
     private void updateTotal(int quantity) {
-        double total = tour.price * quantity;
+        double total = tour.getPrecio() * quantity;
         tTotal.setText("Total: S/. " + total);
     }
 

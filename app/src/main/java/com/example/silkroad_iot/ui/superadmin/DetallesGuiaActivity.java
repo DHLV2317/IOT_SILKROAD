@@ -10,141 +10,113 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.databinding.ActivitySuperadminDetallesGuiaBinding;
-import com.example.silkroad_iot.ui.superadmin.entity.Guia;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class DetallesGuiaActivity extends AppCompatActivity {
 
     private ActivitySuperadminDetallesGuiaBinding binding;
     private FirebaseFirestore db;
-    private String correoDoc;
+    private String docId;
 
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySuperadminDetallesGuiaBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
 
-        Intent intent = getIntent();
-        Guia guia = (Guia) intent.getSerializableExtra("guia");
-        if (guia == null) {
-            Toast.makeText(this, "Error: guía no encontrada", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        Intent i = getIntent();
+        User guia = (User) i.getSerializableExtra("guia");
+        if (guia == null) { Toast.makeText(this, "Guía no encontrado", Toast.LENGTH_SHORT).show(); finish(); return; }
 
-        correoDoc = guia.getCorreo();
+        docId = guia.getEmail();
 
-        // Cargar datos en campos
-        binding.inputName.setText(guia.getNombres());
-        binding.inputLastName.setText(guia.getApellidos());
-        binding.inputDocumentType.setText(guia.getTipoDocumento());
-        binding.inputDocumentNumber.setText(guia.getNumeroDocumento());
+        binding.inputName.setText(guia.getName());
+        binding.inputLastName.setText(guia.getLastName());
+        binding.inputDocumentType.setText(guia.getDocumentType());
+        binding.inputDocumentNumber.setText(guia.getDocumentNumber());
+        binding.inputBirthDate.setText(guia.getBirthDate() == null ? "" : guia.getBirthDate());
+        binding.inputEmail.setText(guia.getEmail());
+        binding.inputPhone.setText(guia.getPhone());
+        binding.inputAddress.setText(guia.getAddress());
+        binding.inputLanguages.setText(guia.getLanguages());
+        binding.inputPassword.setText(guia.getPassword());
 
-        // ✅ Formatear Date a String
-        String fechaNac = (guia.getFechaNacimiento() != null) ? SDF.format(guia.getFechaNacimiento()) : "";
-        binding.inputBirthDate.setText(fechaNac);
-
-        binding.inputEmail.setText(guia.getCorreo());
-        binding.inputPhone.setText(guia.getTelefono());
-        binding.inputAddress.setText(guia.getDomicilio());
-        binding.inputLanguages.setText(guia.getIdiomas());
-
-        // ⛳ Tu layout no necesita un "estadoAprobacion" separado;
-        //    si quieres mostrarlo, muéstralo como texto derivado de boolean:
-        //    (solo si tienes un TextInput para esto)
-        // binding.inputGuideApprovalStatus.setText(guia.isAprobado() ? "APPROVED" : "PENDING");
-
-        binding.inputPassword.setText(guia.getContrasena());
-
-        updateEstadoUI(guia.isActivo());
-
-        binding.en.setOnClickListener(v -> setActivo(true));
-        binding.di.setOnClickListener(v -> setActivo(false));
+        updateEstadoUI(true);
+        binding.en.setOnClickListener(v -> setActive(true));
+        binding.di.setOnClickListener(v -> setActive(false));
         binding.button.setOnClickListener(this::guardar);
     }
 
-    private void updateEstadoUI(boolean activo) {
+    private void updateEstadoUI(boolean active) {
         int verde = ContextCompat.getColor(this, R.color.brand_verde);
         int rojo  = ContextCompat.getColor(this, R.color.red);
         int base  = ContextCompat.getColor(this, R.color.brand_celeste);
-
-        if (activo) {
-            binding.en.setBackgroundColor(verde);
-            binding.di.setBackgroundColor(base);
-        } else {
-            binding.en.setBackgroundColor(base);
-            binding.di.setBackgroundColor(rojo);
-        }
+        binding.en.setBackgroundColor(active ? verde : base);
+        binding.di.setBackgroundColor(active ? base  : rojo);
     }
 
-    private void setActivo(boolean activo) {
-        db.collection("guias").document(correoDoc)
-                .update("activo", activo)
-                .addOnSuccessListener(v -> {
-                    updateEstadoUI(activo);
-                    Toast.makeText(this, "Estado actualizado correctamente", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_LONG).show());
+    private void setActive(boolean active){
+        db.collection("users").document(docId)
+                .update("active", active)
+                .addOnSuccessListener(v -> { updateEstadoUI(active); Toast.makeText(this, "Estado actualizado", Toast.LENGTH_SHORT).show(); })
+                .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void guardar(View view) {
-        String nombres         = binding.inputName.getText().toString().trim();
-        String apellidos       = binding.inputLastName.getText().toString().trim();
-        String tipoDocumento   = binding.inputDocumentType.getText().toString().trim();
-        String numeroDocumento = binding.inputDocumentNumber.getText().toString().trim();
-        String fechaNacimiento = binding.inputBirthDate.getText().toString().trim(); // guardamos como string yyyy-MM-dd
-        String correo          = binding.inputEmail.getText().toString().trim();
-        String telefono        = binding.inputPhone.getText().toString().trim();
-        String domicilio       = binding.inputAddress.getText().toString().trim();
-        String idiomas         = binding.inputLanguages.getText().toString().trim();
-        String contrasena      = binding.inputPassword.getText().toString().trim();
+        String nombres  = binding.inputName.getText().toString().trim();
+        String apellidos= binding.inputLastName.getText().toString().trim();
+        String docType  = binding.inputDocumentType.getText().toString().trim();
+        String docNum   = binding.inputDocumentNumber.getText().toString().trim();
+        String birth    = binding.inputBirthDate.getText().toString().trim();
+        String email    = binding.inputEmail.getText().toString().trim();
+        String phone    = binding.inputPhone.getText().toString().trim();
+        String address  = binding.inputAddress.getText().toString().trim();
+        String langs    = binding.inputLanguages.getText().toString().trim();
+        String pass     = binding.inputPassword.getText().toString().trim();
 
-        if (nombres.isEmpty() || apellidos.isEmpty() || tipoDocumento.isEmpty() || numeroDocumento.isEmpty()
-                || correo.isEmpty() || telefono.isEmpty() || domicilio.isEmpty() || idiomas.isEmpty()) {
+        if (nombres.isEmpty() || apellidos.isEmpty() || docType.isEmpty() || docNum.isEmpty()
+                || email.isEmpty() || phone.isEmpty() || address.isEmpty() || langs.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Map<String, Object> update = new HashMap<>();
-        update.put("nombres", nombres);
-        update.put("apellidos", apellidos);
-        update.put("tipoDocumento", tipoDocumento);
-        update.put("numeroDocumento", numeroDocumento);
-        update.put("fechaNacimiento", fechaNacimiento); // ✅ string (o cámbialo a Timestamp si prefieres)
-        update.put("correo", correo);
-        update.put("telefono", telefono);
-        update.put("domicilio", domicilio);
-        update.put("idiomas", idiomas);
-        update.put("contrasena", contrasena);
+        Map<String, Object> up = new HashMap<>();
+        up.put("name", nombres);
+        up.put("lastName", apellidos);
+        up.put("documentType", docType);
+        up.put("documentNumber", docNum);
+        up.put("birthDate", birth);
+        up.put("email", email);
+        up.put("phone", phone);
+        up.put("address", address);
+        up.put("languages", langs);
+        up.put("password", pass);
+        up.put("role", User.Role.GUIDE.name());
+        // Mantener estado de aprobación si existe
+        up.put("guideApprovalStatus", "APPROVED"); // si esta pantalla es solo para aprobados
+        up.put("guideApproved", true);
 
-        boolean correoCambio = !correo.equals(correoDoc);
-        if (correoCambio) {
-            db.collection("guias").document(correoDoc).delete()
-                    .addOnSuccessListener(v1 -> db.collection("guias").document(correo).set(update)
-                            .addOnSuccessListener(v2 -> { Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show(); finish(); })
+        boolean emailChange = !email.equals(docId);
+        if (emailChange) {
+            db.collection("users").document(docId).delete()
+                    .addOnSuccessListener(v1 -> db.collection("users").document(email).set(up)
+                            .addOnSuccessListener(v2 -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                             .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()))
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         } else {
-            db.collection("guias").document(correoDoc).update(update)
-                    .addOnSuccessListener(v2 -> { Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show(); finish(); })
+            db.collection("users").document(docId).update(up)
+                    .addOnSuccessListener(v -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         return true;
     }
