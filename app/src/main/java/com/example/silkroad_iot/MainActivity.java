@@ -32,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding b;
     private final UserStore store = UserStore.get();
-
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
@@ -46,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(b.getRoot());
         setSupportActionBar(b.toolbar);
 
-        // 🔹 Inicializa Firebase
         FirebaseApp.initializeApp(this);
         auth = FirebaseAuth.getInstance();
         db   = FirebaseFirestore.getInstance();
@@ -58,9 +56,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ForgotPasswordActivity.class)));
     }
 
-    // ======================================================
-    // 🔐 LOGIN
-    // ======================================================
     private void doLogin() {
         String email = safe(b.inputEmail.getText());
         String pass  = safe(b.inputPass.getText());
@@ -72,56 +67,69 @@ public class MainActivity extends AppCompatActivity {
 
         auth.signInWithEmailAndPassword(email, pass)
                 .addOnSuccessListener(res -> {
-                    // 1️⃣ Buscar el usuario en Firestore (colección "usuarios")
                     db.collection("usuarios")
                             .whereEqualTo("email", email)
                             .limit(1)
                             .get()
                             .addOnSuccessListener(snap -> {
-                                setLoading(false);
-
                                 if (snap.isEmpty()) {
+                                    setLoading(false);
                                     Snackbar.make(b.getRoot(),
-                                            "No se encontró el perfil en Firestore (colección 'usuarios').",
+                                            "No se encontró el perfil en 'usuarios'.",
                                             Snackbar.LENGTH_LONG).show();
                                     return;
                                 }
 
                                 DocumentSnapshot d = snap.getDocuments().get(0);
 
-                                // 2️⃣ Mapear a modelo local
+                                // 1) Construir User base
                                 User u = new User();
                                 u.setEmail(email);
                                 u.setUid(auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null);
-                                u.setName(nz(d.getString("nombre"))); // usamos campo "nombre"
-                                String rol = nz(d.getString("rol")).toLowerCase();
-
-                                switch (rol) {
-                                    case "empresa":
-                                    case "admin":
-                                        u.setRole(User.Role.ADMIN);
-                                        break;
-                                    case "guia":
-                                        u.setRole(User.Role.GUIDE);
-                                        Boolean aprobado = d.getBoolean("aprobado");
-                                        u.setGuideApproved(aprobado != null && aprobado);
-                                        u.setGuideApprovalStatus(aprobado != null && aprobado ? "APPROVED" : "PENDING");
-                                        break;
-                                    case "superadmin":
-                                        u.setRole(User.Role.SUPERADMIN);
-                                        break;
-                                    default:
-                                        u.setRole(User.Role.CLIENT);
-                                        u.setClientProfileCompleted(true);
-                                }
-
-                                // 3️⃣ IDs opcionales
+                                u.setName(nz(d.getString("nombre")));
                                 u.setCompanyId(nz(d.getString("empresaId")));
                                 u.setGuideId(nz(d.getString("guiaId")));
 
-                                // 4️⃣ Guardar sesión y redirigir
-                                store.setLogged(u);
-                                routeAfterLogin(u);
+                                // 2) Rol desde doc (puede venir vacío)
+                                String rolRaw = nz(d.getString("rol")).trim().toLowerCase();
+                                if (rolRaw.equals("empresa") || rolRaw.equals("admin")) {
+                                    u.setRole(User.Role.ADMIN);
+                                } else if (rolRaw.equals("guia") || rolRaw.equals("guide")) {
+                                    u.setRole(User.Role.GUIDE);
+                                } else if (rolRaw.equals("superadmin")) {
+                                    u.setRole(User.Role.SUPERADMIN);
+                                } else if (rolRaw.equals("cliente") || rolRaw.equals("client")) {
+                                    u.setRole(User.Role.CLIENT);
+                                } else {
+                                    // Inferir si no hay "rol"
+                                    if (!u.getGuideId().isEmpty()) {
+                                        u.setRole(User.Role.GUIDE);
+                                    } else {
+                                        u.setRole(User.Role.CLIENT); // temporal, luego intentamos mejorar
+                                    }
+                                }
+
+                                // 3) Aprobación guía (acepta varios nombres de campo)
+                                boolean approvedBool =
+                                        (d.getBoolean("aprobado") != null && d.getBoolean("aprobado")) ||
+                                                (d.getBoolean("guideApproved") != null && d.getBoolean("guideApproved"));
+                                String status = nz(d.getString("guideApprovalStatus"));
+                                if (approvedBool) status = "APPROVED";
+                                if (status.isEmpty()) status = "PENDING";
+                                u.setGuideApproved(approvedBool ||
+                                        "approved".equalsIgnoreCase(status) ||
+                                        "aprobado".equalsIgnoreCase(status));
+                                u.setGuideApprovalStatus(status.toUpperCase());
+
+                                // 4) Si ya tenemos un rol fiable -> rutear
+                                //    Si quedó como CLIENT, intentamos inferir ADMIN por colecciones secundarias y por correos demo.
+                                if (u.getRole() != User.Role.CLIENT) {
+                                    setLoading(false);
+                                    store.setLogged(u);
+                                    routeAfterLogin(u);
+                                } else {
+                                    inferAdminOrDemoAndRoute(u);
+                                }
                             })
                             .addOnFailureListener(e -> {
                                 setLoading(false);
@@ -138,57 +146,115 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    // ======================================================
-    // 🧭 RUTEO SEGÚN ROL
-    // ======================================================
+    /** Si el rol quedó como CLIENT, intentamos:
+     *  a) Buscar en 'administradores' por correo/email → ADMIN
+     *  b) Fallback por correos de demo → ADMIN / SUPERADMIN / GUIDE
+     */
+    private void inferAdminOrDemoAndRoute(User u) {
+        final String email = u.getEmail();
+
+        db.collection("administradores")
+                .whereEqualTo("correo", email)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(s1 -> {
+                    if (!s1.isEmpty()) {
+                        u.setRole(User.Role.ADMIN);
+                        finishRouting(u);
+                        return;
+                    }
+                    // Intentar con campo "email" (por si usas otro nombre)
+                    db.collection("administradores")
+                            .whereEqualTo("email", email)
+                            .limit(1)
+                            .get()
+                            .addOnSuccessListener(s2 -> {
+                                if (!s2.isEmpty()) {
+                                    u.setRole(User.Role.ADMIN);
+                                    finishRouting(u);
+                                } else {
+                                    // Fallback de cuentas demo
+                                    applyDemoFallback(u);
+                                    finishRouting(u);
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                applyDemoFallback(u);
+                                finishRouting(u);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    applyDemoFallback(u);
+                    finishRouting(u);
+                });
+    }
+
+    private void applyDemoFallback(User u) {
+        String email = nz(u.getEmail()).toLowerCase();
+        if (email.equals("admin@demo.com")) {
+            u.setRole(User.Role.ADMIN);
+        } else if (email.equals("superadmin@demo.com")) {
+            u.setRole(User.Role.SUPERADMIN);
+        } else if (email.equals("guide@demo.com")) {
+            u.setRole(User.Role.GUIDE);
+            u.setGuideApproved(true);
+            u.setGuideApprovalStatus("APPROVED");
+        } else if (email.equals("client@demo.com")) {
+            u.setRole(User.Role.CLIENT);
+            u.setClientProfileCompleted(true);
+        }
+    }
+
+    private void finishRouting(User u) {
+        setLoading(false);
+        store.setLogged(u);
+        routeAfterLogin(u);
+    }
+
+    // ========================== RUTEO (if/else) ==========================
     private void routeAfterLogin(User u) {
         Intent next;
 
-        switch (u.getRole()) {
-            case CLIENT:
-                next = u.isClientProfileCompleted()
-                        ? new Intent(this, ClientHomeActivity.class)
-                        : new Intent(this, ClientOnboardingActivity.class);
-                break;
-
-            case GUIDE:
-                next = u.isGuideApproved()
-                        ? new Intent(this, GuideHomeActivity.class)
-                        : new Intent(this, GuidePendingApprovalActivity.class);
-                break;
-
-            case ADMIN:
-                // Si aún usas la verificación de empresa local:
-                AdminRepository.Company c = AdminRepository.get().getOrCreateCompany();
-                boolean incompleto = c == null ||
-                        TextUtils.isEmpty(c.name) ||
-                        TextUtils.isEmpty(c.email) ||
-                        TextUtils.isEmpty(c.phone) ||
-                        TextUtils.isEmpty(c.address);
-
-                SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
-                boolean marcado = sp.getBoolean(KEY_COMPANY_DONE, false);
-
-                next = (incompleto || !marcado)
-                        ? new Intent(this, AdminCompanyDetailActivity.class).putExtra("firstRun", true)
-                        : new Intent(this, AdminToursActivity.class);
-                break;
-
-            case SUPERADMIN:
-                next = new Intent(this, SuperAdminHomeActivity.class);
-                break;
-
-            default:
+        if (u.getRole() == User.Role.CLIENT) {
+            if (u.isClientProfileCompleted()) {
                 next = new Intent(this, ClientHomeActivity.class);
+            } else {
+                next = new Intent(this, ClientOnboardingActivity.class);
+            }
+        } else if (u.getRole() == User.Role.GUIDE) {
+            if (u.isGuideApproved()) {
+                next = new Intent(this, GuideHomeActivity.class);
+            } else {
+                next = new Intent(this, GuidePendingApprovalActivity.class);
+            }
+        } else if (u.getRole() == User.Role.ADMIN) {
+            AdminRepository.Company c = AdminRepository.get().getOrCreateCompany();
+            boolean incompleto = c == null ||
+                    TextUtils.isEmpty(c.name) ||
+                    TextUtils.isEmpty(c.email) ||
+                    TextUtils.isEmpty(c.phone) ||
+                    TextUtils.isEmpty(c.address);
+
+            SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
+            boolean marcado = sp.getBoolean(KEY_COMPANY_DONE, false);
+
+            if (incompleto || !marcado) {
+                next = new Intent(this, AdminCompanyDetailActivity.class).putExtra("firstRun", true);
+            } else {
+                next = new Intent(this, AdminToursActivity.class);
+            }
+        } else if (u.getRole() == User.Role.SUPERADMIN) {
+            next = new Intent(this, SuperAdminHomeActivity.class);
+        } else {
+            next = new Intent(this, ClientHomeActivity.class);
         }
 
+        next.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(next);
         finish();
     }
 
-    // ======================================================
-    // 🧩 HELPERS
-    // ======================================================
+    // ============================ HELPERS ============================
     private void setLoading(boolean loading) {
         b.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         b.btnLogin.setEnabled(!loading);

@@ -33,8 +33,25 @@ public class GuidePendingApprovalActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) getSupportActionBar().setTitle("Cuenta Pendiente");
 
+        // Si ya está aprobado en memoria → ir directo al panel del guía
+        User u = store.getLogged();
+        if (u != null && u.isGuideApproved() && u.isGuide()) {
+            goHomeAndFinish();
+            return;
+        }
+
         setupUserInfo();
         setupClickListeners();
+
+        // Chequeo automático al abrir
+        refreshFromFirestore();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Revalida por si cambió mientras la app estaba en background
+        refreshFromFirestore();
     }
 
     private void setupUserInfo() {
@@ -93,7 +110,7 @@ public class GuidePendingApprovalActivity extends AppCompatActivity {
         }
     }
 
-    /** Consulta Firestore: colección 'usuarios', búsqueda por email, lee 'aprobado' y 'guideApprovalStatus' */
+    /** Consulta Firestore en colección 'usuarios' (donde está el rol GUIDE). */
     private void refreshFromFirestore() {
         User u = store.getLogged();
         if (u == null || u.getEmail() == null || u.getEmail().isEmpty()) {
@@ -112,37 +129,51 @@ public class GuidePendingApprovalActivity extends AppCompatActivity {
                         Snackbar.make(binding.getRoot(), "No se encontró tu perfil en Firestore.", Snackbar.LENGTH_LONG).show();
                         return;
                     }
-                    DocumentSnapshot d = snap.getDocuments().get(0);
-
-                    // Campo oficial de aprobación (bool)
-                    Boolean aprobado = d.getBoolean("aprobado");
-                    // Campo textual opcional
-                    String status = d.getString("guideApprovalStatus");
-
-                    // Normalizamos: si 'aprobado' true => status APPROVED
-                    if (aprobado != null && aprobado) status = "APPROVED";
-                    if (status == null) status = (aprobado != null && aprobado) ? "APPROVED" : "PENDING";
-
-                    // Actualiza el usuario en memoria
-                    u.setGuideApproved(aprobado != null && aprobado);
-                    u.setGuideApprovalStatus(status);
-                    store.updateLogged(u);
-
-                    // Pinta UI
-                    showStatus(status);
-                    binding.txtLastCheck.setText("Última verificación: " +
-                            DateFormat.getDateTimeInstance().format(new Date()));
-
-                    // Si ya fue aprobado, navega al Home
-                    if (u.isGuideApproved()) {
-                        Toast.makeText(this, "¡Tu cuenta de guía ya fue aprobada!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(this, GuideHomeActivity.class));
-                        finish();
-                    }
+                    handleUserDoc(u, snap.getDocuments().get(0));
                 })
                 .addOnFailureListener(e -> {
                     setLoading(false);
                     Snackbar.make(binding.getRoot(), "Error consultando estado: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
                 });
+    }
+
+    private void handleUserDoc(User u, DocumentSnapshot d) {
+        // ---- lectura tolerante de campos ----
+        String rol = d.getString("rol");                       // "GUIDE"
+        Boolean aprobadoBool = d.getBoolean("aprobado");       // true/false (opcional)
+        String status = d.getString("guideApprovalStatus");    // "APPROVED"/"PENDING"/"REJECTED" (opcional)
+        String estado = d.getString("estado");                 // "Aprobado"/"Pendiente" (opcional)
+
+        boolean isApproved = false;
+        if (aprobadoBool != null && aprobadoBool) isApproved = true;
+        if ("APPROVED".equalsIgnoreCase(status)) isApproved = true;
+        if ("Aprobado".equalsIgnoreCase(estado)) isApproved = true;
+
+        if (status == null) status = isApproved ? "APPROVED" : "PENDING";
+
+        // ---- actualiza cache local ----
+        if (rol != null && rol.equalsIgnoreCase("GUIDE")) {
+            u.setRole(User.Role.GUIDE); // fuerza el rol correcto para el ruteo
+        }
+        u.setGuideApproved(isApproved);
+        u.setGuideApprovalStatus(status);
+
+        store.updateLogged(u);
+
+        // ---- UI ----
+        showStatus(status);
+        binding.txtLastCheck.setText("Última verificación: " +
+                DateFormat.getDateTimeInstance().format(new Date()));
+
+        // ---- navegación ----
+        if (u.isGuideApproved() && u.getRole() == User.Role.GUIDE) {
+            Toast.makeText(this, "¡Tu cuenta de guía fue aprobada!", Toast.LENGTH_SHORT).show();
+            goHomeAndFinish();
+        }
+    }
+
+    private void goHomeAndFinish() {
+        startActivity(new Intent(this, GuideHomeActivity.class));
+        finish();
     }
 }
