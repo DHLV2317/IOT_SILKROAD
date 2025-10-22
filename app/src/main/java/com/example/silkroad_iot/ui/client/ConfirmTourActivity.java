@@ -100,7 +100,8 @@ public class ConfirmTourActivity extends AppCompatActivity {
                     null,            // ID será generado por Firestore, así que pon null o "" por ahora
                     tourId,          // ID del tour original
                     userId,          // ID del usuario
-                    selectedDateTime.getTime()  // Fecha como string
+                    selectedDateTime.getTime(),
+                    "solicitado"// Fecha como string
             );
 
             OrderStore.addOrder(historial);

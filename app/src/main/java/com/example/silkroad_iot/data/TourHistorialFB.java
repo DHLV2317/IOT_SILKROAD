@@ -14,17 +14,29 @@ public class TourHistorialFB implements Serializable {
     private String id_tour;         // Referencia al tour original
     private String id_usuario;      // Usuario que realizó el tour
     private Date fecha_realizado; // Fecha de realización (formato texto o timestamp ISO)
+    private String estado;
+
 
     public TourHistorialFB() {}
 
-    public TourHistorialFB(String id, String id_tour, String id_usuario, Date fecha_realizado) {
+    public TourHistorialFB(String id, String id_tour, String id_usuario, Date fecha_realizado, String estado) {
         this.id = id;
         this.id_tour = id_tour;
         this.id_usuario = id_usuario;
         this.fecha_realizado = fecha_realizado;
+        this.estado = estado;
     }
 
     // Getters y Setters
+
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

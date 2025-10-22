@@ -30,13 +30,13 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
     }
 
     public static class VH extends RecyclerView.ViewHolder {
-        TextView tvTourName, tvDate;
+        TextView tvTourName, tvDate, tvStatus;
 
         public VH(@NonNull View v) {
             super(v);
             tvTourName = v.findViewById(R.id.tvCompanyName); // ✅ CAMBIA AQUÍ
             tvDate = v.findViewById(R.id.tvTourDate);
-        }
+            tvStatus = v.findViewById(R.id.tvStatus);        }
     }
 
     @NonNull
@@ -54,6 +54,9 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
         Date fecha = historial.getFechaRealizado();
         String fechaStr = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(fecha);
         holder.tvDate.setText("Realizado el: " + fechaStr);
+
+        holder.tvStatus.setText("Estado: " + historial.getEstado());
+
 
         // 🔄 Obtener nombre del tour desde Firestore
         FirebaseFirestore.getInstance()
