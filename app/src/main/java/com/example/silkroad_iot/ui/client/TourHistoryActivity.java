@@ -2,6 +2,8 @@ package com.example.silkroad_iot.ui.client;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -68,13 +70,14 @@ public class TourHistoryActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         List<TourHistorialFB> historialList = new ArrayList<>();
 
+
         db.collection("tours_history")
                 .whereEqualTo("id_usuario", email)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         TourHistorialFB historial = doc.toObject(TourHistorialFB.class);
-                        historial.setId(doc.getId());
+                          historial.setId(doc.getId());
                         historialList.add(historial);
                     }
 

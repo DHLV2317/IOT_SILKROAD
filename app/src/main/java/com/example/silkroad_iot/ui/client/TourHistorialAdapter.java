@@ -1,6 +1,7 @@
 package com.example.silkroad_iot.ui.client;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,13 +31,17 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
     }
 
     public static class VH extends RecyclerView.ViewHolder {
-        TextView tvTourName, tvDate, tvStatus;
+        TextView tvTourName, tvDate, tvStatus, tvTotalPrice,tvOrderDate;
 
         public VH(@NonNull View v) {
             super(v);
             tvTourName = v.findViewById(R.id.tvCompanyName); // ✅ CAMBIA AQUÍ
             tvDate = v.findViewById(R.id.tvTourDate);
-            tvStatus = v.findViewById(R.id.tvStatus);        }
+            tvStatus = v.findViewById(R.id.tvStatus);
+            tvTotalPrice= v.findViewById(R.id.tvTotalPrice);
+            tvOrderDate= v.findViewById(R.id.tvOrderDate);
+
+        }
     }
 
     @NonNull
@@ -50,15 +55,23 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
     public void onBindViewHolder(@NonNull VH holder, int position) {
         TourHistorialFB historial = historialList.get(position);
 
-        // 🕒 Fecha
-        Date fecha = historial.getFechaRealizado();
-        String fechaStr = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(fecha);
-        holder.tvDate.setText("Realizado el: " + fechaStr);
+        // 🕒 Fecha del tour
+        Date fechaTour = historial.getFechaRealizado();
+        String fechaTourStr = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(fechaTour);
+        holder.tvDate.setText("Inicio del Tour: " + fechaTourStr);
+
+        // 📅 Fecha de reserva
+        Date fechaReserva = historial.getFechaReserva();
+        if (fechaReserva != null) {
+            String fechaReservaStr = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(fechaReserva);
+            holder.tvOrderDate.setText("Reservado el: " + fechaReservaStr);
+        } else {
+            holder.tvOrderDate.setText("Reservado el: -");
+        }
 
         holder.tvStatus.setText("Estado: " + historial.getEstado());
 
-
-        // 🔄 Obtener nombre del tour desde Firestore
+        // 🔄 Obtener TourFB desde Firestore (una sola vez) y manejar click
         FirebaseFirestore.getInstance()
                 .collection("tours")
                 .document(historial.getIdTour())
@@ -67,14 +80,28 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
                     TourFB tour = doc.toObject(TourFB.class);
                     if (tour != null) {
                         holder.tvTourName.setText(tour.getNombre());
+                        holder.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/ %.2f", tour.getPrecio()));
+
+                        // 👉 Click para ir al detalle
+                        holder.itemView.setOnClickListener(v -> {
+                            Intent intent = new Intent(v.getContext(), OrderDetailActivity.class);
+                            intent.putExtra("tourFB", tour);
+                            intent.putExtra("historialFB", historial);
+                            intent.putExtra("historialId", historial.getId());
+
+                            v.getContext().startActivity(intent);
+                        });
                     } else {
                         holder.tvTourName.setText("Tour desconocido");
+                        holder.tvTotalPrice.setText("S/ -");
                     }
                 })
                 .addOnFailureListener(e -> {
                     holder.tvTourName.setText("Error cargando tour");
+                    holder.tvTotalPrice.setText("S/ -");
                 });
     }
+
 
     @Override
     public int getItemCount() {

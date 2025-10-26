@@ -101,6 +101,7 @@ public class ConfirmTourActivity extends AppCompatActivity {
                     tourId,          // ID del tour original
                     userId,          // ID del usuario
                     selectedDateTime.getTime(),
+                    new Date(),
                     "solicitado"// Fecha como string
             );
 
