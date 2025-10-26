@@ -11,6 +11,8 @@
         android:title=""
         android:titleTextColor="@android:color/white" />
 
+
+
     <TextView
         android:id="@+id/tvStopsTitle"
         android:layout_width="wrap_content"
@@ -20,6 +22,17 @@
         android:text="Lugares a visitar"
         android:textSize="20sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvEmptyMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#888888"
+        android:gravity="center"
+        android:visibility="gone"
+        android:text="Este tour aún no tiene paradas registradas"
+        android:layout_marginTop="16dp"/>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvStops"

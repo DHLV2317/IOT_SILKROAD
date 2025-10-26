@@ -22,12 +22,24 @@
         android:background="#DDD"
         android:layout_marginBottom="16dp"/>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
     <TextView
         android:id="@+id/tTourName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Tour 1"
-        android:padding="16dp"
+        android:padding="8dp"
         android:textStyle="bold"
         android:textSize="20sp"
         android:layout_marginBottom="8dp"/>
@@ -37,23 +49,63 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Descripción del tour"
-        android:padding="16dp"
+        android:padding="8dp"
         android:layout_marginBottom="8dp"/>
 
     <TextView
-        android:id="@+id/tTourPrice"
+        android:id="@+id/tTourLangs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="S/. 100"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp"/>
+        android:text="Idiomas: Inglés"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"/>
 
-    <Button
-        android:id="@+id/btnAdd"
-        android:layout_width="193dp"
+    <TextView
+        android:id="@+id/tTourPeople"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agregar S/. 100"
-        android:backgroundTint="@color/brand_celeste"/>
+        android:text="Cupo: 10 personas"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"/>
 
+    <TextView
+        android:id="@+id/tTourDateFrom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Inicio: 20/10/2025"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tTourDateTo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fin: 22/10/2025"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tTourDuration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Duración: 3 días"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Agregar S/. 100"
+            android:backgroundTint="@color/brand_celeste" />
+    </LinearLayout>
 </LinearLayout>

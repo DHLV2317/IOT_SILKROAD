@@ -46,10 +46,10 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
     public void onBindViewHolder(@NonNull VH holder, int position) {
         Stop stop = stops.get(position);
 
-        holder.tvName.setText((position + 1) + "° Parada: " + stop.name);
-        holder.tvAddress.setText("Dirección: " + stop.address);
-        holder.tvTime.setText("Tiempo: " + stop.time);
-        holder.tvCost.setText(String.format("Costo: S/. %.2f", stop.cost));
+        holder.tvName.setText((position + 1) + "° Parada: " + stop.getName());
+        holder.tvAddress.setText("Dirección: " + stop.getAddress());
+        holder.tvTime.setText("Tiempo: " + stop.getTime());
+        holder.tvCost.setText(String.format("Costo: S/. %.2f", stop.getCost()));
     }
 
     @Override

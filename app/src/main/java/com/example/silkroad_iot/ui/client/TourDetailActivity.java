@@ -14,17 +14,16 @@ import com.example.silkroad_iot.databinding.ActivityTourDetailBinding;
 public class TourDetailActivity extends AppCompatActivity {
     ActivityTourDetailBinding b;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         b = ActivityTourDetailBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
-        // 🧭 Configurar toolbar
         setSupportActionBar(b.toolbar);
         getSupportActionBar().setTitle("Detalles del Tour");
 
-        // 📦 Obtener tour desde el intent
         TourFB tour = (TourFB) getIntent().getSerializableExtra("tour");
 
         if (tour == null) {
@@ -35,22 +34,39 @@ public class TourDetailActivity extends AppCompatActivity {
 
         Log.d("TOUR_DETAIL", "Mostrando detalles de: " + tour.getNombre());
 
-        // 🖼️ Mostrar datos
+        // Mostrar datos básicos
         b.tTourName.setText(tour.getNombre());
-        //b.tTourDescription.setText(tour.getDescripcion() != null ? tour.getDescripcion() : "Sin descripción");
-        b.tTourDescription.setText("Sin descripción");
-        b.tTourPrice.setText("S/. " + tour.getPrecio());
         b.btnAdd.setText("Agregar S/. " + tour.getPrecio());
 
         Glide.with(this)
                 .load(tour.getImagen())
                 .into(b.imgTour);
 
-        // 🎟️ Botón para confirmar compra / reservar tour
+        // Mostrar descripción
+        b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "Sin descripción");
+
+        // Mostrar campos adicionales
+        b.tTourLangs.setText("Idiomas: " + (tour.getLangs() != null ? tour.getLangs() : "No especificado"));
+        b.tTourPeople.setText("Cupo: " + tour.getCantidad_personas() + " personas");
+
+        if (tour.getDateFrom() != null)
+            b.tTourDateFrom.setText("Inicio: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateFrom()));
+        else
+            b.tTourDateFrom.setText("Inicio: -");
+
+        if (tour.getDateTo() != null)
+            b.tTourDateTo.setText("Fin: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateTo()));
+        else
+            b.tTourDateTo.setText("Fin: -");
+
+        b.tTourDuration.setText("Duración: " + (tour.getDuration() != null ? tour.getDuration() : "-"));
+
+        // Acción del botón
         b.btnAdd.setOnClickListener(v -> {
             Intent i = new Intent(this, ConfirmTourActivity.class);
             i.putExtra("tour", tour);
             startActivity(i);
         });
     }
+
 }

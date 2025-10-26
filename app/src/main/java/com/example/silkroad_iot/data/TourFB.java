@@ -2,6 +2,8 @@ package com.example.silkroad_iot.data;
 
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Modelo Firestore para "tours".
@@ -23,8 +25,12 @@ public class TourFB implements Serializable {
     // (Opcional) otros campos que ya consumes con reflexión en las pantallas admin
     private String duration;           // "3h", "1 día", etc.
     private String assignedGuideName;  // guía asignado
-    private Double paymentProposal;    // propuesta de pago
-
+    private Double paymentProposal;
+    private  String description;// propuesta de pago
+    private Date dateFrom;
+    private Date dateTo;
+    // en TourFB.java
+    private List<Stop> stops; // + getter y setter
 
 
     public TourFB() {}
@@ -41,6 +47,31 @@ public class TourFB implements Serializable {
     }
 
     // --- Getters y Setters ---
+
+
+    public Date getDateFrom() {
+        return dateFrom;
+    }
+
+    public void setDateFrom(Date dateFrom) {
+        this.dateFrom = dateFrom;
+    }
+
+    public Date getDateTo() {
+        return dateTo;
+    }
+
+    public void setDateTo(Date dateTo) {
+        this.dateTo = dateTo;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -96,6 +127,16 @@ public class TourFB implements Serializable {
     public Double getPaymentProposal() { return paymentProposal; }
     @PropertyName("paymentProposal")
     public void setPaymentProposal(Double paymentProposal) { this.paymentProposal = paymentProposal; }
+
+
+    public List<Stop> getStops() {
+        return stops;
+    }
+
+    public void setStops(List<Stop> stops) {
+        this.stops = stops;
+    }
+
 
     @Override
     public String toString() {

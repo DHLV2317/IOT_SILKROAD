@@ -2,11 +2,15 @@ package com.example.silkroad_iot.ui.client;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.bumptech.glide.Glide;
+import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.EmpresaFb;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.databinding.ActivityToursBinding;
@@ -49,6 +53,18 @@ public class ToursActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // 🏢 Mostrar imagen y nombre de empresa
+        ImageView imgCompanyLogo = b.imgCompanyLogo;
+        TextView tvCompanyName = b.tvCompanyName;
+
+        tvCompanyName.setText(empresa.getNombre());
+
+        Glide.with(this)
+                .load(empresa.getImagen()) // Asegúrate que empresa.getLogo() devuelva una URL válida
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .into(imgCompanyLogo);
+
 
         Log.d("TOURS_ACTIVITY", "Cargando tours de empresa: " + empresa.getNombre());
 

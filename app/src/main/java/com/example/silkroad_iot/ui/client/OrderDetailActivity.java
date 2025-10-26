@@ -5,18 +5,23 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.data.Stop;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.data.TourOrder;
 import com.example.silkroad_iot.databinding.ActivityOrderDetailBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class OrderDetailActivity extends AppCompatActivity {
@@ -77,10 +82,30 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         // Botones
         findViewById(R.id.btnPlaces).setOnClickListener(v -> {
-            Intent intent = new Intent(OrderDetailActivity.this, StopsActivity.class);
-            intent.putExtra("tour", tour);
-            startActivity(intent);
+            if (tour == null) return;
+
+            FirebaseFirestore.getInstance()
+                    .collection("tours")
+                    .document(tour.getId())
+                    .collection("paradas") // subcolección
+                    .get()
+                    .addOnSuccessListener(snapshot -> {
+                        List<Stop> stops = new ArrayList<>();
+                        for (QueryDocumentSnapshot doc : snapshot) {
+                            stops.add(doc.toObject(Stop.class));
+                        }
+
+                        tour.setStops(stops); // llenar el tour con las paradas
+                        Intent intent = new Intent(OrderDetailActivity.this, StopsActivity.class);
+                        intent.putExtra("tour", tour);
+                        startActivity(intent);
+                    })
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                        Toast.makeText(this, "No se pudieron cargar las paradas", Toast.LENGTH_SHORT).show();
+                    });
         });
+
 
         findViewById(R.id.btnCancelar).setOnClickListener(v -> {
             new AlertDialog.Builder(OrderDetailActivity.this)
