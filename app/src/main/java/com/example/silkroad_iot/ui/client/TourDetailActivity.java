@@ -46,8 +46,8 @@ public class TourDetailActivity extends AppCompatActivity {
         b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "Sin descripción");
 
         // Mostrar campos adicionales
-        b.tTourLangs.setText("Idiomas: " + (tour.getLangs() != null ? tour.getLangs() : "No especificado"));
-        b.tTourPeople.setText("Cupo: " + tour.getCantidad_personas() + " personas");
+       // b.tTourLangs.setText("Idiomas: " + (tour.getLangs() != null ? tour.getLangs() : "No especificado"));
+        b.tTourPeople.setText("Personas: " + tour.getCantidad_personas() + " personas");
 
         if (tour.getDateFrom() != null)
             b.tTourDateFrom.setText("Inicio: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateFrom()));
@@ -59,8 +59,8 @@ public class TourDetailActivity extends AppCompatActivity {
         else
             b.tTourDateTo.setText("Fin: -");
 
-        b.tTourDuration.setText("Duración: " + (tour.getDuration() != null ? tour.getDuration() : "-"));
-
+        //b.tTourDuration.setText("Duración: " + (tour.getDuration() != null ? tour.getDuration() : "-"));
+        b.tTourDuration.setText("Paradas: " + (tour.getId_paradas() != null ? tour.getId_paradas() : "-"));
         // Acción del botón
         b.btnAdd.setOnClickListener(v -> {
             Intent i = new Intent(this, ConfirmTourActivity.class);

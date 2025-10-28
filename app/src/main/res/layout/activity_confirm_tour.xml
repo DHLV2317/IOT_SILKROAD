@@ -1,11 +1,10 @@
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal">
 
+    <!-- 🔷 Toolbar superior -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -14,6 +13,7 @@
         android:title="Reservas"
         android:titleTextColor="@android:color/white" />
 
+    <!-- 🔷 Nombre del tour -->
     <TextView
         android:id="@+id/tTourName"
         android:layout_width="wrap_content"
@@ -24,39 +24,25 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btnSelectDate"
+    <!-- 🔷 Cantidad de personas -->
+    <TextView
+        android:id="@+id/tTourPeople"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Seleccionar fecha"
-        android:backgroundTint="@color/brand_celeste"/>
-
-    <Button
-        android:id="@+id/btnSelectTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:text="Cupo: -"
         android:layout_marginTop="8dp"
-        android:text="Seleccionar hora"
-        android:backgroundTint="@color/brand_celeste"/>
+        android:textSize="16sp" />
 
+    <!-- 🔷 Fechas del tour -->
     <TextView
-        android:id="@+id/tSelectedDateTime"
+        android:id="@+id/tTourDates"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fecha y hora no seleccionadas"
-        android:layout_marginTop="12dp"
-        android:textStyle="italic"/>
+        android:text="Fechas: -"
+        android:layout_marginTop="4dp"
+        android:textSize="16sp" />
 
-    <TextView
-        android:text="Personas:"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
-    <NumberPicker
-        android:id="@+id/npQuantity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
+    <!-- 🔷 Total del tour -->
     <TextView
         android:id="@+id/tTotal"
         android:layout_width="wrap_content"
@@ -67,11 +53,11 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"/>
 
+    <!-- 🔷 Botón para confirmar la reserva -->
     <Button
         android:id="@+id/btnConfirm"
         android:layout_width="214dp"
         android:layout_height="wrap_content"
         android:text="Confirmar reserva"
-        android:backgroundTint="@color/brand_celeste"
-        />
+        android:backgroundTint="@color/brand_celeste" />
 </LinearLayout>
