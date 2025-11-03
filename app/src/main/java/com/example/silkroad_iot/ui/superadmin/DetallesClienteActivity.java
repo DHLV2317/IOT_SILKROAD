@@ -47,26 +47,43 @@ public class DetallesClienteActivity extends AppCompatActivity {
         binding.inputPassword.setText(cliente.getPassword());
         binding.inputPasswordRepeat.setText(cliente.getPassword());
 
-        updateEstadoUI(true); // si usas un campo 'active' puedes leerlo y reflejarlo
-
+        if(cliente.isActive()){
+            binding.en.setBackgroundColor(getResources().getColor(R.color.green, null));
+            binding.di.setBackgroundColor(getResources().getColor(R.color.base, null));
+        }else{
+            binding.en.setBackgroundColor(getResources().getColor(R.color.base, null));
+            binding.di.setBackgroundColor(getResources().getColor(R.color.red, null));
+        }
         binding.en.setOnClickListener(v -> setActive(true));
         binding.di.setOnClickListener(v -> setActive(false));
+
         binding.button.setOnClickListener(this::guardar);
+
+        setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    private void updateEstadoUI(boolean activo) {
+    /*private void updateEstadoUI(boolean activo) {
         int verde = ContextCompat.getColor(this, R.color.brand_verde);
         int rojo  = ContextCompat.getColor(this, R.color.red);
         int base  = ContextCompat.getColor(this, R.color.brand_celeste);
         binding.en.setBackgroundColor(activo ? verde : base);
         binding.di.setBackgroundColor(activo ? base  : rojo);
-    }
+    }*/
 
     private void setActive(boolean active){
-        db.collection("users").document(docId)
+        //db.collection("users").document(docId)
+        db.collection("usuarios").document(docId)
                 .update("active", active)
-                .addOnSuccessListener(v -> { updateEstadoUI(active); Toast.makeText(this, "Estado actualizado", Toast.LENGTH_SHORT).show(); })
+                .addOnSuccessListener(v -> Toast.makeText(this, "Estado actualizado", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        if(active){
+            binding.en.setBackgroundColor(getResources().getColor(R.color.green, null));
+            binding.di.setBackgroundColor(getResources().getColor(R.color.base, null));
+        }else{
+            binding.en.setBackgroundColor(getResources().getColor(R.color.base, null));
+            binding.di.setBackgroundColor(getResources().getColor(R.color.red, null));
+        }
     }
 
     private void guardar(View view) {
@@ -105,16 +122,21 @@ public class DetallesClienteActivity extends AppCompatActivity {
 
         boolean emailChange = !correo.equals(docId);
         if (emailChange) {
-            db.collection("users").document(docId).delete()
-                    .addOnSuccessListener(v1 -> db.collection("users").document(correo).set(up)
+            //db.collection("users").document(docId).delete()
+            db.collection("usuarios").document(docId).delete()
+                    //.addOnSuccessListener(v1 -> db.collection("users").document(correo).set(up)
+                    .addOnSuccessListener(v1 -> db.collection("usuarios").document(correo).set(up)
                             .addOnSuccessListener(v2 -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                             .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()))
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         } else {
-            db.collection("users").document(docId).update(up)
+            //db.collection("users").document(docId).update(up)
+            db.collection("usuarios").document(docId).update(up)
                     .addOnSuccessListener(v -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         }
+        startActivity(new Intent(this, ClientesActivity.class));
+        finish();
     }
 
     @Override public boolean onCreateOptionsMenu(Menu menu) {

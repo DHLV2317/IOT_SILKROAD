@@ -7,14 +7,23 @@
     android:layout_height="match_parent"
     tools:context=".ui.superadmin.DetallesLogActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="409dp"
+        android:layout_height="wrap_content"
+        android:background="@color/base"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="20dp"
 
-        android:layout_marginBottom="632dp"
         android:letterSpacing="0.02"
         android:shadowColor="@color/black"
         android:shadowDx="1"
@@ -27,8 +36,7 @@
         android:typeface="sans"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.1" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
 
     <TextView
@@ -63,7 +71,7 @@
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowRadius="2"
-        android:text="Hora:"
+        android:text="Usuario:"
         android:textAllCaps="false"
         android:textColor="@color/gris"
         android:textSize="14sp"
@@ -82,7 +90,7 @@
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowRadius="2"
-        android:text="Usuario:"
+        android:text=""
         android:textAllCaps="false"
         android:textColor="@color/gris"
         android:textSize="14sp"
@@ -112,6 +120,7 @@
 
     <TextView
         android:id="@+id/textView12"
+        android:layout_marginStart="5dp"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
         android:layout_marginBottom="16dp"
@@ -134,7 +143,7 @@
         android:id="@+id/textView10"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
-
+        android:layout_marginStart="5dp"
         android:layout_marginBottom="16dp"
         android:letterSpacing="0.02"
         android:shadowColor="@color/black"
@@ -155,14 +164,14 @@
         android:id="@+id/textView14"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
-
+        android:layout_marginStart="5dp"
         android:layout_marginBottom="16dp"
         android:letterSpacing="0.02"
         android:shadowColor="@color/black"
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowRadius="2"
-        android:text="Evento:"
+        android:text=""
         android:textAllCaps="false"
         android:textColor="@color/gris"
         android:textSize="14sp"
@@ -198,7 +207,7 @@
         android:id="@+id/textView13"
         android:layout_width="wrap_content"
         android:layout_height="25dp"
-
+        android:layout_marginStart="5dp"
         android:layout_marginBottom="16dp"
         android:letterSpacing="0.02"
         android:shadowColor="@color/black"

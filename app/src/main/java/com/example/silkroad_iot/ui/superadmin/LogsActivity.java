@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -106,14 +107,14 @@ public class LogsActivity extends AppCompatActivity implements NavigationView.On
         private final List<LogItem> items;
         LogsAdapter(List<LogItem> items){ this.items = items; }
         @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int v) {
-            View view = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_2, p, false);
+            View view = LayoutInflater.from(p.getContext()).inflate(R.layout.sp_administrador_rv, p, false);
             return new VH(view);
         }
         @Override public void onBindViewHolder(@NonNull VH h, int pos) {
             LogItem l = items.get(pos);
             h.t1.setText((l.tipo == null ? "" : l.tipo) + " de " + (l.tipoUsuario == null ? "" : l.tipoUsuario));
             h.t2.setText(l.nombre == null ? "" : l.nombre);
-            h.itemView.setOnClickListener(v -> {
+            h.card.setOnClickListener(v -> {
                 Intent i = new Intent(v.getContext(), DetallesLogActivity.class);
                 i.putExtra("tipo", l.tipo);
                 i.putExtra("tipoUsuario", l.tipoUsuario);
@@ -127,7 +128,14 @@ public class LogsActivity extends AppCompatActivity implements NavigationView.On
         }
         @Override public int getItemCount(){ return items.size(); }
         static class VH extends RecyclerView.ViewHolder {
-            TextView t1, t2; VH(@NonNull View v){ super(v); t1=v.findViewById(android.R.id.text1); t2=v.findViewById(android.R.id.text2); }
+            TextView t1, t2;
+            CardView card;
+            VH(@NonNull View v){
+                super(v);
+                t1=v.findViewById(R.id.textView1);
+                t2=v.findViewById(R.id.textView2);
+                card=v.findViewById(R.id.cardView1);
+            }
         }
     }
 }

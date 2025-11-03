@@ -13,6 +13,8 @@ public class User implements Serializable {
     private String password;
     private Role role;
 
+    private boolean active;
+
     // IDs externos (Firebase / Firestore)
     private String uid;         // ID del usuario en Firebase Auth
     private String companyId;   // para admins/empresas
@@ -128,5 +130,13 @@ public class User implements Serializable {
                 ", guideApproved=" + guideApproved +
                 ", guideApprovalStatus='" + guideApprovalStatus + '\'' +
                 '}';
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,6 +38,7 @@ public class GuiasActivity extends AppCompatActivity implements NavigationView.O
     private NavigationView navigationView;
     private GuidesAdapter adapter;
     private FirebaseFirestore db;
+    private static final String TAG = "GUIAS";
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +69,8 @@ public class GuiasActivity extends AppCompatActivity implements NavigationView.O
 
     private void cargarLista() {
         data.clear();
-        db.collection("users")
+        //db.collection("users")
+        db.collection("usuarios")
                 .whereEqualTo("role", "GUIDE")
                 .whereEqualTo("guideApproved", true)
                 .get()
@@ -97,18 +100,24 @@ public class GuiasActivity extends AppCompatActivity implements NavigationView.O
         private final List<User> items;
         GuidesAdapter(List<User> items){ this.items = items; }
         @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int v) {
-            View view = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_2, p, false);
+            View view = LayoutInflater.from(p.getContext()).inflate(R.layout.sp_administrador_rv, p, false);
             return new VH(view);
         }
         @Override public void onBindViewHolder(@NonNull VH h, int pos) {
             User u = items.get(pos);
             h.t1.setText(u.getName() == null ? "(Sin nombre)" : u.getName());
             h.t2.setText(u.getEmail() == null ? "" : u.getEmail());
+            h.card.setOnClickListener(v -> {
+                Intent i = new Intent(v.getContext(), DetallesGuiaActivity.class);
+                i.putExtra("guia", u);
+                v.getContext().startActivity(i);
+            });
         }
         @Override public int getItemCount(){ return items.size(); }
         static class VH extends RecyclerView.ViewHolder {
             TextView t1, t2;
-            VH(@NonNull View v){ super(v); t1=v.findViewById(android.R.id.text1); t2=v.findViewById(android.R.id.text2); }
+            CardView card;
+            VH(@NonNull View v){ super(v); t1=v.findViewById(R.id.textView1); t2=v.findViewById(R.id.textView2); card = v.findViewById(R.id.cardView1);}
         }
     }
 }

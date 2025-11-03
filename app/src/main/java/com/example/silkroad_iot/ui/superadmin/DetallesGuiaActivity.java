@@ -47,6 +47,9 @@ public class DetallesGuiaActivity extends AppCompatActivity {
         binding.inputLanguages.setText(guia.getLanguages());
         binding.inputPassword.setText(guia.getPassword());
 
+        setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         updateEstadoUI(true);
         binding.en.setOnClickListener(v -> setActive(true));
         binding.di.setOnClickListener(v -> setActive(false));
@@ -56,13 +59,14 @@ public class DetallesGuiaActivity extends AppCompatActivity {
     private void updateEstadoUI(boolean active) {
         int verde = ContextCompat.getColor(this, R.color.brand_verde);
         int rojo  = ContextCompat.getColor(this, R.color.red);
-        int base  = ContextCompat.getColor(this, R.color.brand_celeste);
+        int base  = ContextCompat.getColor(this, R.color.base2);
         binding.en.setBackgroundColor(active ? verde : base);
         binding.di.setBackgroundColor(active ? base  : rojo);
     }
 
     private void setActive(boolean active){
-        db.collection("users").document(docId)
+        //db.collection("users").document(docId)
+        db.collection("usuarios").document(docId)
                 .update("active", active)
                 .addOnSuccessListener(v -> { updateEstadoUI(active); Toast.makeText(this, "Estado actualizado", Toast.LENGTH_SHORT).show(); })
                 .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
@@ -104,13 +108,16 @@ public class DetallesGuiaActivity extends AppCompatActivity {
 
         boolean emailChange = !email.equals(docId);
         if (emailChange) {
-            db.collection("users").document(docId).delete()
-                    .addOnSuccessListener(v1 -> db.collection("users").document(email).set(up)
+            //db.collection("users").document(docId).delete()
+            db.collection("usuarios").document(docId).delete()
+                    //.addOnSuccessListener(v1 -> db.collection("users").document(email).set(up)
+                    .addOnSuccessListener(v1 -> db.collection("usuarios").document(email).set(up)
                             .addOnSuccessListener(v2 -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                             .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()))
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         } else {
-            db.collection("users").document(docId).update(up)
+            //db.collection("users").document(docId).update(up)
+            db.collection("usuarios").document(docId).update(up)
                     .addOnSuccessListener(v -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         }

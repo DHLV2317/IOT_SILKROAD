@@ -8,20 +8,22 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.User;
-import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBinding;
 import com.google.android.material.navigation.NavigationView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -32,6 +34,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBinding;
+
 
 /**
  * Lista de administradores usando SOLO com.example.silkroad_iot.data.User
@@ -55,6 +59,7 @@ public class AdministradoresActivity extends AppCompatActivity
 
     // Datos y adapter (User)
     private final List<User> adminList = new ArrayList<>();
+    private final List<User> adminListCompleta = new ArrayList<>();
     private AdminsAdapter adapter;
 
     @Override
@@ -89,11 +94,46 @@ public class AdministradoresActivity extends AppCompatActivity
 
         // Cargar admins
         cargarAdministradoresDesdeFirestore();
+
+        binding.searchInputEditText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Cada vez que el texto cambia se filtra la lista.
+                // s.toString() contiene el texto actual del campo de búsqueda.
+                filtrarLista(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+        });
+    }
+    private void filtrarLista(String texto) {
+
+        List<User> listaFiltrada = new ArrayList<>();
+
+        for (User usuario : adminListCompleta) {
+            if (usuario.getName().toLowerCase().contains(texto.toLowerCase()) ||
+                    usuario.getEmail().toLowerCase().contains(texto.toLowerCase())) {
+                listaFiltrada.add(usuario);
+            }
+        }
+
+        adminList.clear();
+        adminList.addAll(listaFiltrada);
+
+        adapter.notifyDataSetChanged();
     }
 
     private void cargarAdministradoresDesdeFirestore() {
         adminList.clear();
-        db.collection("users")
+        adminListCompleta.clear();
+        //db.collection("users")
+        db.collection("usuarios")
                 .whereEqualTo("role", "ADMIN") // en Firestore el rol está almacenado como string
                 .get()
                 .addOnSuccessListener(snap -> {
@@ -110,6 +150,9 @@ public class AdministradoresActivity extends AppCompatActivity
                         if (d.contains("phone"))    u.setPhone(String.valueOf(d.get("phone")));
                         if (d.contains("address"))  u.setAddress(String.valueOf(d.get("address")));
                         if (d.contains("uid"))      u.setUid(String.valueOf(d.get("uid")));
+                        if (d.contains("password")) u.setPassword(String.valueOf(d.get("password")));
+                        if (d.contains("companyId"))    u.setCompanyId(String.valueOf(d.get("companyId")));
+                        if (d.contains("active"))       u.setActive(d.getBoolean("active"));
 
                         // Rol para compatibilidad local (no imprescindible para mostrar)
                         try {
@@ -123,6 +166,8 @@ public class AdministradoresActivity extends AppCompatActivity
                         }
 
                         adminList.add(u);
+                        adminListCompleta.add(u);
+
                         Log.d(TAG, "Admin: " + u.getName() + " <" + u.getEmail() + ">");
                     }
                     adapter.notifyDataSetChanged();
@@ -178,7 +223,7 @@ public class AdministradoresActivity extends AppCompatActivity
 
         @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext())
-                    .inflate(android.R.layout.simple_list_item_2, parent, false);
+                    .inflate(R.layout.sp_administrador_rv, parent, false);
             return new VH(v);
         }
 
@@ -186,16 +231,23 @@ public class AdministradoresActivity extends AppCompatActivity
             User u = data.get(pos);
             h.txt1.setText(u.getName() == null || u.getName().isEmpty() ? "(Sin nombre)" : u.getName());
             h.txt2.setText(u.getEmail() == null || u.getEmail().isEmpty() ? "(Sin email)" : u.getEmail());
+            h.card.setOnClickListener(v -> {
+                Intent i = new Intent(v.getContext(), DetallesAdministradorActivity.class);
+                i.putExtra("admin", u);
+                v.getContext().startActivity(i);
+            });
         }
 
         @Override public int getItemCount(){ return data.size(); }
 
         static class VH extends RecyclerView.ViewHolder {
             TextView txt1, txt2;
+            CardView card;
             VH(@NonNull View itemView) {
                 super(itemView);
-                txt1 = itemView.findViewById(android.R.id.text1);
-                txt2 = itemView.findViewById(android.R.id.text2);
+                txt1 = itemView.findViewById(R.id.textView1);
+                txt2 = itemView.findViewById(R.id.textView2);
+                card = itemView.findViewById(R.id.cardView1);
             }
         }
     }

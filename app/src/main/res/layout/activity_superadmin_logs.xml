@@ -5,7 +5,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.superadmin.AdministradoresActivity"
+    tools:context=".ui.superadmin.LogsActivity"
     tools:openDrawer="start">
 
     <!-- Contenido Principal de la Pantalla -->
@@ -55,7 +55,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="480dp"
+                android:layout_height="550dp"
                 android:layout_marginTop="12dp"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -64,22 +64,7 @@
                 app:spanCount="1" />
 
 
-            <Button
-                android:id="@+id/button"
-                android:layout_width="350dp"
-                android:layout_height="65dp"
-                android:layout_marginTop="24dp"
-                android:backgroundTint="@color/seda"
-                android:onClick="crearAdministrador"
-                android:text="Añadir +"
-                android:textAllCaps="true"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                app:cornerRadius="14dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.508"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/recyclerView" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

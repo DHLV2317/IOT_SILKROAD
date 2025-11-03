@@ -2,6 +2,7 @@ package com.example.silkroad_iot.ui.superadmin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -38,6 +40,8 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
     private ClientsAdapter adapter;
     private FirebaseFirestore db;
 
+    private static final String TAG = "CLIENTES";
+
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySuperadminClientesBinding.inflate(getLayoutInflater());
@@ -58,16 +62,15 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
         binding.recyclerView.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-    }
 
-    @Override protected void onStart() {
-        super.onStart();
         cargarLista();
     }
 
+
     private void cargarLista() {
         data.clear();
-        db.collection("users")
+        //db.collection("users")
+        db.collection("usuarios")
                 .whereEqualTo("role", "CLIENT")
                 .get()
                 .addOnSuccessListener(snap -> {
@@ -76,10 +79,17 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
                         // fallback mínimos
                         if (u.getEmail() == null) u.setEmail(String.valueOf(d.get("email")));
                         if (u.getName()  == null) u.setName(String.valueOf(d.get("name")));
+                        if (u.getLastName() == null) u.setLastName(String.valueOf(d.get("lastName")));
+                        if (u.getDocumentType() == null) u.setDocumentType(String.valueOf(d.get("documentType")));
+                        if (u.getDocumentNumber() == null) u.setDocumentNumber(String.valueOf(d.get("documentNumber")));
+                        if (u.getBirthDate() == null) u.setBirthDate(String.valueOf(d.get("birthDate")));
+                        if (u.getPhone() == null) u.setPhone(String.valueOf(d.get("phone")));
+                        if (u.getAddress() == null) u.setAddress(String.valueOf(d.get("address")));
+                        if (u.getPassword() == null) u.setPassword(String.valueOf(d.get("password")));
                         data.add(u);
                     }
                     adapter.notifyDataSetChanged();
-                });
+                }).addOnFailureListener(e -> Log.e(TAG, "Error cargando admins", e));
     }
 
     @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -102,7 +112,7 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
 
         @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int v) {
             View view = LayoutInflater.from(p.getContext())
-                    .inflate(android.R.layout.simple_list_item_2, p, false);
+                    .inflate(R.layout.sp_administrador_rv, p, false);
             return new VH(view);
         }
 
@@ -110,13 +120,24 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
             User u = items.get(pos);
             h.t1.setText(u.getName() == null || u.getName().isEmpty() ? "(Sin nombre)" : u.getName());
             h.t2.setText(u.getEmail() == null || u.getEmail().isEmpty() ? "(Sin email)" : u.getEmail());
+            h.card.setOnClickListener(v -> {
+                Intent i = new Intent(v.getContext(), DetallesClienteActivity.class);
+                i.putExtra("cliente", u);
+                v.getContext().startActivity(i);
+            });
         }
 
         @Override public int getItemCount() { return items.size(); }
 
         static class VH extends RecyclerView.ViewHolder {
             TextView t1, t2;
-            VH(@NonNull View v){ super(v); t1 = v.findViewById(android.R.id.text1); t2 = v.findViewById(android.R.id.text2); }
+            CardView card;
+            VH(@NonNull View v){
+                super(v);
+                t1 = v.findViewById(R.id.textView1);
+                t2 = v.findViewById(R.id.textView2);
+                card = v.findViewById(R.id.cardView1);
+            }
         }
     }
 }

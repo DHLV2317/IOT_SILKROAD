@@ -39,12 +39,16 @@ public class DetallesSolicitudGuiaActivity extends AppCompatActivity {
         binding.textInputLayout8.getEditText().setText(guia.getAddress());
         binding.textInputLayout9.getEditText().setText(guia.getLanguages());
 
+        setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         binding.en.setOnClickListener(v -> setAprobado(true));
         binding.di.setOnClickListener(v -> setAprobado(false));
     }
 
     private void setAprobado(boolean aprobado){
-        db.collection("users").document(docId)
+        //db.collection("users").document(docId)
+        db.collection("usuarios").document(docId)
                 .update("guideApproved", aprobado,
                         "guideApprovalStatus", aprobado ? "APPROVED" : "REJECTED")
                 .addOnSuccessListener(v -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
