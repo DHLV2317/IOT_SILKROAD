@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -22,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.User;
 import com.google.android.material.navigation.NavigationView;
@@ -153,6 +155,7 @@ public class AdministradoresActivity extends AppCompatActivity
                         if (d.contains("password")) u.setPassword(String.valueOf(d.get("password")));
                         if (d.contains("companyId"))    u.setCompanyId(String.valueOf(d.get("companyId")));
                         if (d.contains("active"))       u.setActive(d.getBoolean("active"));
+                        if (d.contains("fotoUrl")) u.setFotoUrl(String.valueOf(d.get("fotoUrl")));
 
                         // Rol para compatibilidad local (no imprescindible para mostrar)
                         try {
@@ -231,6 +234,11 @@ public class AdministradoresActivity extends AppCompatActivity
             User u = data.get(pos);
             h.txt1.setText(u.getName() == null || u.getName().isEmpty() ? "(Sin nombre)" : u.getName());
             h.txt2.setText(u.getEmail() == null || u.getEmail().isEmpty() ? "(Sin email)" : u.getEmail());
+            if(u.getFotoUrl() != null && !u.getFotoUrl().isEmpty()){
+                Glide.with(h.imageView1.getContext())
+                        .load(u.getFotoUrl())
+                        .into(h.imageView1);
+            }
             h.card.setOnClickListener(v -> {
                 Intent i = new Intent(v.getContext(), DetallesAdministradorActivity.class);
                 i.putExtra("admin", u);
@@ -243,11 +251,14 @@ public class AdministradoresActivity extends AppCompatActivity
         static class VH extends RecyclerView.ViewHolder {
             TextView txt1, txt2;
             CardView card;
+            ImageView imageView1;
+
             VH(@NonNull View itemView) {
                 super(itemView);
                 txt1 = itemView.findViewById(R.id.textView1);
                 txt2 = itemView.findViewById(R.id.textView2);
                 card = itemView.findViewById(R.id.cardView1);
+                imageView1 = itemView.findViewById(R.id.imageView1);
             }
         }
     }
