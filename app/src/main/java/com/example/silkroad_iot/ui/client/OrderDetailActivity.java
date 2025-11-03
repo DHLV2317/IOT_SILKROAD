@@ -2,19 +2,15 @@ package com.example.silkroad_iot.ui.client;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.Stop;
+import com.example.silkroad_iot.data.ParadaFB;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
-import com.example.silkroad_iot.data.TourOrder;
 import com.example.silkroad_iot.databinding.ActivityOrderDetailBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -26,79 +22,67 @@ import java.util.Locale;
 
 public class OrderDetailActivity extends AppCompatActivity {
 
-    private TextView tvCompany, tvTourName, tvTourPrice, tvQuantity, tvServices, tvTotalPrice,
-            tvDepartment, tvTourDate, tvDuration, tvStatus, tvHour;
-    private ImageView imgQrCode;
+    private ActivityOrderDetailBinding b;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private final SimpleDateFormat hourFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        b = ActivityOrderDetailBinding.inflate(getLayoutInflater());
+        setContentView(b.getRoot());
+
+        setSupportActionBar(b.toolbar);
+        if (getSupportActionBar()!=null) getSupportActionBar().setTitle("Detalle de Orden");
 
         String historialId = getIntent().getStringExtra("historialId");
-
-        super.onCreate(savedInstanceState);
-        ActivityOrderDetailBinding b = ActivityOrderDetailBinding.inflate(getLayoutInflater());
-        setContentView(b.getRoot());
-        setSupportActionBar(b.toolbar);
-        getSupportActionBar().setTitle("Detalle de Orden");
-
-        bindViews();
-
-        // 👇 Obtener objetos desde el Intent
         TourFB tour = (TourFB) getIntent().getSerializableExtra("tourFB");
         TourHistorialFB historial = (TourHistorialFB) getIntent().getSerializableExtra("historialFB");
 
-        if (tour == null || historial == null) {
-            finish();
-            return;
-        }
+        if (tour == null || historial == null) { finish(); return; }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        SimpleDateFormat hourFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        b.tvCompany.setText(tour.getDisplayName());
+        b.tvTourName.setText(tour.getDisplayName());
+        b.tvTourPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice()));
+        b.tvQuantity.setText("Cantidad de usuarios: 1");
+        b.tvServices.setText("Servicios adicionales :     S./0.00");
+        b.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice()));
+        b.tvDepartment.setText("Departamento por definir");
+        b.tvDuration.setText("Tiempo: " + (tour.getDuration() == null ? "Por definir" : tour.getDuration()));
 
-        // Mostrar datos
-        tvCompany.setText(tour.getNombre());
-        tvTourName.setText(tour.getNombre());
-        tvTourPrice.setText(String.format("S/. %.2f", tour.getPrecio()));
-        tvQuantity.setText("Cantidad de usuarios: 1");
-        tvServices.setText("Servicios adicionales :     S./0.00");
-        tvTotalPrice.setText(String.format("S/. %.2f", tour.getPrecio()));
-        tvDepartment.setText("Departamento por definir");
-        tvDuration.setText("Tiempo: Por definir");
-
-        // Fecha del tour
         if (historial.getFechaRealizado() != null) {
-            tvTourDate.setText("Fecha: " + dateFormat.format(historial.getFechaRealizado()));
-            tvHour.setText(hourFormat.format(historial.getFechaRealizado()));
+            b.tvTourDate.setText("Fecha: " + dateFormat.format(historial.getFechaRealizado()));
+            b.tvHour.setText(hourFormat.format(historial.getFechaRealizado()));
         } else {
-            tvTourDate.setText("Fecha: -");
-            tvHour.setText("Por definir");
+            b.tvTourDate.setText("Fecha: -");
+            b.tvHour.setText("Por definir");
         }
 
-        // Estado
-        tvStatus.setText("Estado: " + historial.getEstado());
+        b.tvStatus.setText("Estado: " + (historial.getEstado() == null ? "desconocido" : historial.getEstado()));
+        b.imgQrCode.setImageResource(R.drawable.qr_code_24);
 
-        // QR
-        imgQrCode.setImageResource(R.drawable.qr_code_24);
-
-        // Botones
-        findViewById(R.id.btnPlaces).setOnClickListener(v -> {
-            if (tour == null) return;
-
+        // Ver Paradas
+        b.btnPlaces.setOnClickListener(v -> {
+            if (tour.getId() == null || tour.getId().isEmpty()) {
+                Toast.makeText(this, "Tour sin ID", Toast.LENGTH_SHORT).show();
+                return;
+            }
             FirebaseFirestore.getInstance()
-                    .collection("tours")
-                    .document(tour.getId())
-                    .collection("paradas") // subcolección
+                    .collection("tours").document(tour.getId())
+                    .collection("paradas")
+                    .orderBy("orden")
                     .get()
                     .addOnSuccessListener(snapshot -> {
-                        List<Stop> stops = new ArrayList<>();
+                        List<ParadaFB> paradas = new ArrayList<>();
                         for (QueryDocumentSnapshot doc : snapshot) {
-                            stops.add(doc.toObject(Stop.class));
+                            ParadaFB p = doc.toObject(ParadaFB.class);
+                            p.setId(doc.getId());
+                            paradas.add(p);
                         }
-
-                        tour.setStops(stops); // llenar el tour con las paradas
-                        Intent intent = new Intent(OrderDetailActivity.this, StopsActivity.class);
-                        intent.putExtra("tour", tour);
-                        startActivity(intent);
+                        tour.setParadas(paradas);
+                        Intent it = new Intent(this, StopsActivity.class); // puedes renombrar luego a ParadasActivity
+                        it.putExtra("tour", tour);
+                        startActivity(it);
                     })
                     .addOnFailureListener(e -> {
                         e.printStackTrace();
@@ -106,55 +90,28 @@ public class OrderDetailActivity extends AppCompatActivity {
                     });
         });
 
-
-        findViewById(R.id.btnCancelar).setOnClickListener(v -> {
-            new AlertDialog.Builder(OrderDetailActivity.this)
+        // Cancelar reserva
+        b.btnCancelar.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
                     .setTitle("Confirmar cancelación")
                     .setMessage("¿Estás seguro de que quieres cancelar esta reserva?")
                     .setPositiveButton("Sí, cancelar", (dialog, which) -> {
-                        // ✅ Acción cuando el usuario confirma
-                        tvStatus.setText("Estado: CANCELADO");
-
-                        if (historialId == null || historialId.isEmpty()) {
-                            finish();
-                            return;
-                        }
-
+                        b.tvStatus.setText("Estado: CANCELADO");
+                        if (historialId == null || historialId.isEmpty()) { finish(); return; }
                         FirebaseFirestore.getInstance()
-                                .collection("tours_history")
-                                .document(historialId)
+                                .collection("tours_history").document(historialId)
                                 .update("estado", "cancelado")
                                 .addOnSuccessListener(aVoid -> {
-                                    // 🔄 Ir a ClienteHomeActivity
-                                    Intent intent = new Intent(OrderDetailActivity.this, ClientHomeActivity.class);
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    startActivity(intent);
+                                    Intent it = new Intent(this, ClientHomeActivity.class);
+                                    it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(it);
                                     finish();
                                 })
-                                .addOnFailureListener(e -> {
-                                    tvStatus.setText("Estado: " + (historial.getEstado() != null ? historial.getEstado() : "desconocido"));
-                                });
+                                .addOnFailureListener(e ->
+                                        b.tvStatus.setText("Estado: " + (historial.getEstado() == null ? "desconocido" : historial.getEstado())));
                     })
-                    .setNegativeButton("No", null) // ❌ No hacer nada si cancela
+                    .setNegativeButton("No", null)
                     .show();
         });
-
-
-    }
-
-
-    private void bindViews() {
-        tvCompany = findViewById(R.id.tvCompany);
-        tvTourName = findViewById(R.id.tvTourName);
-        tvTourPrice = findViewById(R.id.tvTourPrice);
-        tvQuantity = findViewById(R.id.tvQuantity);
-        tvServices = findViewById(R.id.tvServices);
-        tvTotalPrice = findViewById(R.id.tvTotalPrice);
-        tvDepartment = findViewById(R.id.tvDepartment);
-        tvTourDate = findViewById(R.id.tvTourDate);
-        tvDuration = findViewById(R.id.tvDuration);
-        tvStatus = findViewById(R.id.tvStatus);
-        tvHour = findViewById(R.id.tvHour);
-        imgQrCode = findViewById(R.id.imgQrCode);
     }
 }

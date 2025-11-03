@@ -3,26 +3,29 @@ package com.example.silkroad_iot.ui.admin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.AdminRepository;
-import com.example.silkroad_iot.data.AdminRepository.Tour;
+import com.example.silkroad_iot.data.ParadaFB;
+import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.databinding.ActivityAdminTourDetailViewBinding;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class AdminTourDetailViewActivity extends AppCompatActivity {
 
     private ActivityAdminTourDetailViewBinding b;
-    private final AdminRepository repo = AdminRepository.get();
+    private FirebaseFirestore db;
+    private TourFB tour; // modelo cargado
     private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
     @Override
@@ -32,118 +35,172 @@ public class AdminTourDetailViewActivity extends AppCompatActivity {
         setContentView(b.getRoot());
 
         setSupportActionBar(b.toolbar);
-        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar()!=null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         b.toolbar.setNavigationOnClickListener(v -> finish());
         setTitle("Detalle del tour");
 
-        int index = getIntent().getIntExtra("index", -1);
-        final Tour tour = repo.getTourAt(index);   // ✅ acceso seguro
-        if (tour == null) { finish(); return; }
+        db = FirebaseFirestore.getInstance();
 
-        // --- Datos básicos ---
-        b.tName.setText(nz(tour.name));
-        b.tDesc.setText(nz(tour.description));
-        b.tDuration.setText("Duración: " + nz(getStringField(tour, "duration")));
-        b.tLangs.setText("Idiomas: " + nz(getStringField(tour, "langs")));
+        String tourId = getIntent().getStringExtra("tourId");
+        if (TextUtils.isEmpty(tourId)) {
+            // fallback: si venía como objeto
+            tour = (TourFB) getIntent().getSerializableExtra("tour");
+            if (tour == null || TextUtils.isEmpty(tour.getId())) { finish(); return; }
+            bindTour();
+            loadParadas(tour.getId());
+        } else {
+            showStopsLoading(true, null); // por si tarda la carga inicial
+            db.collection("tours").document(tourId).get()
+                    .addOnSuccessListener(d -> {
+                        tour = d.toObject(TourFB.class);
+                        if (tour == null) { finish(); return; }
+                        if (TextUtils.isEmpty(tour.getId())) tour.setId(d.getId());
+                        bindTour();
+                        loadParadas(tour.getId());
+                    })
+                    .addOnFailureListener(e -> {
+                        showStopsLoading(false, getString(R.string.error_loading_tour));
+                        Snackbar.make(b.getRoot(), "Error cargando tour: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                        finish();
+                    });
+        }
 
-        Date df = getDateField(tour, "dateFrom");
-        Date dt = getDateField(tour, "dateTo");
-        String rango = (df != null && dt != null)
-                ? (sdf.format(df) + " - " + sdf.format(dt))
-                : (tour.FechaTour != null ? sdf.format(tour.FechaTour) : "—");
-        b.tDates.setText("Fechas: " + rango);
+        // Editar (abre el form de edición/creación)
+        b.btnEdit.setOnClickListener(v -> {
+            if (tour == null) return;
+            Intent it = new Intent(this, AdminTourDetailActivity.class);
+            it.putExtra("id", tour.getId());
+            startActivity(it);
+        });
 
-        b.tPrice.setText("S/ " + tour.price);
-        b.tPeople.setText(String.valueOf(tour.people));
+        // Eliminar
+        b.btnDelete.setOnClickListener(v -> {
+            if (tour == null || TextUtils.isEmpty(tour.getId())) return;
+            b.btnDelete.setEnabled(false);
+            db.collection("tours").document(tour.getId())
+                    .delete()
+                    .addOnSuccessListener(unused -> {
+                        Snackbar.make(b.getRoot(), "Tour eliminado", Snackbar.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        b.btnDelete.setEnabled(true);
+                        Snackbar.make(b.getRoot(), "Error: " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                    });
+        });
+    }
 
-        // --- Imagen ---
-        if (TextUtils.isEmpty(tour.imageUrl)) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // si vuelves de editar, recarga paradas
+        if (tour != null && !TextUtils.isEmpty(tour.getId())) {
+            loadParadas(tour.getId());
+        }
+    }
+
+    private void bindTour() {
+        // Nombre y descripción
+        b.tName.setText(nz(tour.getDisplayName()));
+        b.tDesc.setText(nz(tour.getDescription()));
+
+        // Duración e idiomas
+        b.tDuration.setText("Duración: " + (TextUtils.isEmpty(tour.getDuration()) ? "—" : tour.getDuration()));
+        b.tLangs.setText("Idiomas: " + (TextUtils.isEmpty(tour.getLangs()) ? "—" : tour.getLangs()));
+
+        // Fechas
+        String fechas = "—";
+        if (tour.getDateFrom() != null && tour.getDateTo() != null) {
+            fechas = sdf.format(tour.getDateFrom()) + " - " + sdf.format(tour.getDateTo());
+        }
+        b.tDates.setText("Fechas: " + fechas);
+
+        // Precio / Personas
+        b.tPrice.setText(String.format(Locale.getDefault(), "S/ %.2f", tour.getDisplayPrice()));
+        b.tPeople.setText(String.valueOf(tour.getDisplayPeople()));
+
+        // Imagen
+        String img = tour.getDisplayImageUrl();
+        if (TextUtils.isEmpty(img)) {
             Glide.with(this).load(R.drawable.ic_menu_24).into(b.img);
         } else {
-            Glide.with(this).load(tour.imageUrl)
+            Glide.with(this).load(img)
                     .placeholder(R.drawable.ic_menu_24)
                     .error(R.drawable.ic_menu_24)
                     .into(b.img);
         }
 
-        // --- Paradas -> boxStops ---
-        b.boxStops.removeAllViews();
-        List<?> stops = getListField(tour, "stops");
-        if (stops != null) {
-            for (Object s : stops) {
-                String address = nz(getStringField(s, "address"));
-                Number minutes = getNumberField(s, "minutes");
-                String m = minutes == null ? "0" : String.valueOf(minutes);
-                Chip chip = new Chip(this);
-                chip.setText(address + " · " + m + " min");
-                chip.setChipBackgroundColorResource(R.color.pill_gray);
-                chip.setTextAppearance(
-                        com.google.android.material.R.style.TextAppearance_MaterialComponents_Body2);
-                b.boxStops.addView(chip);
-            }
-        }
+        // Guía / Pago
+        b.tGuide.setText(TextUtils.isEmpty(tour.getAssignedGuideName()) ? "—" : tour.getAssignedGuideName());
+        b.tPayment.setText(tour.getPaymentProposal() != null && tour.getPaymentProposal() > 0
+                ? String.format(Locale.getDefault(), "S/ %.2f", tour.getPaymentProposal())
+                : "—");
 
-        // --- Servicios -> boxServices ---
+        // Servicios
         b.boxServices.removeAllViews();
-        List<?> services = getListField(tour, "services");
-        if (services != null) {
-            for (Object sv : services) {
-                String name = nz(getStringField(sv, "name"));
-                Boolean included = getBooleanField(sv, "included");
-                Number price = getNumberField(sv, "price");
-                String label = name + (included != null && included
-                        ? " · Incluido"
+        List<TourFB.ServiceFB> services = tour.getServices();
+        if (services != null && !services.isEmpty()) {
+            for (TourFB.ServiceFB sv : services) {
+                String name = nz(sv.getName());
+                Boolean included = sv.getIncluded();
+                Double price = sv.getPrice();
+                String label = name + ((included != null && included) ? " · Incluido"
                         : (" · S/ " + (price == null ? "0" : price)));
                 Chip chip = new Chip(this);
                 chip.setText(label);
                 chip.setChipBackgroundColorResource(R.color.pill_gray);
-                chip.setTextAppearance(
-                        com.google.android.material.R.style.TextAppearance_MaterialComponents_Body2);
                 b.boxServices.addView(chip);
             }
         }
-
-        // --- Guía / Pago ---
-        String guideName = getStringField(tour, "assignedGuideName");
-        b.tGuide.setText(TextUtils.isEmpty(guideName) ? "—" : guideName);
-        Number proposal = getNumberField(tour, "paymentProposal");
-        b.tPayment.setText(proposal != null && proposal.doubleValue() > 0 ? "S/ " + proposal : "—");
-
-        // --- Botones ---
-        b.btnEdit.setOnClickListener(v -> {
-            Intent it = new Intent(this, AdminTourWizardActivity.class);
-            it.putExtra("editIndex", index);
-            startActivity(it);
-        });
-
-        b.btnDelete.setOnClickListener(v -> {
-            AdminRepository.Tour toRemove = repo.getTourAt(index);
-            if (toRemove != null) repo.getTours().remove(toRemove);
-            finish();
-        });
     }
 
-    // ---------- Helpers reflexión segura ----------
-    private static String nz(String s) { return s == null ? "" : s; }
-    private static String getStringField(Object obj, String field) {
-        Object v = getFieldValue(obj, field); return v == null ? "" : String.valueOf(v);
+    private void loadParadas(String tourId) {
+        b.boxStops.removeAllViews();
+        showStopsLoading(true, null);
+
+        db.collection("tours").document(tourId).collection("paradas")
+                .orderBy("orden") // si usas el campo "orden"
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap.isEmpty()) {
+                        showStopsLoading(false, getString(R.string.empty_stops));
+                        return;
+                    }
+                    // hay paradas
+                    showStopsLoading(false, null);
+                    for (QueryDocumentSnapshot d : snap) {
+                        ParadaFB p = d.toObject(ParadaFB.class);
+                        p.setId(d.getId());
+
+                        String title = !isEmpty(p.getAddress()) ? p.getAddress() : nz(p.getNombre());
+                        String minutes = (p.getMinutes() == null) ? "0" : String.valueOf(p.getMinutes());
+
+                        Chip chip = new Chip(this);
+                        chip.setText(title + " · " + minutes + " min");
+                        chip.setChipBackgroundColorResource(R.color.pill_gray);
+                        b.boxStops.addView(chip);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showStopsLoading(false, getString(R.string.error_loading_stops));
+                    Snackbar.make(b.getRoot(), "No se pudieron cargar las paradas", Snackbar.LENGTH_SHORT).show();
+                });
     }
-    private static Date getDateField(Object obj, String field) {
-        Object v = getFieldValue(obj, field); return (v instanceof Date) ? (Date) v : null;
+
+    private void showStopsLoading(boolean loading, String emptyMsg) {
+        b.progressStops.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (!loading) {
+            if (emptyMsg != null) {
+                b.tEmptyStops.setText(emptyMsg);
+                b.tEmptyStops.setVisibility(View.VISIBLE);
+            } else {
+                b.tEmptyStops.setVisibility(View.GONE);
+            }
+        } else {
+            b.tEmptyStops.setVisibility(View.GONE);
+        }
     }
-    private static Number getNumberField(Object obj, String field) {
-        Object v = getFieldValue(obj, field); return (v instanceof Number) ? (Number) v : null;
-    }
-    private static Boolean getBooleanField(Object obj, String field) {
-        Object v = getFieldValue(obj, field); return (v instanceof Boolean) ? (Boolean) v : null;
-    }
-    @SuppressWarnings("unchecked")
-    private static List<?> getListField(Object obj, String field) {
-        Object v = getFieldValue(obj, field); return (v instanceof List) ? (List<?>) v : null;
-    }
-    private static Object getFieldValue(Object obj, String field) {
-        if (obj == null) return null;
-        try { Field f = obj.getClass().getDeclaredField(field); f.setAccessible(true); return f.get(obj); }
-        catch (Throwable ignore) { return null; }
-    }
+
+    private static String nz(String s){ return s==null? "" : s; }
+    private static boolean isEmpty(String s){ return s == null || s.trim().isEmpty(); }
 }

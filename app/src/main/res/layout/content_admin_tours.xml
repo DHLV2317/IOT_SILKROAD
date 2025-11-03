@@ -1,36 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="12dp">
+    android:layout_height="match_parent">
 
-    <!-- Buscador -->
-    <com.google.android.material.textfield.TextInputLayout
+    <!-- Header con buscador -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nombre">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/inputSearch"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mis Tours"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@color/brand_dark"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:startIconDrawable="@drawable/ic_search_24"
+                app:startIconTint="@color/brand_celeste">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Buscar por nombre o ciudad"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Lista -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="96dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_gravity="center_horizontal"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"/>
 
-    <!-- Botón grande Añadir + -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnAdd"
+    <!-- Empty & Progress overlay -->
+    <FrameLayout
         android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aún no has creado tours."
+            android:textSize="14sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+    <!-- FAB Añadir -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnAdd"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Añadir +"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/brand_celeste"
-        android:textColor="@android:color/white"/>
-</LinearLayout>
+        android:contentDescription="Añadir tour"
+        app:srcCompat="@drawable/ic_add_24"
+        app:tint="@android:color/white"
+        app:backgroundTint="@color/brand_celeste"
+        android:layout_margin="16dp"
+        app:layout_anchorGravity="bottom|end"
+        app:layout_anchor="@id/recycler"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

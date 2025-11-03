@@ -46,7 +46,6 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <!-- Título del gráfico -->
         <TextView
             android:id="@+id/tChartTitle"
             android:layout_width="match_parent"
@@ -55,7 +54,7 @@
             android:textStyle="bold"
             android:layout_marginTop="8dp"/>
 
-        <!-- Barras (sin librerías) -->
+        <!-- Barras -->
         <LinearLayout
             android:id="@+id/chartBars"
             android:layout_width="match_parent"
@@ -67,9 +66,6 @@
             android:background="#F4F4F4"
             android:divider="@android:color/transparent"
             android:showDividers="middle">
-
-            <!-- Cada barra se crea/ajusta desde código.
-                 Dejamos 4 contenedores con label debajo -->
 
             <LinearLayout
                 android:id="@+id/bar1"
@@ -83,9 +79,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:background="#E53935"
-                    android:layout_gravity="bottom"
-                    android:layout_margin="6dp"
-                    android:clipToOutline="true"/>
+                    android:layout_margin="6dp"/>
                 <TextView
                     android:id="@+id/tBar1"
                     android:layout_width="match_parent"
@@ -158,7 +152,47 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Lista top tours -->
+        <!-- Leyendas de barras -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="4"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/tLegend1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="—" />
+
+            <TextView
+                android:id="@+id/tLegend2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="—" />
+
+            <TextView
+                android:id="@+id/tLegend3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="—" />
+
+            <TextView
+                android:id="@+id/tLegend4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="—" />
+        </LinearLayout>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -173,7 +207,6 @@
             android:orientation="vertical"
             android:layout_marginTop="6dp"/>
 
-        <!-- Resumen -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -206,7 +239,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Exportar -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnExportPdf"
             android:layout_width="match_parent"

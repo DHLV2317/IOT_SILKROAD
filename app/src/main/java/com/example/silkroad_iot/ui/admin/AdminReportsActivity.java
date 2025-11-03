@@ -19,43 +19,57 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class AdminReportsActivity extends BaseDrawerActivity {
 
     private final AdminRepository repo = AdminRepository.get();
 
     private View rootReports;
-    private TextView tIncome, tReservations, tTopService;
-    private TextView tBar1, tBar2, tBar3, tBar4;
+    private TextView tIncome, tReservations, tTopService, tChartTitle;
+    private TextView tBar1, tBar2, tBar3, tBar4, tLegend1, tLegend2, tLegend3, tLegend4;
     private View barFill1, barFill2, barFill3, barFill4;
     private LinearLayout boxTopTours;
 
+    private final DecimalFormat money = new DecimalFormat("#,##0.00");
+
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setupDrawer(R.layout.content_admin_reports, R.menu.menu_drawer_admin, "Reportes");
 
         rootReports   = findViewById(R.id.rootReports);
         tIncome       = findViewById(R.id.tIncome);
         tReservations = findViewById(R.id.tReservations);
         tTopService   = findViewById(R.id.tTopService);
+        tChartTitle   = findViewById(R.id.tChartTitle);
+
         tBar1 = findViewById(R.id.tBar1); tBar2 = findViewById(R.id.tBar2);
         tBar3 = findViewById(R.id.tBar3); tBar4 = findViewById(R.id.tBar4);
         barFill1 = findViewById(R.id.barFill1); barFill2 = findViewById(R.id.barFill2);
         barFill3 = findViewById(R.id.barFill3); barFill4 = findViewById(R.id.barFill4);
+
+        // Nombres debajo de cada barra
+        tLegend1 = findViewById(R.id.tLegend1);
+        tLegend2 = findViewById(R.id.tLegend2);
+        tLegend3 = findViewById(R.id.tLegend3);
+        tLegend4 = findViewById(R.id.tLegend4);
+
         boxTopTours   = findViewById(R.id.boxTopTours);
 
+        // Resumen
         AdminRepository.ReportSummary s = repo.getReportSummary();
-        tIncome.setText("Ingresos: S/ " + new DecimalFormat("#,##0.00").format(s.totalRevenue));
+        tIncome.setText("Ingresos: S/ " + money.format(s.totalRevenue));
         tReservations.setText("Reservas: " + s.reservations);
         tTopService.setText("Servicio top: " + s.topService);
 
-        // Ranking a partir de reservas con nombres alternativos
+        // Ranking tours
         List<AdminRepository.Reservation> rs = repo.getReservations();
         HashMap<String, Agg> map = new HashMap<>();
         for (AdminRepository.Reservation r : rs) {
@@ -75,13 +89,14 @@ public class AdminReportsActivity extends BaseDrawerActivity {
 
         double total = 0;
         for (Row r : rows) total += r.revenue;
-        List<Row> top4 = rows.size() > 4 ? rows.subList(0, 4) : rows;
+
+        List<Row> top4 = rows.size() > 4 ? new ArrayList<>(rows.subList(0, 4)) : new ArrayList<>(rows);
         while (top4.size() < 4) top4.add(new Row("—", 0, 0));
 
-        setBar(top4.get(3), total, barFill1, tBar1);
-        setBar(top4.get(2), total, barFill2, tBar2);
-        setBar(top4.get(1), total, barFill3, tBar3);
-        setBar(top4.get(0), total, barFill4, tBar4);
+        setBar(top4.get(3), total, barFill1, tBar1, tLegend1);
+        setBar(top4.get(2), total, barFill2, tBar2, tLegend2);
+        setBar(top4.get(1), total, barFill3, tBar3, tLegend3);
+        setBar(top4.get(0), total, barFill4, tBar4, tLegend4);
 
         boxTopTours.removeAllViews();
         int max = Math.min(5, rows.size());
@@ -89,7 +104,7 @@ public class AdminReportsActivity extends BaseDrawerActivity {
             Row r = rows.get(i);
             TextView item = new TextView(this);
             item.setText((i+1) + ". " + r.name + "   S/ " +
-                    new DecimalFormat("#,##0.00").format(r.revenue) +
+                    money.format(r.revenue) +
                     "   " + r.count + " reservas");
             item.setPadding(12, 10, 12, 10);
             boxTopTours.addView(item);
@@ -100,14 +115,15 @@ public class AdminReportsActivity extends BaseDrawerActivity {
 
     @Override protected int defaultMenuId() { return R.id.m_reports; }
 
-    private void setBar(Row r, double total, View barFill, TextView label){
+    private void setBar(Row r, double total, View barFill, TextView pctLabel, TextView legend){
         int chartHeight = dp(160);
         double pct = (total <= 0) ? 0 : (r.revenue * 100.0 / total);
         int h = (int) Math.round(chartHeight * pct / 100.0);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, h);
         barFill.setLayoutParams(lp);
-        label.setText((r.name.equals("—") ? "—" : (Math.round(pct) + "%")));
+        pctLabel.setText(total <= 0 ? "0%" : (Math.round(pct) + "%"));
+        legend.setText(r.name);
     }
 
     private void exportToPdf(View content){
@@ -119,7 +135,8 @@ public class AdminReportsActivity extends BaseDrawerActivity {
             page.getCanvas().drawBitmap(bmp, 0, 0, null);
             doc.finishPage(page);
 
-            File out = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "reporte_admin.pdf");
+            String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+            File out = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), "reporte_admin_" + ts + ".pdf");
             FileOutputStream fos = new FileOutputStream(out);
             doc.writeTo(fos);
             fos.flush(); fos.close();

@@ -7,6 +7,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.EmpresaFb;
 import com.example.silkroad_iot.databinding.ActivityAdminCompanyDetailBinding;
 import com.google.firebase.firestore.DocumentReference;
@@ -16,7 +18,7 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
 
     private ActivityAdminCompanyDetailBinding b;
     private FirebaseFirestore db;
-    private EmpresaFb empresa; // modelo Firestore
+    private EmpresaFb empresa;
     private boolean firstRun;
 
     private static final String PREFS = "app_prefs";
@@ -28,6 +30,7 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         b = ActivityAdminCompanyDetailBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        // Toolbar
         setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Empresa");
@@ -40,18 +43,24 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         firstRun = getIntent().getBooleanExtra("firstRun", false);
         String id = getIntent().getStringExtra("id");
 
-        if (id != null && !id.isEmpty()) {
+        if (!TextUtils.isEmpty(id)) {
             cargarEmpresaDesdeFirestore(id);
         } else {
             empresa = new EmpresaFb();
+            // Imagen por defecto en header
+            Glide.with(this)
+                    .load(R.drawable.ic_image_24)
+                    .into(b.imgLogo);
         }
 
         b.btnSaveCompany.setOnClickListener(v -> guardarEmpresaEnFirestore());
+
+        // (Opcional) Cambiar logo: aquí abrirías un picker y luego subes a Storage
+        b.btnChangePhoto.setOnClickListener(v ->
+                Toast.makeText(this, "Implementar picker de imagen y subir a Storage", Toast.LENGTH_SHORT).show()
+        );
     }
 
-    /**
-     * Carga la empresa desde Firestore según su ID.
-     */
     private void cargarEmpresaDesdeFirestore(String id) {
         db.collection("empresas").document(id).get()
                 .addOnSuccessListener(doc -> {
@@ -68,22 +77,32 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
                         Toast.makeText(this, "Error al cargar datos: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
-    /**
-     * Llena los inputs con la data de Firestore.
-     */
     private void rellenarCampos() {
         if (empresa == null) return;
-        b.inputCompanyName.setText(nullToEmpty(empresa.getNombre()));
-        b.inputEmail.setText(nullToEmpty(empresa.getEmail()));
-        b.inputPhone.setText(nullToEmpty(empresa.getTelefono()));
-        b.inputAddress.setText(nullToEmpty(empresa.getDireccion()));
+
+        b.inputCompanyName.setText(n(empresa.getNombre()));
+        b.inputEmail.setText(n(empresa.getEmail()));
+        b.inputPhone.setText(n(empresa.getTelefono()));
+        b.inputAddress.setText(n(empresa.getDireccion()));
         b.inputLat.setText(String.valueOf(empresa.getLat()));
         b.inputLng.setText(String.valueOf(empresa.getLng()));
+
+        // Título bajo el header
+        b.txtCompanyTitle.setText(n(empresa.getNombre()).isEmpty() ? "Nombre de la empresa" : empresa.getNombre());
+
+        // Cargar imagen (campo 'imagen')
+        if (!TextUtils.isEmpty(empresa.getImagen())) {
+            Glide.with(this)
+                    .load(empresa.getImagen())
+                    .placeholder(R.drawable.ic_image_24)
+                    .error(R.drawable.ic_image_24)
+                    .centerCrop()
+                    .into(b.imgLogo);
+        } else {
+            Glide.with(this).load(R.drawable.ic_image_24).into(b.imgLogo);
+        }
     }
 
-    /**
-     * Guarda o actualiza la empresa en Firestore.
-     */
     private void guardarEmpresaEnFirestore() {
         String name = b.inputCompanyName.getText().toString().trim();
         String email = b.inputEmail.getText().toString().trim();
@@ -97,9 +116,10 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(phone)) { b.inputPhone.setError("Requerido"); return; }
         if (TextUtils.isEmpty(address)) { b.inputAddress.setError("Requerido"); return; }
 
-        double lat = safeDouble(sLat);
-        double lng = safeDouble(sLng);
+        double lat = pDouble(sLat);
+        double lng = pDouble(sLng);
 
+        if (empresa == null) empresa = new EmpresaFb();
         empresa.setNombre(name);
         empresa.setEmail(email);
         empresa.setTelefono(phone);
@@ -107,15 +127,13 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         empresa.setLat(lat);
         empresa.setLng(lng);
 
-        // 🔹 Guardar en Firestore
-        if (empresa.getId() != null && !empresa.getId().isEmpty()) {
-            // Actualizar documento existente
+        // Guardar/actualizar
+        if (!TextUtils.isEmpty(empresa.getId())) {
             db.collection("empresas").document(empresa.getId())
                     .set(empresa)
                     .addOnSuccessListener(aVoid -> onSaveSuccess("Empresa actualizada"))
                     .addOnFailureListener(e -> showError(e.getMessage()));
         } else {
-            // Crear nuevo documento
             DocumentReference ref = db.collection("empresas").document();
             empresa.setId(ref.getId());
             ref.set(empresa)
@@ -139,13 +157,7 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void showError(String msg) {
-        Toast.makeText(this, "Error: " + msg, Toast.LENGTH_LONG).show();
-    }
-
-    private String nullToEmpty(String s) { return s == null ? "" : s; }
-
-    private double safeDouble(String s) {
-        try { return Double.parseDouble(s); } catch (Exception e) { return 0d; }
-    }
+    private void showError(String m) { Toast.makeText(this, "Error: " + m, Toast.LENGTH_LONG).show(); }
+    private String n(String s) { return s == null ? "" : s; }
+    private double pDouble(String s) { try { return Double.parseDouble(s); } catch (Exception e) { return 0d; } }
 }

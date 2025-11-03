@@ -20,7 +20,6 @@ import java.util.Locale;
 
 public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.VH> {
 
-    /** Callbacks hacia la Activity (asignar tour / ver detalle). */
     public interface Callbacks {
         void onAssignClicked(int position);
         void onDetailClicked(int position);
@@ -65,8 +64,7 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         }
     }
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
         View v = LayoutInflater.from(p.getContext())
                 .inflate(R.layout.item_admin_guide, p, false);
@@ -77,34 +75,26 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
     public void onBindViewHolder(@NonNull VH h, int i){
         GuideFb g = data.get(i);
 
-        // Imagen (usa fotoUrl si existe)
         String photo = g.getFotoUrl();
         Glide.with(h.itemView)
                 .load(photo == null || photo.trim().isEmpty() ? R.drawable.ic_person_24 : photo)
                 .into(h.img);
 
-        // Nombre
         String name = safe(g.getNombre());
         h.tTitle.setText(name.isEmpty() ? "(Sin nombre)" : name);
 
-        // Idiomas
         String langs = safe(g.getLangs());
         h.tSubtitle.setText(langs.isEmpty() ? "—" : langs);
 
-        // Estado
         String state = safe(g.getEstado());
         h.tStatus.setText(state.isEmpty() ? "—" : state);
 
-        // Historial + tour actual
         int historyCount = (g.getHistorial() == null) ? 0 : g.getHistorial().size();
         String currentTour = safe(g.getTourActual());
-        if (currentTour.isEmpty()) {
-            h.tExtra.setText(historyCount + " tours");
-        } else {
-            h.tExtra.setText(historyCount + " tours • Actual: " + currentTour);
-        }
+        h.tExtra.setText(currentTour.isEmpty()
+                ? (historyCount + " tours")
+                : (historyCount + " tours • Actual: " + currentTour));
 
-        // Botones
         h.btnAssign.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();
             if (pos != RecyclerView.NO_POSITION && callbacks != null) {

@@ -7,4 +7,8 @@
     <!--string name="navigation_drawer_close">Close navigation drawer</string-->
     <string name="nav_open">Abrir menú</string>
     <string name="nav_close">Cerrar menú</string>
+    <string name="empty_stops">Sin paradas registradas</string>
+    <string name="error_loading_stops">No se pudieron cargar las paradas</string>
+    <string name="error_loading_tour">No se pudo cargar el tour</string>
+    <string name="empty_guides">No hay guías registradas</string>
 </resources>

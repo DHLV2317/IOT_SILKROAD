@@ -8,7 +8,7 @@ public class Stop implements Serializable {
     public String time;     // Ejemplo: "20 min"
     public double cost;
 
-    public Stop(String name, String address, String time, double cost) {
+    public Stop() {
         this.name = name;
         this.address = address;
         this.time = time;

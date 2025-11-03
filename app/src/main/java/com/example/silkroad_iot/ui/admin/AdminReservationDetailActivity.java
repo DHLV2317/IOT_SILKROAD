@@ -32,7 +32,10 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         setContentView(b.getRoot());
 
         setSupportActionBar(b.toolbar);
-        if (getSupportActionBar()!=null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar()!=null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Detalle de reserva");
+        }
         b.toolbar.setNavigationOnClickListener(v -> finish());
 
         int index = getIntent().getIntExtra("index", -1);
@@ -57,10 +60,10 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         b.tAmount.setText("S/ " + (total == null ? 0 : total.doubleValue()));
         b.tStatus.setText(TextUtils.isEmpty(status) ? "pendiente" : status);
 
-        b.tUser.setText(clientName.isEmpty()? "—" : clientName);
-        b.tEmail.setText(clientEmail.isEmpty()? "—" : clientEmail);
-        b.tPhone.setText(clientPhone.isEmpty()? "—" : clientPhone);
-        b.tDni.setText(clientDni.isEmpty()? "—" : clientDni);
+        b.tUser.setText(isEmpty(clientName)? "—" : clientName);
+        b.tEmail.setText(isEmpty(clientEmail)? "—" : clientEmail);
+        b.tPhone.setText(isEmpty(clientPhone)? "—" : clientPhone);
+        b.tDni.setText(isEmpty(clientDni)? "—" : clientDni);
 
         int bg = R.color.pill_gray;
         String st = (status == null ? "" : status).toLowerCase(Locale.getDefault());
@@ -68,11 +71,11 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         else if (st.contains("check-in")) bg = R.color.teal_200;
         else if (st.contains("check-out"))bg = R.color.teal_200;
         else if (st.contains("final"))    bg = R.color.teal_200;
-        else if (st.contains("cancel"))   bg = android.R.color.holo_red_light;
+        else if (st.contains("cancel") || st.contains("rech")) bg = android.R.color.holo_red_light;
         b.tStatus.setBackgroundResource(bg);
 
-        String qrText = "RESERVA|" + (clientName.isEmpty()? "-" : clientName) + "|" +
-                (tourName.isEmpty()? "(Sin tour)": tourName) + "|" +
+        String qrText = "RESERVA|" + (isEmpty(clientName)? "-" : clientName) + "|" +
+                (isEmpty(tourName)? "(Sin tour)": tourName) + "|" +
                 (date==null? "-" : sdf.format(date)) + "|PAX:" + (people==null?1:people.intValue());
         b.imgQr.setImageBitmap(makeQr(qrText));
         b.tQrMessage.setText("Muestra este QR en el punto de encuentro para hacer check-in.");
@@ -84,11 +87,13 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
             String comment = str(r, "comment");
             RatingBar rb = b.tRating;
             if (rb != null) rb.setRating(stars == null ? 5f : stars.floatValue());
-            b.tRatingComment.setText(TextUtils.isEmpty(comment) ? "Sin comentarios." : comment);
+            b.tRatingComment.setText(isEmpty(comment) ? "Sin comentarios." : comment);
         }
 
         b.btnBack.setOnClickListener(v -> finish());
     }
+
+    private static boolean isEmpty(String s){ return s == null || s.trim().isEmpty(); }
 
     private Bitmap makeQr(String text){
         try {
