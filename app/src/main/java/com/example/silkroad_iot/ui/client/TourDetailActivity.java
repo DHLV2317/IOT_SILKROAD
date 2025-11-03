@@ -43,7 +43,7 @@ public class TourDetailActivity extends AppCompatActivity {
                 .into(b.imgTour);
 
         // Mostrar descripción
-        b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "Sin descripción");
+        b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "Bug?");
 
         // Mostrar campos adicionales
        // b.tTourLangs.setText("Idiomas: " + (tour.getLangs() != null ? tour.getLangs() : "No especificado"));

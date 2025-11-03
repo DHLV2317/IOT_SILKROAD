@@ -3,6 +3,7 @@ package com.example.silkroad_iot.ui.admin;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Lista de guías en tiempo real desde Firestore con filtro y asignación.
@@ -163,10 +165,24 @@ public class AdminGuidesActivity extends BaseDrawerActivity {
                     .addOnSuccessListener(snap -> {
                         toursCache.clear();
                         for (DocumentSnapshot d : snap) {
-                            TourFB t = d.toObject(TourFB.class);
-                            if (t != null) {
-                                if (t.getId() == null || t.getId().trim().isEmpty()) t.setId(d.getId());
-                                toursCache.add(t);
+                            try {
+                                // Convertimos a objeto TourFB ignorando id_paradas del documento
+                                Map<String, Object> data = d.getData();
+                                if (data != null) data.remove("id_paradas");
+
+                                TourFB t = d.toObject(TourFB.class);
+
+                                if (t != null) {
+                                    if (t.getId() == null || t.getId().trim().isEmpty())
+                                        t.setId(d.getId());
+
+                                    // Asignamos lista vacía para evitar deserialización fallida
+                                    t.setId_paradas(new ArrayList<>());
+
+                                    toursCache.add(t);
+                                }
+                            } catch (Exception ex) {
+                                Log.e("PRELOAD_TOURS", "Error parseando tour: " + ex);
                             }
                         }
                     })
@@ -178,10 +194,22 @@ public class AdminGuidesActivity extends BaseDrawerActivity {
                     .addOnSuccessListener(snap -> {
                         toursCache.clear();
                         for (DocumentSnapshot d : snap) {
-                            TourFB t = d.toObject(TourFB.class);
-                            if (t != null) {
-                                if (t.getId() == null || t.getId().trim().isEmpty()) t.setId(d.getId());
-                                toursCache.add(t);
+                            try {
+                                Map<String, Object> data = d.getData();
+                                if (data != null) data.remove("id_paradas");
+
+                                TourFB t = d.toObject(TourFB.class);
+
+                                if (t != null) {
+                                    if (t.getId() == null || t.getId().trim().isEmpty())
+                                        t.setId(d.getId());
+
+                                    t.setId_paradas(new ArrayList<>());
+
+                                    toursCache.add(t);
+                                }
+                            } catch (Exception ex) {
+                                Log.e("PRELOAD_TOURS", "Error parseando tour: " + ex);
                             }
                         }
                     })
@@ -189,6 +217,7 @@ public class AdminGuidesActivity extends BaseDrawerActivity {
                             Toast.makeText(this, "No se pudieron precargar tours: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         }
     }
+
 
     /* ============================
      *      ACCIONES DEL ADAPTER

@@ -26,6 +26,8 @@
         <activity android:name=".ui.admin.AdminGuideDetailActivity" android:exported="false"/>
         <activity android:name=".ui.admin.AdminReportsActivity" android:exported="false"/>
         <activity android:name=".ui.admin.AdminHomeActivity" android:exported="false"/>
+        <activity android:name=".ui.admin.AdminProfileActivity" android:exported="false" />
+
 
         <!-- SUPERADMIN -->
         <activity

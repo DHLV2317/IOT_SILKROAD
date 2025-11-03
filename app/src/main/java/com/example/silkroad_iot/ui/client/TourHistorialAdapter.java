@@ -2,6 +2,7 @@ package com.example.silkroad_iot.ui.client;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,52 +56,72 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
     public void onBindViewHolder(@NonNull VH holder, int position) {
         TourHistorialFB historial = historialList.get(position);
 
-        // 🕒 Fecha del tour
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+
+        // 🕒 Fecha del tour (fechaRealizado)
         Date fechaTour = historial.getFechaRealizado();
-        String fechaTourStr = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(fechaTour);
-        holder.tvDate.setText("Inicio del Tour: " + fechaTourStr);
+        if (fechaTour != null) {
+            holder.tvDate.setText("Inicio del Tour: " + sdf.format(fechaTour));
+        } else {
+            holder.tvDate.setText("Inicio del Tour: -");
+            Log.w("HISTORIAL", "⚠️ fechaRealizado es null en posición " + position);
+        }
 
         // 📅 Fecha de reserva
         Date fechaReserva = historial.getFechaReserva();
         if (fechaReserva != null) {
-            String fechaReservaStr = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(fechaReserva);
-            holder.tvOrderDate.setText("Reservado el: " + fechaReservaStr);
+            holder.tvOrderDate.setText("Reservado el: " + sdf.format(fechaReserva));
         } else {
             holder.tvOrderDate.setText("Reservado el: -");
+            Log.w("HISTORIAL", "⚠️ fechaReserva es null en posición " + position);
         }
 
         holder.tvStatus.setText("Estado: " + historial.getEstado());
 
-        // 🔄 Obtener TourFB desde Firestore (una sola vez) y manejar click
+        // ✅ Cargar datos del tour una sola vez
         FirebaseFirestore.getInstance()
                 .collection("tours")
                 .document(historial.getIdTour())
                 .get()
                 .addOnSuccessListener(doc -> {
-                    TourFB tour = doc.toObject(TourFB.class);
-                    if (tour != null) {
-                        holder.tvTourName.setText(tour.getNombre());
-                        holder.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/ %.2f", tour.getPrecio()));
+                    TourFB tour = new TourFB();
 
-                        // 👉 Click para ir al detalle
-                        holder.itemView.setOnClickListener(v -> {
-                            Intent intent = new Intent(v.getContext(), OrderDetailActivity.class);
-                            intent.putExtra("tourFB", tour);
-                            intent.putExtra("historialFB", historial);
-                            intent.putExtra("historialId", historial.getId());
+                    tour.setId(doc.getId());
+                    tour.setNombre(doc.getString("nombre"));
+                    tour.setPrecio(doc.getDouble("precio"));
 
-                            v.getContext().startActivity(intent);
-                        });
+                    Object data = doc.get("id_paradas");
+                    if (data instanceof List) {
+                        tour.setId_paradas((List<String>) data);
+                    } else if (data instanceof String) {
+                        tour.setId_paradas(java.util.Collections.singletonList((String) data));
+                    }
+
+                    // ✅ Validación por seguridad
+                    holder.tvTourName.setText(tour.getNombre() != null ? tour.getNombre() : "Sin nombre");
+
+                    Double precio = tour.getPrecio();
+                    if (precio != null) {
+                        holder.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/ %.2f", precio));
                     } else {
-                        holder.tvTourName.setText("Tour desconocido");
                         holder.tvTotalPrice.setText("S/ -");
                     }
+
+                    holder.itemView.setOnClickListener(v -> {
+                        Intent intent = new Intent(v.getContext(), OrderDetailActivity.class);
+                        intent.putExtra("tourFB", tour);
+                        intent.putExtra("historialFB", historial);
+                        intent.putExtra("historialId", historial.getId());
+                        v.getContext().startActivity(intent);
+                    });
                 })
+
                 .addOnFailureListener(e -> {
                     holder.tvTourName.setText("Error cargando tour");
                     holder.tvTotalPrice.setText("S/ -");
                 });
     }
+
 
 
     @Override

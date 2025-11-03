@@ -80,14 +80,39 @@ public class ToursActivity extends AppCompatActivity {
                     Log.d("TOURS_FIREBASE", "✅ id de la empresa: " + empresaId);
                     tourList.clear();
 
-                    for (DocumentSnapshot doc : querySnapshot) {
-                        TourFB tour = doc.toObject(TourFB.class);
-                        if (tour != null) {
-                            tour.setId(doc.getId());
-                            tourList.add(tour);
-                            Log.d("TOURS_FIREBASE", "✅ Tour cargado: " + tour.getNombre() + " / Empresa: " + tour.getEmpresaId());
+                    for (DocumentSnapshot document : querySnapshot) {
+                        TourFB tour = new TourFB();
+
+                        tour.setId(document.getId());
+                        tour.setNombre(document.getString("nombre"));
+                        tour.setPrecio(document.getDouble("precio"));
+                        tour.setEmpresaId(document.getString("empresaId"));
+                        tour.setDescription(document.getString("description"));
+                        tour.setAssignedGuideName(document.getString("guiaId"));
+                        tour.setDateFrom(document.getDate("dateFrom"));
+                        tour.setDateTo(document.getDate("dateTo"));
+                        Long cantidad = document.getLong("cantidad_personas");
+                        if (cantidad != null) {
+                            tour.setCantidad_personas(cantidad.intValue());
+                        } else {
+                            tour.setCantidad_personas(0); // o el valor por defecto que uses
                         }
+
+                        // ✅ Manejo seguro de id_paradas
+                        Object idParadasObj = document.get("id_paradas");
+                        if (idParadasObj instanceof List) {
+                            tour.setId_paradas((List<String>) idParadasObj);
+                        } else if (idParadasObj instanceof String) {
+                            tour.setId_paradas(java.util.Collections.singletonList((String) idParadasObj));
+                        } else {
+                            tour.setId_paradas(new java.util.ArrayList<>());
+                        }
+
+                        tourList.add(tour);
+
+                        Log.d("TOURS_FIREBASE", "✅ Tour cargado: " + tour.getNombre() + " / Empresa: " + tour.getEmpresaId());
                     }
+
 
                     Log.d("TOURS_FIREBASE", "✅ Total tours encontrados: " + tourList.size());
                     Log.d("TOURS_FIREBASE", "✅ tourList.hash=" + tourList.hashCode());
