@@ -2,71 +2,65 @@ package com.example.silkroad_iot.ui.client;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.Stop;
+import com.example.silkroad_iot.data.ParadaFB;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.databinding.ActivityStopsBinding;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class StopsActivity extends AppCompatActivity {
-    private RecyclerView rvStops;
-    private TextView tvStopsTitle, tvEmptyMessage;
+
     private ActivityStopsBinding b;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Inicializar binding
         b = ActivityStopsBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
-        // Configurar Toolbar
+        // Toolbar
         setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Lugares a visitar");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        b.toolbar.setNavigationOnClickListener(v -> finish());
 
-        rvStops = b.rvStops;
-        tvStopsTitle = b.tvStopsTitle;
-
-        // ✅ Nuevo: TextView opcional para mostrar mensaje vacío
-        tvEmptyMessage = b.tvEmptyMessage; // asegúrate de tener esto en tu XML
-
-        // Obtener el Tour
+        // Tour del Intent
         TourFB tour = (TourFB) getIntent().getSerializableExtra("tour");
+        if (tour == null) { finish(); return; }
 
-        if (tour == null) {
-            finish(); // No tour, salir
-            return;
+        String name = (tour.getNombre() == null || tour.getNombre().trim().isEmpty())
+                ? "(Sin nombre)" : tour.getNombre();
+        b.tvStopsTitle.setText("Lugares a visitar - " + name);
+
+        // Recycler
+        b.rvStops.setLayoutManager(new LinearLayoutManager(this));
+
+        // Lista de paradas (ParadaFB)
+        List<ParadaFB> paradas = tour.getParadas();
+
+        // Ordenar por "orden" (nulos al final)
+        if (paradas != null) {
+            Collections.sort(paradas, Comparator.comparingInt(p ->
+                    p.getOrden() == 0 ? Integer.MAX_VALUE : p.getOrden()));
         }
 
-        // Mostrar nombre del tour
-        tvStopsTitle.setText("Lugares a visitar - " + tour.getNombre());
-
-        // Configurar RecyclerView
-        rvStops.setLayoutManager(new LinearLayoutManager(this));
-
-        List<Stop> stops = tour.getStops();
-
-        if (stops == null || stops.isEmpty()) {
-            rvStops.setVisibility(View.GONE);
-            tvEmptyMessage.setVisibility(View.VISIBLE);
-            tvEmptyMessage.setText("Este tour aún no tiene paradas registradas.");
-            return;
+        // Mostrar lista o mensaje vacío
+        if (paradas == null || paradas.isEmpty()) {
+            b.rvStops.setVisibility(View.GONE);
+            b.tvEmptyMessage.setVisibility(View.VISIBLE);
+            b.tvEmptyMessage.setText("Este tour aún no tiene paradas registradas.");
+        } else {
+            b.tvEmptyMessage.setVisibility(View.GONE);
+            b.rvStops.setVisibility(View.VISIBLE);
+            b.rvStops.setAdapter(new StopAdapter(paradas));
         }
-
-        // Mostrar lista si hay
-        tvEmptyMessage.setVisibility(View.GONE);
-        rvStops.setVisibility(View.VISIBLE);
-        StopAdapter adapter = new StopAdapter(stops);
-        rvStops.setAdapter(adapter);
     }
 }

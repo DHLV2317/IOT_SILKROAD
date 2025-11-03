@@ -21,19 +21,23 @@ public class AdminGuideDetailActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private GuideFb guide;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         b = ActivityAdminGuideDetailBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        // Toolbar
         setSupportActionBar(b.toolbar);
-        if (getSupportActionBar()!=null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Detalles del guía");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         b.toolbar.setNavigationOnClickListener(v -> finish());
-        setTitle("Detalles del guía");
 
         db = FirebaseFirestore.getInstance();
 
-        String guideId = getIntent().getStringExtra("guideId"); // <<< AHORA POR ID
+        String guideId = getIntent().getStringExtra("guideId");
         if (TextUtils.isEmpty(guideId)) {
             Toast.makeText(this, "Falta guideId", Toast.LENGTH_SHORT).show();
             finish();
@@ -66,22 +70,26 @@ public class AdminGuideDetailActivity extends AppCompatActivity {
     private void pintarUI() {
         if (guide == null) return;
 
-        // Foto
+        // Foto (header)
         if (!TextUtils.isEmpty(guide.getFotoUrl())) {
-            Glide.with(this).load(guide.getFotoUrl())
+            Glide.with(this)
+                    .load(guide.getFotoUrl())
                     .placeholder(R.drawable.ic_person_24)
                     .error(R.drawable.ic_person_24)
+                    .centerCrop()
                     .into(b.img);
         } else {
             Glide.with(this).load(R.drawable.ic_person_24).into(b.img);
         }
 
-        // Textos
-        b.tName.setText(empty(guide.getNombre()));
-        b.tLangs.setText(empty(guide.getLangs()));
-        b.tState.setText(empty(guide.getEstado()));
-        b.tEmail.setText(emptyOrDash(guide.getEmail()));
-        b.tPhone.setText(emptyOrDash(guide.getTelefono()));
+        // Encabezado
+        b.tName.setText(textOrDash(guide.getNombre()));
+        b.tState.setText(textOrDash(guide.getEstado()));
+
+        // Datos
+        b.tLangs.setText(textOrDash(guide.getLangs()));
+        b.tEmail.setText(textOrDash(guide.getEmail()));
+        b.tPhone.setText(textOrDash(guide.getTelefono()));
         b.tCurrentTour.setText(TextUtils.isEmpty(guide.getTourActual()) ? "Ninguno" : guide.getTourActual());
 
         // Historial
@@ -99,6 +107,5 @@ public class AdminGuideDetailActivity extends AppCompatActivity {
         }
     }
 
-    private String empty(String s){ return TextUtils.isEmpty(s) ? "—" : s; }
-    private String emptyOrDash(String s){ return TextUtils.isEmpty(s) ? "—" : s; }
+    private String textOrDash(String s) { return TextUtils.isEmpty(s) ? "—" : s; }
 }

@@ -70,7 +70,8 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
         }
         String imageUrl   = firstNonEmpty(
                 str(r, "imageUrl"),
-                str(obj(r, "tour"), "imagen")
+                str(obj(r, "tour"), "imagen"),
+                str(obj(r, "tour"), "imageUrl")
         );
 
         h.tTitle.setText(tourName.isEmpty()? "(Sin tour)" : tourName);
