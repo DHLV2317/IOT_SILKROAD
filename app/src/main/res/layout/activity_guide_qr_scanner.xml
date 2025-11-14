@@ -12,9 +12,10 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:backgroundTint="@color/brand_celeste"
-            app:titleTextColor="@color/white" />
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/brand_celeste"
+            app:title="Escanear QR de reserva"
+            app:titleTextColor="@android:color/white" />
 
         <!-- Instructions Section -->
         <com.google.android.material.card.MaterialCardView
@@ -42,7 +43,7 @@
                     android:id="@+id/txtInstructions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Solicite al cliente mostrar su código QR de finalización y proceda a escanearlo para completar el tour."
+                    android:text="Solicite al cliente mostrar su código QR de reserva y proceda a escanearlo para registrar check-in / check-out / finalización."
                     android:textSize="14sp"
                     android:layout_marginBottom="8dp" />
 
@@ -77,8 +78,6 @@
                     android:layout_height="120dp"
                     android:src="@drawable/qr_code_24"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_chip"
-                    android:backgroundTint="@color/brand_celeste"
                     android:padding="20dp" />
 
                 <TextView
@@ -92,7 +91,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="En una implementación real, aquí aparecería la vista de la cámara"
+                    android:text="En una implementación real, aquí aparecería la vista de la cámara."
                     android:textSize="12sp"
                     android:textColor="@android:color/darker_gray"
                     android:textAlignment="center"
@@ -115,7 +114,6 @@
                 android:layout_height="wrap_content"
                 android:text="📱 Simular Escaneo QR (Demo)"
                 android:textSize="16sp"
-                android:layout_marginBottom="12dp"
                 app:backgroundTint="@color/brand_celeste" />
 
             <com.google.android.material.button.MaterialButton
@@ -124,6 +122,7 @@
                 android:layout_height="wrap_content"
                 android:text="✋ Check-out Manual"
                 android:textSize="16sp"
+                android:layout_marginTop="12dp"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 app:strokeColor="@color/brand_celeste" />
 
@@ -154,8 +153,7 @@
                 <ScrollView
                     android:layout_width="match_parent"
                     android:layout_height="120dp"
-                    android:background="@android:color/black"
-                    android:backgroundTint="#F5F5F5"
+                    android:background="#F5F5F5"
                     android:padding="12dp">
 
                     <TextView

@@ -1,7 +1,6 @@
 package com.example.silkroad_iot.ui.client;
 
 import android.os.Bundle;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +27,9 @@ public class ConfirmTourActivity extends AppCompatActivity {
         setContentView(b.getRoot());
 
         setSupportActionBar(b.toolbar);
-        getSupportActionBar().setTitle("Reservas");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Reservas");
+        }
 
         // Obtener tour desde el intent
         tour = (TourFB) getIntent().getSerializableExtra("tour");
@@ -38,47 +39,72 @@ public class ConfirmTourActivity extends AppCompatActivity {
         }
 
         // Mostrar nombre del tour
-        b.tTourName.setText(tour.getNombre());
+        b.tTourName.setText(tour.getDisplayName());
 
-        // Mostrar cantidad de personas
-        b.tTourPeople.setText("Cantidad de personas: " + tour.getCantidad_personas());
+        // Cantidad de personas usando helper (cae a 0 si no hay)
+        int pax = tour.getDisplayPeople();
+        if (pax <= 0) pax = 1;
+        b.tTourPeople.setText("Cantidad de personas: " + pax);
 
         // Mostrar fechas del tour (inicio - fin)
         if (tour.getDateFrom() != null && tour.getDateTo() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             String inicio = sdf.format(tour.getDateFrom());
-            String fin = sdf.format(tour.getDateTo());
+            String fin    = sdf.format(tour.getDateTo());
             b.tTourDates.setText("Fechas: " + inicio + " hasta " + fin);
         } else {
             b.tTourDates.setText("Fechas: No definidas");
         }
 
-        // Mostrar precio total por defecto (una persona)
+        // Mostrar precio total por defecto (por ahora: solo precio base)
         updateTotal();
 
         // Confirmar reserva
         b.btnConfirm.setOnClickListener(v -> {
             User user = UserStore.get().getLogged();
-            if (user == null) return;
+            if (user == null) {
+                Toast.makeText(this, "Inicia sesión para reservar", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            // Crear objeto historial
+            // --------- Datos base de la reserva ----------
+            Date ahora     = new Date();          // fecha de reserva
+            String estado  = "pendiente";        // estado inicial
+            int paxReserva = tour.getDisplayPeople();
+            if (paxReserva <= 0) paxReserva = 1;
+
+            // Cadena que irá dentro del QR (misma que verá el guía al escanear)
+            // Formato: RESERVA|<id_tour>|<id_usuario>|PAX:<pax>
+            String qrData = "RESERVA|" +
+                    (tour.getId() == null ? "-" : tour.getId()) + "|" +
+                    user.getEmail() + "|PAX:" + paxReserva;
+
+            // Crear objeto historial (se guardará en 'tours_history')
             TourHistorialFB historial = new TourHistorialFB(
-                    null,                    // ID (null para que lo genere Firestore)
-                    tour.getId(),            // ID del tour
-                    user.getEmail(),         // ID del usuario (email)
-                    tour.getDateFrom(),      // Fecha de inicio del tour
-                    new Date(),              // Fecha de reserva (ahora)
-                    "solicitado"             // Estado inicial
+                    null,                   // id (lo genera Firestore)
+                    tour.getId(),           // id_tour
+                    user.getEmail(),        // id_usuario
+                    ahora,                  // fechaReserva
+                    paxReserva,             // pax
+                    estado,                 // estado inicial: pendiente
+                    qrData                  // datos que se codifican en el QR
             );
 
+            // Fecha de realización (si ya tienes dateFrom la guardamos también)
+            if (tour.getDateFrom() != null) {
+                historial.setFechaRealizado(tour.getDateFrom());
+            }
+
+            // Guardar en tu store / Firestore
             OrderStore.addOrder(historial);
+
             Toast.makeText(this, "Tour reservado con éxito", Toast.LENGTH_SHORT).show();
             finish();
         });
     }
 
     private void updateTotal() {
-        double total = tour.getPrecio();  // precio por persona
+        double total = tour.getDisplayPrice();  // usa helper que combina precio/price
         b.tTotal.setText("Total: S/. " + total);
     }
 }

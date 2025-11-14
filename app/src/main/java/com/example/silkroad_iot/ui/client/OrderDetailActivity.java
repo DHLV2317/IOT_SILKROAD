@@ -1,6 +1,7 @@
 package com.example.silkroad_iot.ui.client;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -14,6 +15,10 @@ import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.databinding.ActivityOrderDetailBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.common.BitMatrix;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,22 +49,50 @@ public class OrderDetailActivity extends AppCompatActivity {
         b.tvCompany.setText(tour.getDisplayName());
         b.tvTourName.setText(tour.getDisplayName());
         b.tvTourPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice()));
-        b.tvQuantity.setText("Cantidad de usuarios: 1");
+        int pax = historial.getPax() > 0 ? historial.getPax() : 1;
+        b.tvQuantity.setText("Cantidad de usuarios: " + pax);
         b.tvServices.setText("Servicios adicionales :     S./0.00");
-        b.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice()));
+        b.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice() * pax));
         b.tvDepartment.setText("Departamento por definir");
         b.tvDuration.setText("Tiempo: " + (tour.getDuration() == null ? "Por definir" : tour.getDuration()));
 
         if (historial.getFechaRealizado() != null) {
             b.tvTourDate.setText("Fecha: " + dateFormat.format(historial.getFechaRealizado()));
             b.tvHour.setText(hourFormat.format(historial.getFechaRealizado()));
+        } else if (historial.getFechaReserva() != null) {
+            b.tvTourDate.setText("Fecha: " + dateFormat.format(historial.getFechaReserva()));
+            b.tvHour.setText("Por definir");
         } else {
             b.tvTourDate.setText("Fecha: -");
             b.tvHour.setText("Por definir");
         }
 
         b.tvStatus.setText("Estado: " + (historial.getEstado() == null ? "desconocido" : historial.getEstado()));
-        b.imgQrCode.setImageResource(R.drawable.qr_code_24);
+
+        // ========= GENERAR / MOSTRAR QR =========
+        String qrData = historial.getQrData();
+        if (qrData == null || qrData.isEmpty()) {
+            if (historialId != null && !historialId.isEmpty()) {
+                qrData = "RESERVA|" +
+                        historialId + "|" +
+                        historial.getIdTour() + "|" +
+                        historial.getIdUsuario() + "|PAX:" + pax;
+
+                historial.setQrData(qrData);
+                historial.setPax(pax);
+
+                FirebaseFirestore.getInstance()
+                        .collection("tours_history")
+                        .document(historialId)
+                        .update("qrData", qrData, "pax", pax);
+            }
+        }
+
+        if (qrData != null && !qrData.isEmpty()) {
+            b.imgQrCode.setImageBitmap(makeQr(qrData));
+        } else {
+            b.imgQrCode.setImageResource(R.drawable.qr_code_24);
+        }
 
         // Ver Paradas
         b.btnPlaces.setOnClickListener(v -> {
@@ -80,7 +113,7 @@ public class OrderDetailActivity extends AppCompatActivity {
                             paradas.add(p);
                         }
                         tour.setParadas(paradas);
-                        Intent it = new Intent(this, StopsActivity.class); // puedes renombrar luego a ParadasActivity
+                        Intent it = new Intent(this, StopsActivity.class);
                         it.putExtra("tour", tour);
                         startActivity(it);
                     })
@@ -91,15 +124,16 @@ public class OrderDetailActivity extends AppCompatActivity {
         });
 
         // Cancelar reserva
+        String finalHistorialId = historialId;
         b.btnCancelar.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Confirmar cancelación")
                     .setMessage("¿Estás seguro de que quieres cancelar esta reserva?")
                     .setPositiveButton("Sí, cancelar", (dialog, which) -> {
                         b.tvStatus.setText("Estado: CANCELADO");
-                        if (historialId == null || historialId.isEmpty()) { finish(); return; }
+                        if (finalHistorialId == null || finalHistorialId.isEmpty()) { finish(); return; }
                         FirebaseFirestore.getInstance()
-                                .collection("tours_history").document(historialId)
+                                .collection("tours_history").document(finalHistorialId)
                                 .update("estado", "cancelado")
                                 .addOnSuccessListener(aVoid -> {
                                     Intent it = new Intent(this, ClientHomeActivity.class);
@@ -113,5 +147,22 @@ public class OrderDetailActivity extends AppCompatActivity {
                     .setNegativeButton("No", null)
                     .show();
         });
+    }
+
+    private Bitmap makeQr(String text) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            int size = 512;
+            BitMatrix bit = writer.encode(text, BarcodeFormat.QR_CODE, size, size);
+            Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    bmp.setPixel(x, y, bit.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
+                }
+            }
+            return bmp;
+        } catch (WriterException e) {
+            return null;
+        }
     }
 }

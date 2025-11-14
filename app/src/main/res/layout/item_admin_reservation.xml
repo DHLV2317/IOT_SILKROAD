@@ -1,95 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardUseCompatPadding="true"
     app:cardCornerRadius="12dp"
     app:cardElevation="2dp">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:padding="12dp"
-        android:gravity="center_vertical">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <!-- Imagen del tour -->
         <ImageView
             android:id="@+id/aImg"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:scaleType="centerCrop"
-            android:background="#E0E0E0"
-            android:src="@drawable/ic_menu_24" />
+            android:src="@drawable/ic_menu_24"
+            android:background="#EEEEEE" />
 
-        <!-- Texto principal -->
         <LinearLayout
+            android:orientation="vertical"
+            android:layout_marginStart="12dp"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/aTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Nombre del tour"
+                android:text="Tour"
                 android:textStyle="bold"
                 android:textSize="16sp"
-                android:textColor="@android:color/black" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/aSubtitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:text="Cliente · 1 pax · S/ 0.00"
+                android:textSize="12sp"
                 android:layout_marginTop="2dp"
-                android:text="Cliente · 2 pax · S/ 100"
-                android:textSize="13sp"
-                android:textColor="@android:color/darker_gray" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/aDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:text="12 Ene 2025"
+                android:textSize="12sp"
                 android:layout_marginTop="2dp"
-                android:text="10 nov 2025"
-                android:textSize="12sp"
-                android:textColor="@android:color/darker_gray" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
-        <!-- Columna derecha: estado + botón detalle -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/aStatus"
+            android:text="pendiente"
+            android:padding="4dp"
+            android:background="@color/pill_gray"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp" />
+
+        <TextView
+            android:id="@+id/btnDetail"
+            android:text="Ver"
+            android:textStyle="bold"
+            android:textColor="@color/brand_celeste"
+            android:layout_marginStart="12dp"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center_vertical|end">
-
-            <TextView
-                android:id="@+id/aStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:text="pendiente"
-                android:textSize="12sp"
-                android:textColor="@android:color/white"
-                android:background="@color/pill_gray" />
-
-            <TextView
-                android:id="@+id/btnDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Ver detalle"
-                android:textSize="12sp"
-                android:textColor="@color/brand_celeste" />
-        </LinearLayout>
-
+            android:layout_height="wrap_content" />
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

@@ -3,6 +3,7 @@ package com.example.silkroad_iot.ui.admin;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,8 +16,6 @@ import com.example.silkroad_iot.databinding.ContentAdminReservationsBinding;
 import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,7 +97,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
 
         if (empresaId == null) {
             // si no hay empresa asociada, no hay nada que listar
-            adapter.setItems(new ArrayList<>());
+            adapter.replace(new ArrayList<>());
             return;
         }
 
@@ -117,7 +116,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
                     }
 
                     if (tourMap.isEmpty()) {
-                        adapter.setItems(new ArrayList<>());
+                        adapter.replace(new ArrayList<>());
                         return;
                     }
 
@@ -141,7 +140,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
                                     fullList.add(new ReservaWithTour(r, tour));
                                 }
 
-                                adapter.setItems(fullList);
+                                adapter.replace(fullList);
 
                                 // aplicar filtros actuales
                                 String q = b.inputSearch.getText() == null

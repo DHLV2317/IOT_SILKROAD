@@ -4,10 +4,8 @@ import java.io.Serializable;
 
 public class ReservaWithTour implements Serializable {
 
-    private TourHistorialFB reserva;
-    private TourFB tour;
-
-    public ReservaWithTour() {}
+    private final TourHistorialFB reserva;
+    private final TourFB tour;
 
     public ReservaWithTour(TourHistorialFB reserva, TourFB tour) {
         this.reserva = reserva;
@@ -15,8 +13,5 @@ public class ReservaWithTour implements Serializable {
     }
 
     public TourHistorialFB getReserva() { return reserva; }
-    public void setReserva(TourHistorialFB reserva) { this.reserva = reserva; }
-
     public TourFB getTour() { return tour; }
-    public void setTour(TourFB tour) { this.tour = tour; }
 }

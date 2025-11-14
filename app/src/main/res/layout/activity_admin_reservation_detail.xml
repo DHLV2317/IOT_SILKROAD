@@ -18,7 +18,7 @@
             app:title="Detalle de reserva"
             app:titleTextColor="@android:color/white" />
 
-        <!-- Card: Datos de la reserva -->
+        <!-- Tarjeta datos de la reserva -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
 
                 <TextView
                     style="@style/TextAppearance.MaterialComponents.Subtitle1"
-                    android:text="Fecha de reserva"
+                    android:text="Fecha"
                     android:layout_marginTop="8dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -92,7 +92,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card: Cliente -->
+        <!-- Datos del cliente -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -158,7 +158,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card: QR -->
+        <!-- QR -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -183,8 +183,8 @@
                     android:layout_width="200dp"
                     android:layout_height="200dp"
                     android:layout_marginTop="8dp"
-                    android:src="@drawable/ic_menu_24"
                     android:background="#EFEFEF"
+                    android:src="@drawable/ic_menu_24"
                     app:tint="@android:color/darker_gray" />
 
                 <TextView
@@ -197,7 +197,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card rating (por ahora oculto) -->
+        <!-- Rating (se muestra solo si la reserva está finalizada) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardRating"
             android:layout_width="match_parent"
@@ -236,6 +236,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Botón volver -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBack"
             android:layout_width="match_parent"
@@ -244,5 +245,6 @@
             android:text="Volver a reservas"
             android:backgroundTint="@color/brand_celeste"
             android:textColor="@android:color/white" />
+
     </LinearLayout>
 </ScrollView>
