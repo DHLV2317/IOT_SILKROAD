@@ -5,42 +5,53 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
-import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.UserStore;
 import com.example.silkroad_iot.databinding.ActivityGuideRegisterBinding;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class GuideRegisterActivity extends AppCompatActivity {
 
     private ActivityGuideRegisterBinding binding;
     private Uri imageUri;
 
-    // ActivityResultLauncher for picking an image
+    // Firebase
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+
+    // ---- Idiomas: lista + códigos ----
+    private static final String[] LANGUAGE_NAMES = {
+            "Español", "Inglés", "Francés", "Portugués", "Alemán", "Italiano"
+    };
+    private static final String[] LANGUAGE_CODES = {
+            "ES", "EN", "FR", "PT", "DE", "IT"
+    };
+    private final boolean[] selectedLanguages = new boolean[LANGUAGE_NAMES.length];
+    private String selectedLanguageCodes = ""; // guardado en BD ej: "EN,ES"
+
+    // Lanzador para elegir imagen (opcional)
     private final ActivityResultLauncher<Intent> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                if (result.getResultCode() == Activity.RESULT_OK &&
+                        result.getData() != null &&
+                        result.getData().getData() != null) {
                     imageUri = result.getData().getData();
                     binding.imageProfile.setImageURI(imageUri);
                 }
@@ -52,159 +63,283 @@ public class GuideRegisterActivity extends AppCompatActivity {
         binding = ActivityGuideRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Toolbar toolbar = findViewById(R.id.toolbar); // Assuming you add a Toolbar with id 'toolbar' in your layout
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-            Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        // Firebase
+        auth = FirebaseAuth.getInstance();
+        db   = FirebaseFirestore.getInstance();
+
+        // Toolbar
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Registro de Guía");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
 
+        // Tipo de documento
+        String[] documentTypes = {"DNI", "Carnet de Extranjería", "Pasaporte"};
+        androidx.appcompat.widget.AppCompatAutoCompleteTextView docSpinner =
+                (androidx.appcompat.widget.AppCompatAutoCompleteTextView) binding.spinnerDocumentType;
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                documentTypes
+        );
+        docSpinner.setAdapter(adapter);
 
-        // Setup Document Type Spinner
-        String[] documentTypes = new String[]{"DNI", "Carnet de Extranjería", "Pasaporte"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, documentTypes);
-        binding.spinnerDocumentType.setAdapter(adapter);
-
-        // Setup Birth Date Picker
+        // Fecha nacimiento
         binding.inputBirthDate.setOnClickListener(v -> showDatePickerDialog());
-        binding.inputBirthDate.setOnFocusChangeListener((v, hasFocus) -> {
-            if(hasFocus){
-                showDatePickerDialog();
-            }
-        });
 
+        // Idiomas → abre diálogo multi selección
+        binding.inputLanguages.setFocusable(false);
+        binding.inputLanguages.setClickable(true);
+        binding.inputLanguages.setOnClickListener(v -> showLanguagesDialog());
 
-        // Setup Select Image Button
-        binding.btnSelectImage.setOnClickListener(v -> openFileChooser());
+        // Seleccionar imagen (opcional)
+        binding.btnSelectImage.setOnClickListener(v -> openImagePicker());
 
-        // Setup Register Button
+        // Registrar guía
         binding.btnRegisterGuide.setOnClickListener(v -> registerGuide());
     }
 
+    // ---------------- FECHA ----------------
     private void showDatePickerDialog() {
-        final Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
+        Calendar calendar = Calendar.getInstance();
+        int year  = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        int day   = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(
-                GuideRegisterActivity.this,
-                (view, year1, monthOfYear, dayOfMonth) -> {
-                    String selectedDate = String.format("%02d/%02d/%d", dayOfMonth, (monthOfYear + 1), year1);
-                    binding.inputBirthDate.setText(selectedDate);
+        new DatePickerDialog(
+                this,
+                (view, year1, month1, day1) -> {
+                    String date = String.format(Locale.US, "%02d/%02d/%d",
+                            day1, month1 + 1, year1);
+                    binding.inputBirthDate.setText(date);
                 },
-                year, month, day);
-        datePickerDialog.show();
+                year, month, day
+        ).show();
     }
 
-    private void openFileChooser() {
-        Intent intent = new Intent();
+    // ---------------- IDIOMAS ----------------
+    private void showLanguagesDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Selecciona los idiomas que hablas")
+                .setMultiChoiceItems(LANGUAGE_NAMES, selectedLanguages,
+                        (dialog, i, checked) -> selectedLanguages[i] = checked)
+                .setPositiveButton("Aceptar", (dialog, which) -> {
+                    StringBuilder names = new StringBuilder();
+                    StringBuilder codes = new StringBuilder();
+
+                    for (int i = 0; i < LANGUAGE_NAMES.length; i++) {
+                        if (selectedLanguages[i]) {
+                            if (names.length() > 0) names.append(", ");
+                            if (codes.length() > 0) codes.append(",");
+                            names.append(LANGUAGE_NAMES[i]);
+                            codes.append(LANGUAGE_CODES[i]);
+                        }
+                    }
+
+                    binding.inputLanguages.setText(names.toString());
+                    selectedLanguageCodes = codes.toString();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    // ---------------- IMAGEN (OPCIONAL) ----------------
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
         pickImageLauncher.launch(intent);
     }
 
+    // ---------------- REGISTRO COMPLETO (Auth + Firestore) ----------------
     private void registerGuide() {
-        String names = Objects.requireNonNull(binding.inputNames.getText()).toString().trim();
-        String lastNames = Objects.requireNonNull(binding.inputLastNames.getText()).toString().trim();
-        String documentType = binding.spinnerDocumentType.getText().toString().trim();
-        String documentNumber = Objects.requireNonNull(binding.inputDocumentNumber.getText()).toString().trim();
-        String birthDate = Objects.requireNonNull(binding.inputBirthDate.getText()).toString().trim();
-        String email = Objects.requireNonNull(binding.inputEmail.getText()).toString().trim();
-        String phone = Objects.requireNonNull(binding.inputPhone.getText()).toString().trim();
-        String address = Objects.requireNonNull(binding.inputAddress.getText()).toString().trim();
-        String languages = Objects.requireNonNull(binding.inputLanguages.getText()).toString().trim();
+        String names          = binding.inputNames.getText().toString().trim();
+        String lastNames      = binding.inputLastNames.getText().toString().trim();
+        String documentType   = binding.spinnerDocumentType.getText().toString().trim();
+        String documentNumber = binding.inputDocumentNumber.getText().toString().trim();
+        String birthDate      = binding.inputBirthDate.getText().toString().trim();
+        String email          = binding.inputEmail.getText().toString().trim();
+        String phone          = binding.inputPhone.getText().toString().trim();
+        String address        = binding.inputAddress.getText().toString().trim();
+        String pass1          = binding.inputPass1.getText().toString().trim();
+        String pass2          = binding.inputPass2.getText().toString().trim();
 
-        // Basic Validations
+        // Validaciones básicas
         if (TextUtils.isEmpty(names)) {
-            binding.inputNames.setError("Nombres requeridos");
-            binding.inputNames.requestFocus();
+            binding.inputNames.setError("Requerido");
             return;
         }
         if (TextUtils.isEmpty(lastNames)) {
-            binding.inputLastNames.setError("Apellidos requeridos");
-            binding.inputLastNames.requestFocus();
+            binding.inputLastNames.setError("Requerido");
             return;
         }
         if (TextUtils.isEmpty(documentType)) {
-            binding.spinnerDocumentType.setError("Seleccione tipo de documento");
-            binding.spinnerDocumentType.requestFocus();
-            // Toast.makeText(this, "Seleccione tipo de documento", Toast.LENGTH_SHORT).show();
+            binding.spinnerDocumentType.setError("Requerido");
             return;
         }
-         binding.spinnerDocumentType.setError(null); // Clear error if present
-
         if (TextUtils.isEmpty(documentNumber)) {
-            binding.inputDocumentNumber.setError("Número de documento requerido");
-            binding.inputDocumentNumber.requestFocus();
+            binding.inputDocumentNumber.setError("Requerido");
             return;
         }
         if (TextUtils.isEmpty(birthDate)) {
-            binding.inputBirthDate.setError("Fecha de nacimiento requerida");
-            //binding.inputBirthDate.requestFocus(); // Avoids immediate re-trigger of date picker
-            Toast.makeText(this, "Fecha de nacimiento requerida", Toast.LENGTH_SHORT).show();
+            binding.inputBirthDate.setError("Requerido");
             return;
         }
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.inputEmail.setError("Correo electrónico inválido");
-            binding.inputEmail.requestFocus();
+            binding.inputEmail.setError("Correo inválido");
             return;
         }
         if (TextUtils.isEmpty(phone)) {
-            binding.inputPhone.setError("Teléfono requerido");
-            binding.inputPhone.requestFocus();
+            binding.inputPhone.setError("Requerido");
             return;
         }
-         if (TextUtils.isEmpty(address)) {
-            binding.inputAddress.setError("Domicilio requerido");
-            binding.inputAddress.requestFocus();
+        if (TextUtils.isEmpty(address)) {
+            binding.inputAddress.setError("Requerido");
             return;
         }
-        if (imageUri == null) {
-            Snackbar.make(binding.getRoot(), "Por favor, seleccione una foto de perfil.", Snackbar.LENGTH_LONG).show();
+        // Foto YA NO ES obligatoria -> no validamos imageUri
+
+        if (TextUtils.isEmpty(pass1)) {
+            binding.inputPass1.setError("Requerido");
             return;
         }
-        if (TextUtils.isEmpty(languages)) {
-            binding.inputLanguages.setError("Idiomas requeridos");
-            binding.inputLanguages.requestFocus();
+        if (pass1.length() < 6) {
+            binding.inputPass1.setError("Mínimo 6 caracteres");
+            return;
+        }
+        if (TextUtils.isEmpty(pass2)) {
+            binding.inputPass2.setError("Requerido");
+            return;
+        }
+        if (!pass1.equals(pass2)) {
+            binding.inputPass2.setError("Las contraseñas no coinciden");
             return;
         }
 
-        // --- Simulación de envío de información ---
-        // En una aplicación real, aquí enviarías los datos a tu backend o UserStore.
-        // Por ahora, solo mostraremos un mensaje.
+        if (selectedLanguageCodes.isEmpty()) {
+            Snackbar.make(binding.getRoot(), "Selecciona al menos un idioma", Snackbar.LENGTH_LONG).show();
+            return;
+        }
 
-        String guideInfo = "Nombres: " + names + "\n" +
-                           "Apellidos: " + lastNames + "\n" +
-                           "Documento: " + documentType + " - " + documentNumber + "\n" +
-                           "Nacimiento: " + birthDate + "\n" +
-                           "Email: " + email + "\n" +
-                           "Teléfono: " + phone + "\n" +
-                           "Domicilio: " + address + "\n" +
-                           "Idiomas: " + languages + "\n" +
-                           "Foto URI: " + imageUri.toString();
+        setLoading(true);
 
-        //Log.d("GuideRegister", "Información del Guía:\n" + guideInfo);
-        // For the demo, we'll use a Snackbar/Toast
-        Snackbar.make(binding.getRoot(), "Registro de guía enviado (simulado). Pendiente de aprobación.", Snackbar.LENGTH_LONG).show();
+        // 1) Crear usuario en Firebase Auth
+        auth.createUserWithEmailAndPassword(email, pass1)
+                .addOnSuccessListener(authResult -> {
+                    String uid = authResult.getUser() != null
+                            ? authResult.getUser().getUid()
+                            : null;
 
-        // ✅ IMPLEMENTADO: Guardamos la información del guía
-        UserStore.get().registerGuide(names, lastNames, documentType, documentNumber, 
-                                    birthDate, email, phone, address, 
-                                    imageUri.toString(), languages);
+                    if (uid == null) {
+                        setLoading(false);
+                        Snackbar.make(binding.getRoot(),
+                                "Error: UID nulo al crear usuario",
+                                Snackbar.LENGTH_LONG).show();
+                        return;
+                    }
 
-        // For now, just finish the activity or navigate back
-        // For a real app, you might want to navigate to a "Pending Approval" screen or back to login
-        new android.os.Handler().postDelayed(
-            () -> {
-                // Example: Navigate back to MainActivity or a Login screen
-                // Intent intent = new Intent(GuideRegisterActivity.this, MainActivity.class);
-                // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                // startActivity(intent);
-                finish(); // Close this activity
-            },
-            3000 // Delay to show Snackbar
-        );
+                    // 2) Crear documento en "guias"
+                    crearGuiaEnFirestore(uid, names, lastNames, documentType,
+                            documentNumber, birthDate, email, phone, address);
+                })
+                .addOnFailureListener(e -> {
+                    setLoading(false);
+                    Snackbar.make(binding.getRoot(),
+                            "Error creando usuario: " + e.getMessage(),
+                            Snackbar.LENGTH_LONG).show();
+                });
+    }
+
+    private void crearGuiaEnFirestore(String uid,
+                                      String names,
+                                      String lastNames,
+                                      String documentType,
+                                      String documentNumber,
+                                      String birthDate,
+                                      String email,
+                                      String phone,
+                                      String address) {
+
+        DocumentReference guiaRef = db.collection("guias").document();
+        String guiaId = guiaRef.getId();
+
+        Map<String, Object> guideData = new HashMap<>();
+        guideData.put("uid", uid);
+        guideData.put("email", email);
+        guideData.put("fotoUrl", imageUri != null ? imageUri.toString() : "");
+        guideData.put("langs", selectedLanguageCodes);   // EN,ES
+        guideData.put("nombre", names + " " + lastNames);
+        guideData.put("telefono", phone);
+        guideData.put("direccion", address);
+        guideData.put("birthDate", birthDate);
+        guideData.put("documentType", documentType);
+        guideData.put("documentNumber", documentNumber);
+        guideData.put("historial", new ArrayList<String>());
+        guideData.put("tourActual", "");
+        guideData.put("estado", "Libre");
+        guideData.put("guideApproved", false);
+        guideData.put("guideApprovalStatus", "PENDING");
+
+        guiaRef.set(guideData)
+                .addOnSuccessListener(done -> actualizarUsuarioComoGuia(uid, guiaId, names, lastNames))
+                .addOnFailureListener(e -> {
+                    setLoading(false);
+                    Snackbar.make(binding.getRoot(),
+                            "Error guardando guía: " + e.getMessage(),
+                            Snackbar.LENGTH_LONG).show();
+                });
+    }
+
+    private void actualizarUsuarioComoGuia(String uid,
+                                           String guiaId,
+                                           String names,
+                                           String lastNames) {
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("uid", uid);
+        userData.put("email", auth.getCurrentUser() != null ? auth.getCurrentUser().getEmail() : "");
+        userData.put("nombre", names + " " + lastNames);
+        userData.put("rol", "GUIDE");
+        userData.put("guiaId", guiaId);
+        userData.put("guideApproved", false);
+        userData.put("guideApprovalStatus", "PENDING");
+
+        db.collection("usuarios")
+                .document(uid)
+                .set(userData)
+                .addOnSuccessListener(unused -> {
+                    setLoading(false);
+                    Snackbar.make(binding.getRoot(),
+                            "Solicitud de guía enviada. Espera la aprobación del superadmin.",
+                            Snackbar.LENGTH_LONG).show();
+
+                    // Cerrar activity después de mostrar mensaje
+                    new android.os.Handler().postDelayed(this::finish, 2500);
+                })
+                .addOnFailureListener(e -> {
+                    setLoading(false);
+                    Snackbar.make(binding.getRoot(),
+                            "Error guardando usuario/guía: " + e.getMessage(),
+                            Snackbar.LENGTH_LONG).show();
+                });
+    }
+
+    // ---------------- UI helper ----------------
+    private void setLoading(boolean loading) {
+        binding.btnRegisterGuide.setEnabled(!loading);
+        binding.btnSelectImage.setEnabled(!loading);
+        binding.inputNames.setEnabled(!loading);
+        binding.inputLastNames.setEnabled(!loading);
+        binding.spinnerDocumentType.setEnabled(!loading);
+        binding.inputDocumentNumber.setEnabled(!loading);
+        binding.inputBirthDate.setEnabled(!loading);
+        binding.inputEmail.setEnabled(!loading);
+        binding.inputPhone.setEnabled(!loading);
+        binding.inputAddress.setEnabled(!loading);
+        binding.inputLanguages.setEnabled(!loading);
+        binding.inputPass1.setEnabled(!loading);
+        binding.inputPass2.setEnabled(!loading);
     }
 
     @Override

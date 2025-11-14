@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,6 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Buscar por tour o cliente">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputSearch"
                 android:layout_width="match_parent"
@@ -28,6 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:hint="Estado">
+
             <AutoCompleteTextView
                 android:id="@+id/inputStatus"
                 android:layout_width="match_parent"
@@ -42,7 +45,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
 
     <!-- Botón de generar reporte -->
     <com.google.android.material.button.MaterialButton

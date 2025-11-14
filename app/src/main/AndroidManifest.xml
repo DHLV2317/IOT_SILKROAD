@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
+    <!-- Permisos básicos -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -13,135 +13,241 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SILKROAD_IOT">
+        <activity
+            android:name=".ui.auth.ForgotPasswordVerifyActivity"
+            android:exported="false" />
+        <!-- 🌐 CONFIG FACEBOOK SDK (IOT_SILKROAD) -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" /> <!-- Activities internas de Facebook -->
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name" />
+        <activity
+            android:name="com.facebook.CustomTabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="@string/fb_login_protocol_scheme" />
+            </intent-filter>
+        </activity> <!-- ===================== -->
         <!-- ADMIN -->
-        <activity android:name=".ui.admin.AdminCompanyDetailActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminToursActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminTourDetailActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminTourWizardActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminTourDetailViewActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminReservationsActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminReservationDetailActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminGuidesActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminGuideDetailActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminReportsActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminHomeActivity" android:exported="false"/>
-        <activity android:name=".ui.admin.AdminProfileActivity" android:exported="false" />
-
-
+        <!-- ===================== -->
+        <activity
+            android:name=".ui.admin.AdminCompanyDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminToursActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminTourDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminTourWizardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminTourDetailViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminReservationsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminReservationDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminGuidesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminGuideDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminReportsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminProfileActivity"
+            android:exported="false" /> <!-- ===================== -->
         <!-- SUPERADMIN -->
+        <!-- ===================== -->
         <activity
             android:name=".ui.superadmin.SuperAdminHomeActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.AdministradoresActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.CrearAdministradorActivity"
             android:exported="false"
             android:label="Crear Administrador"
             android:parentActivityName=".ui.superadmin.AdministradoresActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.DetallesAdministradorActivity"
             android:exported="false"
             android:label="Editar Administrador"
             android:parentActivityName=".ui.superadmin.AdministradoresActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.GuiasActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
-        <activity android:name=".ui.superadmin.DetallesGuiaActivity"
+            android:theme="@style/Theme.SuperAdminTheme" />
+        <activity
+            android:name=".ui.superadmin.DetallesGuiaActivity"
             android:exported="false"
             android:label="Editar Guia"
             android:parentActivityName=".ui.superadmin.GuiasActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.SolicitudesGuiasActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.DetallesSolicitudGuiaActivity"
             android:exported="false"
             android:label="Solicitud de guía"
             android:parentActivityName=".ui.superadmin.SolicitudesGuiasActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.ClientesActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.DetallesClienteActivity"
             android:exported="false"
             android:label="Editar Cliente"
             android:parentActivityName=".ui.superadmin.ClientesActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.LogsActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.DetallesLogActivity"
             android:exported="false"
             android:label="Evento"
             android:parentActivityName=".ui.superadmin.LogsActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.ReportesActivity"
             android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme"/>
+            android:theme="@style/Theme.SuperAdminTheme" />
         <activity
             android:name=".ui.superadmin.DetallesReporteActivity"
             android:exported="false"
             android:label="Reporte"
             android:parentActivityName=".ui.superadmin.ReportesActivity"
-            android:theme="@style/Theme.SuperAdminTheme"/>
-
+            android:theme="@style/Theme.SuperAdminTheme" /> <!-- ===================== -->
         <!-- GUIDE -->
-        <activity android:name=".ui.guide.GuideHomeActivity" android:exported="false"/>
-        <activity android:name=".ui.guide.GuideTourOffersActivity" android:exported="false"
-            android:label="Ofertas de Tours" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
-        <activity android:name=".ui.guide.GuideLocationTrackingActivity" android:exported="false"
-            android:label="Registrar Ubicación" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
-        <activity android:name=".ui.guide.GuideQRScannerActivity" android:exported="false"
-            android:label="Escanear QR" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
-        <activity android:name=".ui.guide.GuidePendingApprovalActivity" android:exported="false"
-            android:label="Cuenta Pendiente"/>
-        <activity android:name=".ui.guide.GuideProfileActivity" android:exported="false"
-            android:label="Mi Perfil" android:parentActivityName=".ui.guide.GuideHomeActivity"/>
-        <activity android:name=".ui.guide.GuideHistoryActivity" android:exported="false"
-            android:label="Historial de Tours" android:parentActivityName=".ui.guide.GuideProfileActivity"/>
-
+        <!-- ===================== -->
+        <activity
+            android:name=".ui.guide.GuideHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.guide.GuideTourOffersActivity"
+            android:exported="false"
+            android:label="Ofertas de Tours"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuideLocationTrackingActivity"
+            android:exported="false"
+            android:label="Registrar Ubicación"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuideQRScannerActivity"
+            android:exported="false"
+            android:label="Escanear QR"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuidePendingApprovalActivity"
+            android:exported="false"
+            android:label="Cuenta Pendiente" />
+        <activity
+            android:name=".ui.guide.GuideProfileActivity"
+            android:exported="false"
+            android:label="Mi Perfil"
+            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+        <activity
+            android:name=".ui.guide.GuideHistoryActivity"
+            android:exported="false"
+            android:label="Historial de Tours"
+            android:parentActivityName=".ui.guide.GuideProfileActivity" /> <!-- ===================== -->
         <!-- CLIENT -->
-        <activity android:name=".ui.client.ClientHomeActivity" android:exported="false" android:label="Inicio Cliente"/>
-        <activity android:name=".ui.client.ClientOnboardingActivity" android:exported="false" android:label="Verificación de datos"/>
-        <activity android:name=".ui.client.ToursActivity" android:exported="false" android:label="tours"/>
-        <activity android:name=".ui.client.TourDetailActivity" android:exported="false" android:label="tours"/>
-        <activity android:name=".ui.client.ConfirmTourActivity" android:exported="false" android:label="tours"/>
-        <activity android:name=".ui.client.TourHistoryActivity" android:exported="false" android:label="tours"/>
-        <activity android:name=".ui.client.OrderDetailActivity" android:exported="false" android:label="tours"/>
-        <activity android:name=".ui.client.StopsActivity" android:exported="false" android:label="tours"/>
-
-        <!-- AUTH / MAIN -->
-        <activity android:name=".ui.auth.RegisterActivity" android:exported="false" android:label="Registro"/>
-        <activity android:name=".ui.auth.GuideRegisterActivity" android:exported="false" android:label="Registro Guía"
-            android:parentActivityName=".ui.auth.RegisterActivity"/>
-        <activity android:name=".ui.auth.RegisterVerifyActivity" android:exported="false" android:label="Verificación de registro"/>
-        <activity android:name=".ui.auth.ForgotPasswordActivity" android:exported="false" android:label="Recuperar contraseña"/>
-
+        <!-- ===================== -->
+        <activity
+            android:name=".ui.client.ClientHomeActivity"
+            android:exported="false"
+            android:label="Inicio Cliente" />
+        <activity
+            android:name=".ui.client.ClientOnboardingActivity"
+            android:exported="false"
+            android:label="Verificación de datos" />
+        <activity
+            android:name=".ui.client.ToursActivity"
+            android:exported="false"
+            android:label="tours" />
+        <activity
+            android:name=".ui.client.TourDetailActivity"
+            android:exported="false"
+            android:label="tours" />
+        <activity
+            android:name=".ui.client.ConfirmTourActivity"
+            android:exported="false"
+            android:label="tours" />
+        <activity
+            android:name=".ui.client.TourHistoryActivity"
+            android:exported="false"
+            android:label="tours" />
+        <activity
+            android:name=".ui.client.OrderDetailActivity"
+            android:exported="false"
+            android:label="tours" />
+        <activity
+            android:name=".ui.client.StopsActivity"
+            android:exported="false"
+            android:label="tours" /> <!-- ===================== -->
+        <!-- AUTH -->
+        <!-- ===================== -->
+        <activity
+            android:name=".ui.auth.RegisterActivity"
+            android:exported="false"
+            android:label="Registro" />
+        <activity
+            android:name=".ui.auth.GuideRegisterActivity"
+            android:exported="false"
+            android:label="Registro Guía"
+            android:parentActivityName=".ui.auth.RegisterActivity" />
+        <activity
+            android:name=".ui.auth.RegisterVerifyActivity"
+            android:exported="false"
+            android:label="Verificación de registro" />
+        <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false"
+            android:label="Recuperar contraseña" /> <!-- ===================== -->
+        <!-- MAIN / LAUNCH -->
+        <!-- ===================== -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="Login">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>

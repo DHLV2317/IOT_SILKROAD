@@ -1,44 +1,40 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.PropertyName;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Modelo Firestore para "tours".
- * - Soporta alias de campos (nombre/name, imagen/imageUrl, precio/price, cantidad_personas/people).
- * - Incluye helpers para UI (displayName, displayImageUrl, etc.).
- * - Soporta paradas embebidas (paradas) o referenciadas (id_paradas).
- * - Incluye lista opcional de servicios (services).
- */
 @IgnoreExtraProperties
 public class TourFB implements Serializable {
 
     private String id;
 
     // Nombres / visual
-    private String nombre;          // preferido
-    private String name;            // alias
+    private String nombre;
+    private String name;
     private String description;
 
-    // Imagen (dos posibles nombres)
+    // Imagen
     private String imagen;
     private String imageUrl;
 
-    // Precio / personas (alias)
-    private double precio;            // preferido
-    private Double price;             // alias
-    private int    cantidad_personas; // preferido
-    private Integer people;           // alias
+    // Precio / personas
+    private double  precio;
+    private Double  price;
+    private int     cantidad_personas;
+    private Integer people;
 
     // Metadatos
     private String empresaId;
-    private String ownerUid;        // por si filtras por dueño
-    private String ciudad;          // para filtro/búsqueda
-    private String langs;           // "Español/Inglés"
+    private String ownerUid;
+    private String ciudad;
+    private String langs;
     private String duration;
     private String assignedGuideName;
     private Double paymentProposal;
@@ -47,11 +43,14 @@ public class TourFB implements Serializable {
     private Date dateFrom;
     private Date dateTo;
 
-    // Paradas
-    private List<ParadaFB> paradas;     // EMBEBIDAS en el documento
-    private List<String>   id_paradas;  // REFERENCIAS (IDs en otra colección)
+    // Paradas embebidas
+    private List<ParadaFB> paradas;
 
-    // Servicios opcionales (para chips)
+    // Paradas referenciadas (puede ser String o List en Firestore) -> guardamos RAW
+    @PropertyName("id_paradas")
+    private Object idParadasRaw;
+
+    // Servicios
     private List<ServiceFB> services;
 
     public TourFB() {}
@@ -94,7 +93,7 @@ public class TourFB implements Serializable {
     @PropertyName("ownerUid")  public String getOwnerUid() { return ownerUid; }
     @PropertyName("ownerUid")  public void setOwnerUid(String ownerUid) { this.ownerUid = ownerUid; }
 
-    // --- Otros campos útiles ---
+    // --- Otros ---
     @PropertyName("ciudad") public String getCiudad() { return ciudad; }
     @PropertyName("ciudad") public void setCiudad(String ciudad) { this.ciudad = ciudad; }
     @PropertyName("langs") public String getLangs() { return langs; }
@@ -112,19 +111,48 @@ public class TourFB implements Serializable {
     @PropertyName("dateTo") public Date getDateTo() { return dateTo; }
     @PropertyName("dateTo") public void setDateTo(Date dateTo) { this.dateTo = dateTo; }
 
-    // --- Paradas (embebidas) ---
+    // --- Paradas embebidas ---
     @PropertyName("paradas") public List<ParadaFB> getParadas() { return paradas; }
     @PropertyName("paradas") public void setParadas(List<ParadaFB> paradas) { this.paradas = paradas; }
 
-    // --- Paradas (referencias) ---
-    @PropertyName("id_paradas") public List<String> getId_paradas() { return id_paradas; }
-    @PropertyName("id_paradas") public void setId_paradas(List<String> id_paradas) { this.id_paradas = id_paradas; }
+    // --- Paradas referenciadas RAW (único mapeo a Firestore) ---
+    @PropertyName("id_paradas") public Object getIdParadasRaw() { return idParadasRaw; }
+    @PropertyName("id_paradas") public void setIdParadasRaw(Object raw) { this.idParadasRaw = raw; }
+
+    // --- Helpers normalizados (Firestore debe IGNORARLOS) ---
+    /** Devuelve siempre una lista, aunque en Firestore esté guardado como String. */
+    @Exclude
+    public List<String> getIdParadasList() {
+        if (idParadasRaw == null) return Collections.emptyList();
+        if (idParadasRaw instanceof String) {
+            String s = ((String) idParadasRaw).trim();
+            return s.isEmpty() ? Collections.emptyList() : Collections.singletonList(s);
+        }
+        if (idParadasRaw instanceof List) {
+            List<?> in = (List<?>) idParadasRaw;
+            List<String> out = new ArrayList<>(in.size());
+            for (Object o : in) if (o != null) out.add(String.valueOf(o));
+            return out;
+        }
+        return Collections.emptyList();
+    }
+
+    /** Compat: si en tu código antiguo llamabas getId_paradas(), usa este helper. */
+    @Exclude
+    public List<String> getId_paradas() {
+        return getIdParadasList();
+    }
+
+    /** Compat: si en tu código antiguo llamabas setId_paradas(List). */
+    @Exclude
+    public void setId_paradas(List<String> ids) {
+        this.idParadasRaw = (ids == null ? null : new ArrayList<>(ids));
+    }
 
     // --- Servicios ---
     @PropertyName("services") public List<ServiceFB> getServices() { return services; }
     @PropertyName("services") public void setServices(List<ServiceFB> services) { this.services = services; }
 
-    /** Modelo interno de Servicio (para chips en UI) */
     public static class ServiceFB implements Serializable {
         private String name;
         private Boolean included;
@@ -134,15 +162,13 @@ public class TourFB implements Serializable {
 
         @PropertyName("name") public String getName() { return name; }
         @PropertyName("name") public void setName(String name) { this.name = name; }
-
         @PropertyName("included") public Boolean getIncluded() { return included; }
         @PropertyName("included") public void setIncluded(Boolean included) { this.included = included; }
-
         @PropertyName("price") public Double getPrice() { return price; }
         @PropertyName("price") public void setPrice(Double price) { this.price = price; }
     }
 
-    // --- Helpers para la UI ---
+    // --- Helpers UI ---
     public String getDisplayName() {
         if (nombre != null && !nombre.isEmpty()) return nombre;
         return name != null ? name : "";
@@ -164,8 +190,8 @@ public class TourFB implements Serializable {
     }
 
     public boolean hasParadas() {
-        return (paradas != null && !paradas.isEmpty()) ||
-                (id_paradas != null && !id_paradas.isEmpty());
+        return (paradas != null && !paradas.isEmpty())
+                || (!getIdParadasList().isEmpty());
     }
 
     @Override

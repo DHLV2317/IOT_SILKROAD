@@ -3,65 +3,151 @@ package com.example.silkroad_iot.ui.admin;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.silkroad_iot.R;
-import com.example.silkroad_iot.data.AdminRepository;
+import com.example.silkroad_iot.data.ReservaWithTour;
+import com.example.silkroad_iot.data.TourFB;
+import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.databinding.ContentAdminReservationsBinding;
 import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import android.widget.ArrayAdapter;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AdminReservationsActivity extends BaseDrawerActivity {
 
     private ContentAdminReservationsBinding b;
-    private final AdminRepository repo = AdminRepository.get();
+    private FirebaseFirestore db;
+
+    private final List<ReservaWithTour> fullList = new ArrayList<>();
     private AdminReservationsAdapter adapter;
 
-    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private static final String PREFS = "app_prefs";
+    private static final String KEY_EMPRESA_ID = "empresa_id";
 
-        // Inserta el contenido dentro del Drawer y toma la toolbar del Drawer
+    @Override
+    protected void onCreate(@Nullable Bundle s) {
+        super.onCreate(s);
+
+        // Inserta el contenido dentro del drawer
         setupDrawer(R.layout.content_admin_reservations, R.menu.menu_drawer_admin, "Reservas");
 
-        // Binding al layout de contenido (sin toolbar propia)
         b = ContentAdminReservationsBinding.bind(findViewById(R.id.rootContent));
+        db = FirebaseFirestore.getInstance();
 
-        // Lista + adapter
-        adapter = new AdminReservationsAdapter(repo.getReservations());
+        // Recycler + adapter
         b.list.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new AdminReservationsAdapter(new ArrayList<>());
         b.list.setAdapter(adapter);
 
         // Búsqueda por texto
         b.inputSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            @Override public void onTextChanged(CharSequence s, int st, int b2, int c2) {}
             @Override public void afterTextChanged(Editable s) {
-                adapter.filter(s == null ? "" : s.toString(), adapter.getStatusFilter());
+                String q = (s == null) ? "" : s.toString();
+                adapter.filter(q, adapter.getStatusFilter());
             }
         });
 
-        // Filtro por estado (dropdown)
-        String[] estados = new String[]{"Todos", "pendiente", "check-in", "check-out", "finalizada", "cancelada"};
-        ArrayAdapter<String> stAdapter =
+        // Filtro por estado
+        String[] estados = new String[]{
+                "Todos", "pendiente", "check-in", "check-out", "finalizada", "cancelado"
+        };
+
+        ArrayAdapter<String> statusAdapter =
                 new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, estados);
-        b.inputStatus.setAdapter(stAdapter);
+
+        b.inputStatus.setAdapter(statusAdapter);
         b.inputStatus.setText("Todos", false);
-        b.inputStatus.setOnItemClickListener((parent, view, position, id) -> {
-            String sel = estados[position];
+
+        b.inputStatus.setOnItemClickListener((p, v, pos, id) -> {
+            String sel = estados[pos];
             adapter.setStatusFilter(sel);
-            String q = b.inputSearch.getText() == null ? "" : b.inputSearch.getText().toString();
+            String q = b.inputSearch.getText() == null
+                    ? "" : b.inputSearch.getText().toString();
             adapter.filter(q, sel);
         });
 
-        // Hook para generar reporte con la lista filtrada actual
-        b.btnReport.setOnClickListener(v -> {
-            // Ejemplo:
-            // List<Object> items = adapter.getCurrentItems();
-            // TODO: Generar PDF/Share con 'items'
-        });
+        // Carga inicial
+        loadData();
     }
 
-    @Override protected int defaultMenuId() { return R.id.m_reservations; }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // por si hubo nuevas reservas
+        loadData();
+    }
+
+    @Override
+    protected int defaultMenuId() { return R.id.m_reservations; }
+
+    private void loadData() {
+        String empresaId = getSharedPreferences(PREFS, MODE_PRIVATE)
+                .getString(KEY_EMPRESA_ID, null);
+
+        if (empresaId == null) {
+            // si no hay empresa asociada, no hay nada que listar
+            adapter.setItems(new ArrayList<>());
+            return;
+        }
+
+        // 1) Obtener tours de la empresa
+        db.collection("tours")
+                .whereEqualTo("empresaId", empresaId)
+                .get()
+                .addOnSuccessListener(tourSnap -> {
+
+                    Map<String, TourFB> tourMap = new HashMap<>();
+
+                    for (QueryDocumentSnapshot d : tourSnap) {
+                        TourFB t = d.toObject(TourFB.class);
+                        t.setId(d.getId());
+                        tourMap.put(d.getId(), t);
+                    }
+
+                    if (tourMap.isEmpty()) {
+                        adapter.setItems(new ArrayList<>());
+                        return;
+                    }
+
+                    // 2) Obtener TODAS las reservas y filtrar por id_tour
+                    db.collection("tours_history")
+                            .get()
+                            .addOnSuccessListener(hSnap -> {
+
+                                fullList.clear();
+
+                                for (QueryDocumentSnapshot h : hSnap) {
+                                    TourHistorialFB r = h.toObject(TourHistorialFB.class);
+                                    r.setId(h.getId());
+
+                                    TourFB tour = tourMap.get(r.getIdTour());
+                                    if (tour == null) {
+                                        // la reserva es de otro tour/empresa
+                                        continue;
+                                    }
+
+                                    fullList.add(new ReservaWithTour(r, tour));
+                                }
+
+                                adapter.setItems(fullList);
+
+                                // aplicar filtros actuales
+                                String q = b.inputSearch.getText() == null
+                                        ? "" : b.inputSearch.getText().toString();
+                                adapter.filter(q, adapter.getStatusFilter());
+                            });
+                });
+    }
 }

@@ -15,6 +15,7 @@ import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.databinding.ContentAdminToursBinding;
 import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -26,17 +27,12 @@ public class AdminToursActivity extends BaseDrawerActivity {
 
     private ContentAdminToursBinding c;
 
-    // Firestore
     private FirebaseFirestore db;
     private FirebaseAuth auth;
     private ListenerRegistration reg;
 
-    // Datos/adapter
     private final List<TourFB> allTours = new ArrayList<>();
     private AdminToursAdapter adapter;
-
-    private static final String PREFS = "app_prefs";
-    private static final String KEY_EMPRESA_ID = "empresa_id";
 
     @Override
     protected void onCreate(@Nullable Bundle s) {
@@ -46,20 +42,22 @@ public class AdminToursActivity extends BaseDrawerActivity {
         FrameLayout container = findViewById(R.id.contentContainer);
         c = ContentAdminToursBinding.bind(container.getChildAt(0));
 
-        db = FirebaseFirestore.getInstance();
+        db   = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-        // UI
+        // Recycler
         c.recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminToursAdapter(new ArrayList<>());
         c.recycler.setAdapter(adapter);
 
+        // Buscador
         c.inputSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c1, int a) {}
             @Override public void onTextChanged(CharSequence s, int st, int b, int c2) { filter(s); }
             @Override public void afterTextChanged(Editable s) {}
         });
 
+        // Añadir nuevo tour
         c.btnAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminTourWizardActivity.class)));
     }
@@ -80,48 +78,59 @@ public class AdminToursActivity extends BaseDrawerActivity {
         c.progress.setVisibility(View.VISIBLE);
         c.empty.setVisibility(View.GONE);
 
-        String empresaId = getSharedPreferences(PREFS, MODE_PRIVATE)
-                .getString(KEY_EMPRESA_ID, null);
         String uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
-
-        if (empresaId != null) {
-            reg = db.collection("tours")
-                    .whereEqualTo("empresaId", empresaId)
-                    .addSnapshotListener((snap, err) -> {
-                        c.progress.setVisibility(View.GONE);
-                        if (err != null || snap == null) {
-                            showEmpty("No se pudieron cargar los tours.");
-                            return;
-                        }
-                        allTours.clear();
-                        for (QueryDocumentSnapshot d : snap) {
-                            TourFB t = d.toObject(TourFB.class);
-                            t.setId(d.getId());
-                            allTours.add(t);
-                        }
-                        applyData();
-                    });
-        } else if (uid != null) {
-            reg = db.collection("tours")
-                    .whereEqualTo("ownerUid", uid)
-                    .addSnapshotListener((snap, err) -> {
-                        c.progress.setVisibility(View.GONE);
-                        if (err != null || snap == null) {
-                            showEmpty("No se pudieron cargar los tours.");
-                            return;
-                        }
-                        allTours.clear();
-                        for (QueryDocumentSnapshot d : snap) {
-                            TourFB t = d.toObject(TourFB.class);
-                            t.setId(d.getId());
-                            allTours.add(t);
-                        }
-                        applyData();
-                    });
-        } else {
+        if (uid == null) {
             c.progress.setVisibility(View.GONE);
             showEmpty("Inicia sesión para ver tus tours.");
+            return;
         }
+
+        // 1) Obtener empresaId desde usuarios/{uid}
+        db.collection("usuarios")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(this::onUserLoadedForEmpresa)
+                .addOnFailureListener(e -> {
+                    c.progress.setVisibility(View.GONE);
+                    showEmpty("No se pudo obtener la empresa del usuario.");
+                });
+    }
+
+    private void onUserLoadedForEmpresa(DocumentSnapshot doc) {
+        if (!doc.exists()) {
+            c.progress.setVisibility(View.GONE);
+            showEmpty("No se encontró información del usuario.");
+            return;
+        }
+
+        String empresaId = doc.getString("empresaId");
+
+        if (empresaId == null || empresaId.isEmpty()) {
+            c.progress.setVisibility(View.GONE);
+            showEmpty("Tu usuario no tiene empresa asignada.");
+            return;
+        }
+
+        // 2) Cargar tours según empresaId
+        if (reg != null) { reg.remove(); }
+        reg = db.collection("tours")
+                .whereEqualTo("empresaId", empresaId)
+                .addSnapshotListener((snap, err) -> {
+                    c.progress.setVisibility(View.GONE);
+                    if (err != null || snap == null) {
+                        showEmpty("No se pudieron cargar los tours.");
+                        return;
+                    }
+
+                    allTours.clear();
+                    for (QueryDocumentSnapshot d : snap) {
+                        TourFB t = d.toObject(TourFB.class);
+                        t.setId(d.getId());
+                        allTours.add(t);
+                    }
+
+                    applyData();
+                });
     }
 
     private void applyData() {
@@ -150,6 +159,7 @@ public class AdminToursActivity extends BaseDrawerActivity {
             }
         }
         adapter.replace(filtered);
+
         if (filtered.isEmpty()) showEmpty("Sin resultados para \"" + q + "\"");
         else c.empty.setVisibility(View.GONE);
     }

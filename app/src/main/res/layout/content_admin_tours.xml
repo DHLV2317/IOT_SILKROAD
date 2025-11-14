@@ -5,60 +5,67 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header con buscador -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardHeader"
+    <!-- Contenido vertical: header + lista -->
+    <LinearLayout
+        android:id="@+id/contentInner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <!-- Header con buscador -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_margin="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
 
-            <TextView
-                android:id="@+id/tHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mis Tours"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="@color/brand_dark"
-                android:layout_marginBottom="8dp"/>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:startIconDrawable="@drawable/ic_search_24"
-                app:startIconTint="@color/brand_celeste">
+                android:orientation="vertical"
+                android:padding="16dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inputSearch"
+                <TextView
+                    android:id="@+id/tHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mis Tours"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="@color/brand_dark"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Buscar por nombre o ciudad"/>
-            </com.google.android.material.textfield.TextInputLayout>
+                    app:startIconDrawable="@drawable/ic_search_24"
+                    app:startIconTint="@color/brand_celeste">
 
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/inputSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Buscar por nombre o ciudad"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Lista -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="96dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_gravity="center_horizontal"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Lista: ahora sí ocupa todo lo demás -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="96dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
 
     <!-- Empty & Progress overlay -->
     <FrameLayout
@@ -94,7 +101,7 @@
         app:tint="@android:color/white"
         app:backgroundTint="@color/brand_celeste"
         android:layout_margin="16dp"
-        app:layout_anchorGravity="bottom|end"
-        app:layout_anchor="@id/recycler"/>
+        app:layout_anchor="@id/contentInner"
+        app:layout_anchorGravity="bottom|end"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

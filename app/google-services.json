@@ -12,7 +12,20 @@
           "package_name": "com.example.silkroad_iot"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "109695199773-9i0qnon5ldlrrdhm4m6igh9h1lr17sko.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.silkroad_iot",
+            "certificate_hash": "c458598017719491210a995d70d946fe269253fa"
+          }
+        },
+        {
+          "client_id": "109695199773-qakegcv4b89vrna0apdg98amusa24fa5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAzbWYjaXxthmiC6Fq_zxOzRfdwimKg7ho"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109695199773-qakegcv4b89vrna0apdg98amusa24fa5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

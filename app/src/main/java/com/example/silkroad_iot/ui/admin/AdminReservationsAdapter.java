@@ -12,151 +12,164 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.data.ReservaWithTour;
+import com.example.silkroad_iot.data.TourFB;
+import com.example.silkroad_iot.data.TourHistorialFB;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservationsAdapter.VH> {
+public class AdminReservationsAdapter
+        extends RecyclerView.Adapter<AdminReservationsAdapter.VH> {
 
-    private final List<Object> all;
-    private final List<Object> data;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+    private final List<ReservaWithTour> all;
+    private final List<ReservaWithTour> data;
+    private final SimpleDateFormat sdf =
+            new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
     private String statusFilter = "Todos";
 
-    public AdminReservationsAdapter(List<?> items){
+    public AdminReservationsAdapter(List<ReservaWithTour> items) {
         this.all  = new ArrayList<>(items);
         this.data = new ArrayList<>(items);
+    }
+
+    /** Reemplaza completamente la lista base */
+    public void setItems(List<ReservaWithTour> items) {
+        all.clear();
+        data.clear();
+        if (items != null) {
+            all.addAll(items);
+            data.addAll(items);
+        }
+        notifyDataSetChanged();
     }
 
     static class VH extends RecyclerView.ViewHolder {
         ImageView img;
         TextView tTitle, tSub, tDate, tStatus, btnDetail;
-        VH(View v){
+        VH(View v) {
             super(v);
-            img     = v.findViewById(R.id.aImg);
-            tTitle  = v.findViewById(R.id.aTitle);
-            tSub    = v.findViewById(R.id.aSubtitle);
-            tDate   = v.findViewById(R.id.aDate);
-            tStatus = v.findViewById(R.id.aStatus);
+            img       = v.findViewById(R.id.aImg);
+            tTitle    = v.findViewById(R.id.aTitle);
+            tSub      = v.findViewById(R.id.aSubtitle);
+            tDate     = v.findViewById(R.id.aDate);
+            tStatus   = v.findViewById(R.id.aStatus);
             btnDetail = v.findViewById(R.id.btnDetail);
         }
     }
 
-    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
-        View v = LayoutInflater.from(p.getContext()).inflate(R.layout.item_admin_reservation, p, false);
+    @NonNull
+    @Override
+    public VH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
+        View v = LayoutInflater.from(p.getContext())
+                .inflate(R.layout.item_admin_reservation, p, false);
         return new VH(v);
     }
 
-    @Override public void onBindViewHolder(@NonNull VH h, int i){
-        Object r = data.get(i);
+    @Override
+    public void onBindViewHolder(@NonNull VH h, int i) {
+        ReservaWithTour item = data.get(i);
+        TourHistorialFB r = item.getReserva();
+        TourFB tour       = item.getTour();
 
-        String tourName   = firstNonEmpty(
-                str(r, "tourName"),
-                str(obj(r, "tour"), "name"),
-                str(obj(r, "tour"), "nombre")
-        );
-        String clientName = str(r, "clientName");
-        Number people     = firstNum(num(r, "people"), num(r, "cantidad_personas"));
-        Number total      = firstNum(num(r, "total"), num(r, "precio"));
-        String status     = str(r, "status");
-        Date   date       = date(r, "date");
-        if (date == null) {
-            Number ts = num(r, "date");
-            if (ts != null) date = new Date(ts.longValue());
-        }
-        String imageUrl   = firstNonEmpty(
-                str(r, "imageUrl"),
-                str(obj(r, "tour"), "imagen"),
-                str(obj(r, "tour"), "imageUrl")
-        );
+        String tourName = (tour != null) ? tour.getDisplayName() : "(Sin tour)";
+        String clientId = r.getIdUsuario() == null ? "" : r.getIdUsuario();
 
-        h.tTitle.setText(tourName.isEmpty()? "(Sin tour)" : tourName);
-        h.tSub.setText((clientName.isEmpty()? "Cliente sin nombre" : clientName) +
-                " · " + (people==null? "1" : String.valueOf(people)) + " pax · S/ " +
-                (total==null? "0" : String.valueOf(total)));
-        h.tDate.setText(date==null? "—" : sdf.format(date));
-        h.tStatus.setText(status.isEmpty()? "pendiente" : status);
+        int    people = (tour != null) ? tour.getDisplayPeople() : 1;
+        double total  = (tour != null) ? tour.getDisplayPrice() : 0.0;
+
+        String status = r.getEstado();
+        if (status == null || status.trim().isEmpty()) status = "pendiente";
+
+        Date date = r.getFechaReserva() != null ? r.getFechaReserva()
+                : r.getFechaRealizado();
+
+        String imageUrl = (tour != null) ? tour.getDisplayImageUrl() : "";
+
+        // --------- Pintar ----------
+        h.tTitle.setText(tourName.isEmpty() ? "(Sin tour)" : tourName);
+
+        String cliLabel = clientId.isEmpty() ? "Cliente sin nombre" : clientId;
+        h.tSub.setText(cliLabel + " · " + people + " pax · S/ " + total);
+
+        h.tDate.setText(date == null ? "—" : sdf.format(date));
+        h.tStatus.setText(status);
 
         int bg = R.color.pill_gray;
-        String st = status == null ? "" : status.toLowerCase(Locale.getDefault());
-        if (st.contains("check-in")) bg = R.color.teal_200;
+        String st = status.toLowerCase(Locale.getDefault());
+        if (st.contains("check-in"))       bg = R.color.teal_200;
         else if (st.contains("check-out")) bg = R.color.teal_200;
-        else if (st.contains("final")) bg = R.color.teal_200;
-        else if (st.contains("rech") || st.contains("cancel")) bg = android.R.color.holo_red_light;
+        else if (st.contains("final"))     bg = R.color.teal_200;
+        else if (st.contains("rech") ||
+                st.contains("cancel"))    bg = android.R.color.holo_red_light;
         h.tStatus.setBackgroundResource(bg);
 
-        if (imageUrl.isEmpty()){
+        if (imageUrl == null || imageUrl.isEmpty()) {
             Glide.with(h.itemView).load(R.drawable.ic_menu_24)
-                    .error(R.drawable.ic_menu_24).into(h.img);
+                    .error(R.drawable.ic_menu_24)
+                    .into(h.img);
         } else {
             Glide.with(h.itemView).load(imageUrl)
                     .placeholder(R.drawable.ic_menu_24)
-                    .error(R.drawable.ic_menu_24).into(h.img);
+                    .error(R.drawable.ic_menu_24)
+                    .into(h.img);
         }
 
+        // Detalle
         h.btnDetail.setOnClickListener(v -> {
             Intent it = new Intent(v.getContext(), AdminReservationDetailActivity.class);
-            it.putExtra("index", h.getBindingAdapterPosition());
+            it.putExtra("reserva", item);  // ReservaWithTour debe implementar Serializable
             v.getContext().startActivity(it);
         });
     }
 
-    @Override public int getItemCount(){ return data.size(); }
+    @Override
+    public int getItemCount() { return data.size(); }
 
     /** Filtro combinado por texto y estado */
-    public void filter(String query, String status){
-        String q = query == null ? "" : query.trim().toLowerCase(Locale.getDefault());
+    public void filter(String query, String status) {
+        String q  = query  == null ? "" : query.trim().toLowerCase(Locale.getDefault());
         String st = status == null ? "Todos" : status;
 
         data.clear();
-        for (Object r : all){
-            String tour = firstNonEmpty(
-                    str(r, "tourName"),
-                    str(obj(r, "tour"), "name"),
-                    str(obj(r, "tour"), "nombre")
-            ).toLowerCase(Locale.getDefault());
 
-            String cli  = str(r, "clientName").toLowerCase(Locale.getDefault());
-            String s    = str(r, "status").toLowerCase(Locale.getDefault());
+        for (ReservaWithTour item : all) {
+            TourHistorialFB r = item.getReserva();
+            TourFB tour       = item.getTour();
 
-            boolean matchText = q.isEmpty() || tour.contains(q) || cli.contains(q);
-            boolean matchStatus = st.equals("Todos") || s.equals(st.toLowerCase(Locale.getDefault()));
+            String tourName = tour != null ? tour.getDisplayName() : "";
+            String clientId = r.getIdUsuario() == null ? "" : r.getIdUsuario();
+            String s        = r.getEstado() == null ? "" : r.getEstado();
 
-            if (matchText && matchStatus) data.add(r);
+            boolean matchText =
+                    q.isEmpty()
+                            || tourName.toLowerCase(Locale.getDefault()).contains(q)
+                            || clientId.toLowerCase(Locale.getDefault()).contains(q);
+
+            boolean matchStatus =
+                    st.equals("Todos")
+                            || s.toLowerCase(Locale.getDefault())
+                            .equals(st.toLowerCase(Locale.getDefault()));
+
+            if (matchText && matchStatus) {
+                data.add(item);
+            }
         }
         notifyDataSetChanged();
     }
 
-    public void setStatusFilter(String status){
+    public void setStatusFilter(String status) {
         this.statusFilter = status == null ? "Todos" : status;
     }
 
-    public String getStatusFilter(){ return statusFilter; }
+    public String getStatusFilter() { return statusFilter; }
 
-    /** Lista filtrada actual (útil para exportar) */
-    public List<Object> getCurrentItems(){ return new ArrayList<>(data); }
-
-    // ------- helpers reflexión/fallback -------
-    private static Object f(Object o, String n){
-        if (o==null) return null;
-        try { Field f=o.getClass().getDeclaredField(n); f.setAccessible(true); return f.get(o); }
-        catch (Throwable ignore){ return null; }
-    }
-    private static Object obj(Object o, String n){ return f(o,n); }
-    private static String str(Object o, String n){ Object v=f(o,n); return v==null? "": String.valueOf(v); }
-    private static Number num(Object o, String n){ Object v=f(o,n); return (v instanceof Number)? (Number)v : null; }
-    private static Date date(Object o, String n){ Object v=f(o,n); return (v instanceof Date)? (Date)v : null; }
-
-    private static String firstNonEmpty(String... vals){
-        for (String s : vals){ if (s != null && !s.trim().isEmpty()) return s; }
-        return "";
-    }
-    private static Number firstNum(Number... nums){
-        for (Number n : nums){ if (n != null) return n; }
-        return null;
+    /** Lista filtrada actual (útil para reportes/PDF) */
+    public List<ReservaWithTour> getCurrentItems() {
+        return new ArrayList<>(data);
     }
 }
