@@ -12,9 +12,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.data.ReservaWithTour;
+import com.example.silkroad_iot.data.TourFB;
+import com.example.silkroad_iot.data.TourHistorialFB;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,13 +24,13 @@ import java.util.Locale;
 
 public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservationsAdapter.VH> {
 
-    private final List<Object> all;
-    private final List<Object> data;
+    private final List<ReservaWithTour> all;
+    private final List<ReservaWithTour> data;
     private final SimpleDateFormat sdf =
             new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
     private String statusFilter = "Todos";
 
-    public AdminReservationsAdapter(List<?> items) {
+    public AdminReservationsAdapter(List<ReservaWithTour> items) {
         this.all  = new ArrayList<>(items);
         this.data = new ArrayList<>(items);
     }
@@ -58,77 +59,57 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
 
     @Override
     public void onBindViewHolder(@NonNull VH h, int i){
-        Object r = data.get(i);
+        ReservaWithTour item = data.get(i);
+        TourHistorialFB r = item.getReserva();
+        TourFB tour       = item.getTour();
 
         // ------- datos principales (tour) -------
-        String tourName = firstNonEmpty(
-                str(r, "tourName"),
-                str(obj(r, "tour"), "name"),
-                str(obj(r, "tour"), "nombre")
-        );
+        String tourName = tour != null ? tour.getDisplayName() : "(Sin tour)";
 
         // ------- cliente -------
-        String clientName = firstNonEmpty(
-                str(r, "clientName"),
-                str(r, "clientEmail"),
-                str(r, "id_usuario")
-        );
+        String clientName = r.getIdUsuario() != null ? r.getIdUsuario() : "Cliente sin nombre";
 
         // ------- pax / total -------
-        Number people = firstNum(
-                num(r, "people"),
-                num(r, "cantidad_personas"),
-                num(obj(r, "tour"), "cantidad_personas")
-        );
+        int pax = r.getPax() > 0
+                ? r.getPax()
+                : (tour != null && tour.getDisplayPeople() > 0 ? tour.getDisplayPeople() : 1);
 
-        Number total = firstNum(
-                num(r, "total"),
-                num(r, "precio"),
-                num(obj(r, "tour"), "precio")
-        );
+        double precioUnit = tour != null ? tour.getDisplayPrice() : 0.0;
+        double total = precioUnit * pax;
 
         // ------- estado / fecha -------
-        String status = firstNonEmpty(
-                str(r, "status"),
-                str(r, "estado")
-        );
+        String status = r.getEstado();
+        if (status == null || status.trim().isEmpty()) status = "pendiente";
 
-        Date date = firstDate(
-                date(r, "date"),
-                date(r, "fechaReserva"),
-                date(r, "fecha_realizado")
-        );
+        Date date = r.getFechaReserva() != null
+                ? r.getFechaReserva()
+                : r.getFechaRealizado();
 
         // ------- imagen -------
-        String imageUrl = firstNonEmpty(
-                str(r, "imageUrl"),
-                str(obj(r, "tour"), "imagen"),
-                str(obj(r, "tour"), "imageUrl")
-        );
+        String imageUrl = tour != null ? tour.getImageUrl() : null;
 
         // ------- bind UI -------
-        h.tTitle.setText(tourName.isEmpty() ? "(Sin tour)" : tourName);
+        h.tTitle.setText(tourName);
 
-        String paxText = (people == null ? "1" : String.valueOf(people)) + " pax";
-        String money   = "S/ " + (total == null ? "0" : String.valueOf(total));
-        h.tSub.setText(
-                (clientName.isEmpty() ? "Cliente sin nombre" : clientName)
-                        + " · " + paxText + " · " + money
-        );
+        String paxText = pax + " pax";
+        String money   = "S/ " + String.format(Locale.getDefault(), "%.2f", total);
+        h.tSub.setText(clientName + " · " + paxText + " · " + money);
 
         h.tDate.setText(date == null ? "—" : sdf.format(date));
-        if (status == null || status.trim().isEmpty()) status = "pendiente";
         h.tStatus.setText(status);
 
+        // Color según estado
         int bg = R.color.pill_gray;
         String st = status.toLowerCase(Locale.getDefault());
-        if (st.contains("check-in") || st.contains("check-out") || st.contains("final"))
-            bg = R.color.teal_200;
-        else if (st.contains("rech") || st.contains("cancel"))
-            bg = android.R.color.holo_red_light;
+        if (st.contains("check-in") || st.contains("check-out")
+                || st.contains("final") || st.contains("acept")) {
+            bg = R.color.teal_200;                // verde/teal para aceptado / finalizada / check
+        } else if (st.contains("rech") || st.contains("cancel")) {
+            bg = android.R.color.holo_red_light;  // rojo para cancelado / rechazado
+        }
         h.tStatus.setBackgroundResource(bg);
 
-        if (imageUrl.isEmpty()){
+        if (imageUrl == null || imageUrl.trim().isEmpty()){
             Glide.with(h.itemView)
                     .load(R.drawable.ic_menu_24)
                     .error(R.drawable.ic_menu_24)
@@ -144,9 +125,7 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
         // ------- botón detalle (pasamos el objeto entero) -------
         h.btnDetail.setOnClickListener(v -> {
             Intent it = new Intent(v.getContext(), AdminReservationDetailActivity.class);
-            if (r instanceof Serializable) {
-                it.putExtra("reserva", (Serializable) r);
-            }
+            it.putExtra("reserva", item);
             v.getContext().startActivity(it);
         });
     }
@@ -158,31 +137,28 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
     // =========================================================
     public void filter(String query, String status){
         String q  = query  == null ? "" : query.trim().toLowerCase(Locale.getDefault());
-        String st = status == null ? "Todos" : status;
+        String stFilter = status == null ? "Todos" : status.toLowerCase(Locale.getDefault());
 
         data.clear();
-        for (Object r : all){
-            String tour = firstNonEmpty(
-                    str(r, "tourName"),
-                    str(obj(r, "tour"), "name"),
-                    str(obj(r, "tour"), "nombre")
-            ).toLowerCase(Locale.getDefault());
+        for (ReservaWithTour item : all){
 
-            String cli = firstNonEmpty(
-                    str(r, "clientName"),
-                    str(r, "clientEmail"),
-                    str(r, "id_usuario")
-            ).toLowerCase(Locale.getDefault());
+            TourHistorialFB r = item.getReserva();
+            TourFB tour       = item.getTour();
 
-            String s = firstNonEmpty(
-                    str(r, "status"),
-                    str(r, "estado")
-            ).toLowerCase(Locale.getDefault());
+            String tourName = tour != null ? tour.getDisplayName() : "";
+            String cli      = r.getIdUsuario() != null ? r.getIdUsuario() : "";
+            String s        = r.getEstado() != null ? r.getEstado() : "pendiente";
 
-            boolean matchText   = q.isEmpty() || tour.contains(q) || cli.contains(q);
-            boolean matchStatus = st.equals("Todos") || s.equals(st.toLowerCase(Locale.getDefault()));
+            String sLower = s.toLowerCase(Locale.getDefault());
 
-            if (matchText && matchStatus) data.add(r);
+            boolean matchText = q.isEmpty()
+                    || tourName.toLowerCase(Locale.getDefault()).contains(q)
+                    || cli.toLowerCase(Locale.getDefault()).contains(q);
+
+            boolean matchStatus = stFilter.equals("todos")
+                    || sLower.equals(stFilter);
+
+            if (matchText && matchStatus) data.add(item);
         }
         notifyDataSetChanged();
     }
@@ -193,54 +169,11 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
 
     public String getStatusFilter(){ return statusFilter; }
 
-    public List<Object> getCurrentItems(){ return new ArrayList<>(data); }
-
-    /** Reemplaza los datos al refrescar desde Firestore */
-    public void replace(List<?> newItems) {
+    public void replace(List<ReservaWithTour> newItems) {
         all.clear();
         data.clear();
         all.addAll(newItems);
         data.addAll(newItems);
         notifyDataSetChanged();
-    }
-
-    // =========================================================
-    // helpers reflexión/fallback
-    // =========================================================
-    private static Object f(Object o, String n){
-        if (o==null) return null;
-        try {
-            Field f=o.getClass().getDeclaredField(n);
-            f.setAccessible(true);
-            return f.get(o);
-        } catch (Throwable ignore){ return null; }
-    }
-    private static Object obj(Object o, String n){ return f(o,n); }
-    private static String str(Object o, String n){
-        Object v=f(o,n);
-        return v==null? "" : String.valueOf(v);
-    }
-    private static Number num(Object o, String n){
-        Object v=f(o,n);
-        return (v instanceof Number)? (Number)v : null;
-    }
-    private static Date date(Object o, String n){
-        Object v=f(o,n);
-        return (v instanceof Date)? (Date)v : null;
-    }
-
-    private static String firstNonEmpty(String... vals){
-        for (String s : vals){
-            if (s != null && !s.trim().isEmpty()) return s;
-        }
-        return "";
-    }
-    private static Number firstNum(Number... nums){
-        for (Number n : nums){ if (n != null) return n; }
-        return null;
-    }
-    private static Date firstDate(Date... ds){
-        for (Date d: ds){ if (d != null) return d; }
-        return null;
     }
 }

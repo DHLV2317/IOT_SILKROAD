@@ -25,19 +25,18 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         void onDetailClicked(int position);
     }
 
-    private final List<GuideFb> all = new ArrayList<>();
+    private final List<GuideFb> all  = new ArrayList<>();
     private final List<GuideFb> data = new ArrayList<>();
-    private final Callbacks callbacks;
+    private final Callbacks cb;
 
     public AdminGuidesAdapter(List<GuideFb> items, Callbacks callbacks) {
         if (items != null) {
             all.addAll(items);
             data.addAll(items);
         }
-        this.callbacks = callbacks;
+        this.cb = callbacks;
     }
 
-    /** Reemplaza los datos al recargar desde Firestore. */
     public void updateData(List<GuideFb> items) {
         all.clear();
         data.clear();
@@ -50,12 +49,12 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
 
     static class VH extends RecyclerView.ViewHolder {
         ImageView img;
-        TextView tTitle, tSubtitle, tStatus, tExtra;
+        TextView tName, tSubtitle, tStatus, tExtra;
         MaterialButton btnAssign, btnDetail;
-        VH(View v){
+        VH(View v) {
             super(v);
             img       = v.findViewById(R.id.aImg);
-            tTitle    = v.findViewById(R.id.aTitle);
+            tName     = v.findViewById(R.id.aTitle);
             tSubtitle = v.findViewById(R.id.aSubtitle);
             tStatus   = v.findViewById(R.id.aStatus);
             tExtra    = v.findViewById(R.id.aExtra);
@@ -65,61 +64,57 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
     }
 
     @NonNull @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
-        View v = LayoutInflater.from(p.getContext())
-                .inflate(R.layout.item_admin_guide, p, false);
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_admin_guide, parent, false);
         return new VH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int i){
-        GuideFb g = data.get(i);
+    public void onBindViewHolder(@NonNull VH h, int position) {
+        GuideFb g = data.get(position);
 
-        String photo = g.getFotoUrl();
+        String foto = safe(g.getFotoUrl());
         Glide.with(h.itemView)
-                .load(photo == null || photo.trim().isEmpty() ? R.drawable.ic_person_24 : photo)
+                .load(foto.isEmpty() ? R.drawable.ic_person_24 : foto)
                 .into(h.img);
 
-        String name = safe(g.getNombre());
-        h.tTitle.setText(name.isEmpty() ? "(Sin nombre)" : name);
+        String name   = safe(g.getNombre());
+        String langs  = safe(g.getLangs());
+        String state  = safe(g.getEstado());
+        String actual = safe(g.getTourActual());
 
-        String langs = safe(g.getLangs());
+        h.tName.setText(name.isEmpty() ? "(Sin nombre)" : name);
         h.tSubtitle.setText(langs.isEmpty() ? "—" : langs);
-
-        String state = safe(g.getEstado());
         h.tStatus.setText(state.isEmpty() ? "—" : state);
 
-        int historyCount = (g.getHistorial() == null) ? 0 : g.getHistorial().size();
-        String currentTour = safe(g.getTourActual());
-        h.tExtra.setText(currentTour.isEmpty()
-                ? (historyCount + " tours")
-                : (historyCount + " tours • Actual: " + currentTour));
+        int hist = (g.getHistorial() == null) ? 0 : g.getHistorial().size();
+        h.tExtra.setText(
+                actual.isEmpty()
+                        ? hist + " tours"
+                        : hist + " tours • Actual: " + actual
+        );
 
         h.btnAssign.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();
-            if (pos != RecyclerView.NO_POSITION && callbacks != null) {
-                callbacks.onAssignClicked(pos);
-            }
+            if (pos != RecyclerView.NO_POSITION && cb != null) cb.onAssignClicked(pos);
         });
 
         h.btnDetail.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();
-            if (pos != RecyclerView.NO_POSITION && callbacks != null) {
-                callbacks.onDetailClicked(pos);
-            }
+            if (pos != RecyclerView.NO_POSITION && cb != null) cb.onDetailClicked(pos);
         });
     }
 
-    @Override public int getItemCount(){ return data.size(); }
+    @Override public int getItemCount() { return data.size(); }
 
-    /** Filtro por nombre / idiomas / estado. */
-    public void filter(String q){
-        String s = q == null ? "" : q.trim().toLowerCase(Locale.getDefault());
+    public void filter(String q) {
+        String s = q == null ? "" : q.toLowerCase(Locale.getDefault()).trim();
         data.clear();
-        if (s.isEmpty()){
+        if (s.isEmpty()) {
             data.addAll(all);
         } else {
-            for (GuideFb g : all){
+            for (GuideFb g : all) {
                 String name  = safe(g.getNombre()).toLowerCase(Locale.getDefault());
                 String langs = safe(g.getLangs()).toLowerCase(Locale.getDefault());
                 String state = safe(g.getEstado()).toLowerCase(Locale.getDefault());
@@ -131,5 +126,5 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         notifyDataSetChanged();
     }
 
-    private static String safe(String s){ return s == null ? "" : s; }
+    private static String safe(String s) { return s == null ? "" : s; }
 }

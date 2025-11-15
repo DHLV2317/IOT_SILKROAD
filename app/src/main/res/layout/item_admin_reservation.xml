@@ -15,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <!-- IMAGEN DEL TOUR -->
         <ImageView
             android:id="@+id/aImg"
             android:layout_width="64dp"
@@ -22,6 +23,7 @@
             android:src="@drawable/ic_menu_24"
             android:background="#EEEEEE" />
 
+        <!-- CONTENEDOR DEL TEXTO -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_marginStart="12dp"
@@ -52,8 +54,10 @@
                 android:layout_marginTop="2dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+
         </LinearLayout>
 
+        <!-- ESTADO -->
         <TextView
             android:id="@+id/aStatus"
             android:text="pendiente"
@@ -61,8 +65,12 @@
             android:background="@color/pill_gray"
             android:textColor="@android:color/white"
             android:textSize="12sp"
-            android:layout_marginStart="4dp" />
+            android:layout_marginStart="4dp"
+            android:backgroundTintMode="src_over"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
+        <!-- BOTÓN VER DETALLE -->
         <TextView
             android:id="@+id/btnDetail"
             android:text="Ver"
@@ -71,5 +79,7 @@
             android:layout_marginStart="12dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
     </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>

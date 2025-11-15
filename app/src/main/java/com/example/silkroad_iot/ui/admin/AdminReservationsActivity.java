@@ -58,9 +58,16 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
             }
         });
 
-        // Filtro por estado
+        // ===== Filtro por estado (ahora con todos los estados) =====
         String[] estados = new String[]{
-                "Todos", "pendiente", "check-in", "check-out", "finalizada", "cancelado"
+                "Todos",
+                "pendiente",
+                "aceptado",
+                "rechazado",
+                "check-in",
+                "check-out",
+                "finalizada",
+                "cancelado"
         };
 
         ArrayAdapter<String> statusAdapter =

@@ -6,7 +6,14 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExperimentalGetImage;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -14,19 +21,42 @@ import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.data.UserStore;
 import com.example.silkroad_iot.databinding.ActivityGuideQrScannerBinding;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.common.InputImage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+/**
+ * Escáner REAL de QR para reservas.
+ * No dependemos de reservaId en el texto.
+ * Buscamos directamente en la colección "tours_history" por el campo "qrData".
+ */
 public class GuideQRScannerActivity extends AppCompatActivity {
 
     private ActivityGuideQrScannerBinding b;
     private static final int CAM_REQ = 1002;
+
     private FirebaseFirestore db;
     private String guideDocId;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
+    // CameraX + ML Kit
+    private ExecutorService cameraExecutor;
+    private BarcodeScanner barcodeScanner;
+    private boolean isProcessingFrame = false;
+    private long lastScanTime = 0L;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         b = ActivityGuideQrScannerBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
@@ -38,193 +68,318 @@ public class GuideQRScannerActivity extends AppCompatActivity {
         }
 
         db = FirebaseFirestore.getInstance();
+
+        // Configuración ML Kit: solo QR
+        BarcodeScannerOptions options =
+                new BarcodeScannerOptions.Builder()
+                        .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                        .build();
+        barcodeScanner = BarcodeScanning.getClient(options);
+
+        cameraExecutor = Executors.newSingleThreadExecutor();
+
         resolveGuideDocId();
-
-        // Simulación de escaneo (para pruebas)
-        b.btnSimulateQRScan.setOnClickListener(v -> {
-            // Ejemplo de QR real:
-            // RESERVA|<id_reserva>|<id_tour>|<id_usuario>|PAX:<pax>
-            String sampleQr = "RESERVA|abc123|tour567|cliente@mail.com|PAX:2";
-            onQrDecoded(sampleQr);
-        });
-
-        // Check-out manual (por si hay problemas con el QR/cámara)
-        b.btnManualCheckout.setOnClickListener(v -> manualCheckout());
-
         checkCameraPermission();
     }
 
-    private void resolveGuideDocId() {
-        User u = UserStore.get().getLogged();
-        String email = (u!=null? u.getEmail(): null);
-        if (email == null || email.isEmpty()) return;
-
-        db.collection("guias").whereEqualTo("email", email).limit(1).get()
-                .addOnSuccessListener(snap -> {
-                    if (!snap.isEmpty()) guideDocId = snap.getDocuments().get(0).getId();
-                });
-    }
+    // -------------------------------------------------------------
+    //  Permisos de cámara
+    // -------------------------------------------------------------
 
     private void checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAM_REQ);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, CAM_REQ);
         } else {
-            b.txtCameraStatus.setText("Cámara: Habilitada ✓");
+            startCamera();
         }
     }
 
-    /**
-     * Aquí llega el texto del QR decodificado.
-     * Formato esperado:
-     *   RESERVA|<id_reserva>|<id_tour>|<id_usuario>|PAX:<pax>
-     */
-    private void onQrDecoded(String text) {
-        ParsedReservation parsed = parseReservationQr(text);
-        if (parsed == null) {
-            b.txtScanResult.setText("QR inválido");
-            b.txtInstructions.setText("Asegúrate de escanear un código QR de reserva válido.");
-            Snackbar.make(b.getRoot(), "QR inválido", Snackbar.LENGTH_LONG).show();
-            return;
-        }
-
-        b.txtScanResult.setText("QR leído:\nReserva: " + parsed.reservaId +
-                "\nTour: " + parsed.tourId +
-                "\nCliente: " + parsed.userId +
-                "\nPAX: " + parsed.pax);
-
-        updateReservationState(parsed);
-    }
-
-    /** Cambia el estado de la reserva: pendiente → check-in → check-out → finalizada */
-    private void updateReservationState(ParsedReservation p) {
-        db.collection("tours_history")
-                .document(p.reservaId)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (!doc.exists()) {
-                        b.txtInstructions.setText("No se encontró la reserva en el sistema.");
-                        Snackbar.make(b.getRoot(), "Reserva no encontrada", Snackbar.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    String estadoActual = doc.getString("estado");
-                    if (estadoActual == null) estadoActual = "pendiente";
-                    String nuevoEstado;
-
-                    switch (estadoActual.toLowerCase()) {
-                        case "pendiente":
-                            nuevoEstado = "check-in";
-                            break;
-                        case "check-in":
-                            nuevoEstado = "check-out";
-                            break;
-                        case "check-out":
-                            nuevoEstado = "finalizada";
-                            break;
-                        default:
-                            nuevoEstado = estadoActual; // no cambiamos si ya es finalizada/cancelada
-                            break;
-                    }
-
-                    db.collection("tours_history")
-                            .document(p.reservaId)
-                            .update("estado", nuevoEstado)
-                            .addOnSuccessListener(aVoid -> {
-                                String msg = "Estado actualizado: " + nuevoEstado;
-                                b.txtInstructions.setText(msg);
-                                Snackbar.make(b.getRoot(), msg, Snackbar.LENGTH_LONG).show();
-
-                                // log opcional en subcolección del guía
-                                if (guideDocId != null) {
-                                    Map<String,Object> log = new HashMap<>();
-                                    log.put("reservaId", p.reservaId);
-                                    log.put("tourId", p.tourId);
-                                    log.put("userId", p.userId);
-                                    log.put("pax", p.pax);
-                                    log.put("nuevoEstado", nuevoEstado);
-                                    log.put("timestamp", System.currentTimeMillis());
-                                    db.collection("guias").document(guideDocId)
-                                            .collection("checkins")
-                                            .add(log);
-                                }
-                            })
-                            .addOnFailureListener(e -> {
-                                Snackbar.make(b.getRoot(), "Error al actualizar estado", Snackbar.LENGTH_LONG).show();
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    Snackbar.make(b.getRoot(), "Error leyendo la reserva", Snackbar.LENGTH_LONG).show();
-                });
-    }
-
-    /** Check-out manual sin QR (solo registro local */
-    private void manualCheckout() {
-        long ts = System.currentTimeMillis();
-        b.txtScanResult.setText("⚠️ Check-out manual\n" + new java.util.Date(ts));
-        b.txtInstructions.setText("Registrado como finalización manual.");
-        Snackbar.make(b.getRoot(), "⚠️ Check-out manual", Snackbar.LENGTH_LONG).show();
-
-        if (guideDocId != null) {
-            Map<String,Object> m = new HashMap<>();
-            m.put("manual", true);
-            m.put("timestamp", ts);
-            db.collection("guias").document(guideDocId)
-                    .collection("checkins")
-                    .add(m);
-        }
-    }
-
-    // Parser de texto del QR
-    private ParsedReservation parseReservationQr(String text) {
-        if (text == null) return null;
-        String[] parts = text.split("\\|");
-        if (parts.length < 5) return null;
-        if (!"RESERVA".equalsIgnoreCase(parts[0])) return null;
-
-        String reservaId = parts[1];
-        String tourId    = parts[2];
-        String userId    = parts[3];
-        int pax          = 1;
-        try {
-            String paxPart = parts[4]; // PAX:<n>
-            if (paxPart.startsWith("PAX:")) {
-                pax = Integer.parseInt(paxPart.substring(4));
-            }
-        } catch (Exception ignore){}
-
-        if (reservaId.isEmpty() || tourId.isEmpty() || userId.isEmpty()) return null;
-
-        return new ParsedReservation(reservaId, tourId, userId, pax);
-    }
-
-    private static class ParsedReservation {
-        final String reservaId;
-        final String tourId;
-        final String userId;
-        final int pax;
-        ParsedReservation(String r, String t, String u, int p){
-            this.reservaId = r;
-            this.tourId = t;
-            this.userId = u;
-            this.pax = p;
-        }
-    }
-
-    @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAM_REQ) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                b.txtCameraStatus.setText("Cámara: Habilitada ✓");
+                startCamera();
             } else {
-                b.txtCameraStatus.setText("Cámara: Permiso denegado ❌");
+                b.txtInstructions.setText("Permiso de cámara denegado. No se puede escanear QR.");
                 Snackbar.make(b.getRoot(), "Permiso de cámara necesario", Snackbar.LENGTH_LONG).show();
             }
         }
     }
 
-    @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) { onBackPressed(); return true; }
+    // -------------------------------------------------------------
+    //  CameraX + análisis de frames
+    // -------------------------------------------------------------
+
+    @OptIn(markerClass = ExperimentalGetImage.class)
+    private void startCamera() {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+                ProcessCameraProvider.getInstance(this);
+
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(b.cameraPreview.getSurfaceProvider());
+
+                ImageAnalysis analysis = new ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+
+                analysis.setAnalyzer(cameraExecutor, this::analyzeImage);
+
+                CameraSelector selector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(this, selector, preview, analysis);
+
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+                Snackbar.make(b.getRoot(),
+                        "Error iniciando cámara: " + e.getMessage(),
+                        Snackbar.LENGTH_LONG).show();
+            }
+        }, ContextCompat.getMainExecutor(this));
+    }
+
+    @ExperimentalGetImage
+    private void analyzeImage(@NonNull ImageProxy imageProxy) {
+        if (imageProxy.getImage() == null) {
+            imageProxy.close();
+            return;
+        }
+
+        if (isProcessingFrame) {
+            imageProxy.close();
+            return;
+        }
+        isProcessingFrame = true;
+
+        InputImage image = InputImage.fromMediaImage(
+                imageProxy.getImage(),
+                imageProxy.getImageInfo().getRotationDegrees()
+        );
+
+        barcodeScanner.process(image)
+                .addOnSuccessListener(barcodes -> {
+                    if (barcodes != null && !barcodes.isEmpty()) {
+                        long now = System.currentTimeMillis();
+                        // Evita procesar demasiadas veces el mismo código
+                        if (now - lastScanTime > 2000) {
+                            lastScanTime = now;
+                            Barcode barcode = barcodes.get(0);
+                            String raw = barcode.getRawValue();
+                            if (raw != null) {
+                                runOnUiThread(() -> onQrDecoded(raw));
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Snackbar.make(b.getRoot(), "Error leyendo QR", Snackbar.LENGTH_SHORT).show())
+                .addOnCompleteListener(task -> {
+                    isProcessingFrame = false;
+                    imageProxy.close();
+                });
+    }
+
+    // -------------------------------------------------------------
+    //  Lógica de negocio del QR
+    // -------------------------------------------------------------
+
+    private void onQrDecoded(String text) {
+        if (text == null) text = "";
+        text = text.trim();
+
+        // Mostrar SIEMPRE el texto crudo para depurar
+        b.txtScanResult.setText("Texto QR leído:\n" + text);
+
+        if (text.isEmpty()) {
+            b.txtInstructions.setText("QR inválido");
+            Snackbar.make(b.getRoot(), "QR inválido", Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        // Buscar en tours_history por el campo qrData
+        db.collection("tours_history")
+                .whereEqualTo("qrData", text)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap.isEmpty()) {
+                        b.txtInstructions.setText("QR inválido o reserva no encontrada.");
+                        Snackbar.make(b.getRoot(), "QR inválido o reserva no encontrada", Snackbar.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    DocumentSnapshot doc = snap.getDocuments().get(0);
+
+                    String reservaDocId = doc.getId(); // ID real de la reserva
+                    String estadoActual = doc.getString("estado");
+                    String tourId       = doc.getString("idTour");
+                    String userId       = doc.getString("idUsuario");
+
+                    Long paxLong = doc.getLong("pax");
+                    int pax = (paxLong == null ? 1 : paxLong.intValue());
+
+                    // Mostrar info de la reserva encontrada
+                    b.txtScanResult.append(
+                            "\n\nReserva encontrada:" +
+                                    "\nDocId: " + reservaDocId +
+                                    "\nTour: " + (tourId == null ? "-" : tourId) +
+                                    "\nCliente: " + (userId == null ? "-" : userId) +
+                                    "\nPAX: " + pax
+                    );
+
+                    updateReservationState(reservaDocId, estadoActual, tourId, userId, pax);
+                })
+                .addOnFailureListener(e -> {
+                    b.txtInstructions.setText("Error buscando la reserva: " + e.getMessage());
+                    Snackbar.make(b.getRoot(), "Error buscando la reserva", Snackbar.LENGTH_LONG).show();
+                });
+    }
+
+    /**
+     * Flujo B:
+     *   pendiente  -> NO cambia (debe aceptar admin)
+     *   aceptado   -> check-in
+     *   check-in   -> check-out
+     *   check-out  -> finalizada
+     *   finalizada / cancelado / rechazado -> NO cambia
+     */
+    private void updateReservationState(String reservaDocId,
+                                        String estadoActual,
+                                        String tourId,
+                                        String userId,
+                                        int pax) {
+
+        if (estadoActual == null) estadoActual = "pendiente";
+        String estadoLower = estadoActual.toLowerCase();
+        String nuevoEstado = null;
+        String msg;
+
+        switch (estadoLower) {
+            case "pendiente":
+                msg = "La reserva aún está pendiente. "
+                        + "Primero debe ser aceptada por el administrador.";
+                break;
+            case "aceptado":
+            case "aceptada":
+                nuevoEstado = "check-in";
+                msg = "✅ Check-in registrado correctamente.";
+                break;
+            case "check-in":
+            case "checkin":
+                nuevoEstado = "check-out";
+                msg = "✅ Check-out registrado correctamente.";
+                break;
+            case "check-out":
+            case "checkout":
+                nuevoEstado = "finalizada";
+                msg = "🎉 Servicio finalizado. ¡Gracias!";
+                break;
+            case "finalizada":
+                msg = "Esta reserva ya está finalizada. No se puede modificar.";
+                break;
+            case "cancelado":
+            case "cancelada":
+            case "rechazado":
+            case "rechazada":
+                msg = "Esta reserva está " + estadoActual + " y no puede modificarse.";
+                break;
+            default:
+                msg = "Estado actual: " + estadoActual + ". No se modifica.";
+                break;
+        }
+
+        if (nuevoEstado == null) {
+            showMessage(msg);
+            return;
+        }
+
+        final String finalNuevoEstado = nuevoEstado;
+        db.collection("tours_history")
+                .document(reservaDocId)
+                .update("estado", finalNuevoEstado)
+                .addOnSuccessListener(aVoid -> {
+                    showMessage(msg + " (Nuevo estado: " + finalNuevoEstado + ")");
+                    logGuideCheck(reservaDocId, tourId, userId, pax, finalNuevoEstado);
+                })
+                .addOnFailureListener(e ->
+                        showMessage("Error al actualizar estado: " + e.getMessage()));
+    }
+
+    private void showMessage(String msg) {
+        b.txtInstructions.setText(msg);
+        Snackbar.make(b.getRoot(), msg, Snackbar.LENGTH_LONG).show();
+    }
+
+    private void logGuideCheck(String reservaDocId,
+                               String tourId,
+                               String userId,
+                               int pax,
+                               String nuevoEstado) {
+        if (guideDocId == null) return;
+
+        Map<String, Object> log = new HashMap<>();
+        log.put("reservaId", reservaDocId);
+        log.put("tourId", tourId);
+        log.put("userId", userId);
+        log.put("pax", pax);
+        log.put("nuevoEstado", nuevoEstado);
+        log.put("timestamp", System.currentTimeMillis());
+
+        db.collection("guias").document(guideDocId)
+                .collection("checkins")
+                .add(log);
+    }
+
+    // ----------------- Resolución del documento del guía -----------------
+
+    private void resolveGuideDocId() {
+        User u = UserStore.get().getLogged();
+        String email = (u != null ? u.getEmail() : null);
+        if (email == null || email.isEmpty()) return;
+
+        db.collection("guias").whereEqualTo("email", email).limit(1).get()
+                .addOnSuccessListener(snap -> {
+                    if (!snap.isEmpty()) {
+                        guideDocId = snap.getDocuments().get(0).getId();
+                    } else {
+                        // Fallback por si guardaste 'correo'
+                        db.collection("guias").whereEqualTo("correo", email)
+                                .limit(1)
+                                .get()
+                                .addOnSuccessListener(snap2 -> {
+                                    if (!snap2.isEmpty()) {
+                                        guideDocId = snap2.getDocuments().get(0).getId();
+                                    }
+                                });
+                    }
+                });
+    }
+
+    // ----------------- Toolbar back & cleanup -----------------
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (cameraExecutor != null) {
+            cameraExecutor.shutdown();
+        }
     }
 }

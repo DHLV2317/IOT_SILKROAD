@@ -1,6 +1,7 @@
 package com.example.silkroad_iot.data;
 
 import com.google.firebase.firestore.PropertyName;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -16,9 +17,9 @@ public class GuideFb implements Serializable {
     private List<String> historial;
     private String fotoUrl;
 
-    // 🔹 nuevos campos para estado administrativo
+    // Campos administrativos (no son obligatorios en todos los docs)
     private boolean guideApproved;
-    private String guideApprovalStatus; // "PENDING", "APPROVED", "REJECTED"
+    private String guideApprovalStatus;
 
     public GuideFb() {}
 

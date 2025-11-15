@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RatingBar;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,10 +14,11 @@ import com.example.silkroad_iot.data.ReservaWithTour;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.databinding.ActivityAdminReservationDetailBinding;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,6 +28,10 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
 
     private ActivityAdminReservationDetailBinding b;
     private final SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+    private FirebaseFirestore db;
+
+    private TourHistorialFB reserva;
+    private TourFB tour;
 
     @Override
     protected void onCreate(Bundle s) {
@@ -40,26 +46,43 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         }
         b.toolbar.setNavigationOnClickListener(v -> finish());
 
+        db = FirebaseFirestore.getInstance();
+
+        // Obtenemos el paquete (Reserva + Tour)
         ReservaWithTour item = (ReservaWithTour) getIntent().getSerializableExtra("reserva");
-        if (item == null) { finish(); return; }
+        if (item == null) {
+            finish();
+            return;
+        }
 
-        TourFB tour = item.getTour();
-        TourHistorialFB r = item.getReserva();
+        reserva = item.getReserva();
+        tour    = item.getTour();
 
-        String tourName    = tour != null ? tour.getDisplayName() : "(Sin tour)";
-        double total       = tour != null ? tour.getDisplayPrice() : 0.0;
-        int pax            = r.getPax() > 0 ? r.getPax() : (tour != null ? tour.getDisplayPeople() : 1);
+        bindData();
+        setupButtons();
+    }
+
+    private void bindData() {
+        String tourName   = (tour != null ? tour.getDisplayName() : "(Sin tour)");
+        double precioUnit = (tour != null ? tour.getDisplayPrice() : 0.0);
+
+        int pax = reserva.getPax() > 0
+                ? reserva.getPax()
+                : (tour != null ? tour.getDisplayPeople() : 1);
         if (pax <= 0) pax = 1;
 
-        String clientId    = r.getIdUsuario() == null ? "—" : r.getIdUsuario();
-        String status      = r.getEstado();
+        String clientId = reserva.getIdUsuario() == null ? "—" : reserva.getIdUsuario();
+        String status   = reserva.getEstado();
         if (TextUtils.isEmpty(status)) status = "pendiente";
 
-        Date date = r.getFechaReserva() != null ? r.getFechaReserva() : r.getFechaRealizado();
+        Date date = reserva.getFechaReserva() != null
+                ? reserva.getFechaReserva()
+                : reserva.getFechaRealizado();
 
+        // --- Pintar en UI ---
         b.tTourName.setText(tourName);
         b.tDate.setText(date == null ? "—" : sdf.format(date));
-        b.tAmount.setText("S/ " + (total * pax));
+        b.tAmount.setText("S/ " + (precioUnit * pax));
         b.tStatus.setText(status);
 
         b.tUser.setText(clientId);
@@ -67,46 +90,115 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         b.tPhone.setText("—");
         b.tDni.setText("—");
 
-        int bg = R.color.pill_gray;
-        String st = status.toLowerCase(Locale.getDefault());
-        if (st.contains("check-in") || st.contains("check-out") || st.contains("final")) {
-            bg = R.color.teal_200;
-        } else if (st.contains("cancel") || st.contains("rech")) {
-            bg = android.R.color.holo_red_light;
-        }
-        b.tStatus.setBackgroundResource(bg);
+        // Color del pill según estado
+        pintarEstado(status);
 
-        // QR: usamos qrData si existe
-        String qrData = r.getQrData();
-        if (qrData == null || qrData.isEmpty()) {
-            // Fallback por si alguna reserva antigua no lo tiene
-            String reservaId = r.getId() == null ? "-" : r.getId();
+        // ========= QR: usamos qrData de Firestore, o lo generamos si falta =========
+        String qrData = reserva.getQrData();
+        if ((qrData == null || qrData.isEmpty())
+                && reserva.getId() != null && !reserva.getId().isEmpty()) {
+
             qrData = "RESERVA|" +
-                    reservaId + "|" +
-                    r.getIdTour() + "|" +
-                    r.getIdUsuario() + "|PAX:" + pax;
+                    reserva.getId() + "|" +
+                    reserva.getIdTour() + "|" +
+                    reserva.getIdUsuario() + "|PAX:" + pax;
+
+            reserva.setQrData(qrData);
+            reserva.setPax(pax);
+
+            db.collection("tours_history")
+                    .document(reserva.getId())
+                    .update("qrData", qrData, "pax", pax);
         }
 
-        b.imgQr.setImageBitmap(makeQr(qrData));
+        if (qrData != null && !qrData.isEmpty()) {
+            Bitmap bmp = makeQr(qrData);
+            if (bmp != null) b.imgQr.setImageBitmap(bmp);
+        } else {
+            b.imgQr.setImageResource(R.drawable.qr_code_24);
+        }
+
         b.tQrMessage.setText("Muestra este QR en el punto de encuentro para hacer check-in.");
 
-        // Por ahora no usamos rating → oculto
+        // Rating oculto por ahora
         b.cardRating.setVisibility(View.GONE);
         RatingBar rb = b.tRating;
         if (rb != null) rb.setRating(5f);
 
+        // Si ya está aceptada / cancelada / finalizada -> ocultar botones
+        String st = status.toLowerCase(Locale.getDefault());
+        if (st.contains("acept") || st.contains("final")
+                || st.contains("cancel") || st.contains("rech")) {
+            b.btnAccept.setVisibility(View.GONE);
+            b.btnReject.setVisibility(View.GONE);
+        }
+
         b.btnBack.setOnClickListener(v -> finish());
     }
 
-    private Bitmap makeQr(String text){
+    private void setupButtons() {
+        // Aceptar reserva
+        b.btnAccept.setOnClickListener(v -> cambiarEstado("aceptado"));
+
+        // Rechazar reserva
+        b.btnReject.setOnClickListener(v -> cambiarEstado("rechazado"));
+    }
+
+    private void cambiarEstado(String nuevoEstado) {
+        if (reserva == null || reserva.getId() == null || reserva.getId().isEmpty()) {
+            Toast.makeText(this, "Reserva sin ID, no se puede actualizar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        db.collection("tours_history")
+                .document(reserva.getId())
+                .update("estado", nuevoEstado)
+                .addOnSuccessListener(aVoid -> {
+                    reserva.setEstado(nuevoEstado);
+                    b.tStatus.setText(nuevoEstado);
+                    pintarEstado(nuevoEstado);
+
+                    // 🔥 OCULTAR BOTONES DESPUÉS DE CAMBIAR ESTADO
+                    b.btnAccept.setVisibility(View.GONE);
+                    b.btnReject.setVisibility(View.GONE);
+
+                    Toast.makeText(this,
+                            "Estado actualizado a " + nuevoEstado,
+                            Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Error al actualizar estado",
+                                Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void pintarEstado(String status) {
+        int bg = R.color.pill_gray;
+        if (status == null) {
+            b.tStatus.setBackgroundResource(bg);
+            return;
+        }
+
+        String st = status.toLowerCase(Locale.getDefault());
+        if (st.contains("check-in") || st.contains("check-out")
+                || st.contains("final") || st.contains("acept")) {
+            bg = R.color.teal_200;                // verde/teal para aceptado y finalizado
+        } else if (st.contains("cancel") || st.contains("rech")) {
+            bg = android.R.color.holo_red_light;  // rojo para cancelado / rechazado
+        }
+        b.tStatus.setBackgroundResource(bg);
+    }
+
+    private Bitmap makeQr(String text) {
         try {
             QRCodeWriter w = new QRCodeWriter();
             int size = 512;
             BitMatrix bit = w.encode(text, BarcodeFormat.QR_CODE, size, size);
             Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-            for (int x=0; x<size; x++) {
-                for (int y=0; y<size; y++) {
-                    bmp.setPixel(x, y, bit.get(x,y) ? 0xFF000000 : 0xFFFFFFFF);
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    bmp.setPixel(x, y, bit.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
                 }
             }
             return bmp;
