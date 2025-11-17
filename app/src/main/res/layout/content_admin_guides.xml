@@ -5,15 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Imagen tipo mapa / cabecera -->
-    <ImageView
-        android:id="@+id/imgMap"
+    <!-- ⭐ Mapa -->
+    <fragment
+        android:id="@+id/mapAdmin"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:layout_margin="12dp"
-        android:scaleType="centerCrop"
-        android:background="#EFEFEF"
-        android:src="@drawable/ic_map_placeholder" />
+        android:layout_height="200dp"
+        android:layout_margin="12dp" />
 
     <!-- Buscador -->
     <com.google.android.material.textfield.TextInputLayout
@@ -32,14 +30,13 @@
     <!-- Loader -->
     <ProgressBar
         android:id="@+id/progress"
-        style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_gravity="center_horizontal"
         android:visibility="gone"/>
 
-    <!-- Mensaje vacío -->
+    <!-- Mensaje -->
     <TextView
         android:id="@+id/tEmpty"
         android:layout_width="match_parent"
@@ -56,4 +53,5 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_margin="12dp"/>
+
 </LinearLayout>

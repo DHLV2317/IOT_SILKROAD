@@ -10,7 +10,6 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.silkroad_iot.data.AdminRepository;
 import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.data.UserStore;
 import com.example.silkroad_iot.databinding.ActivityMainBinding;
@@ -68,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     // Facebook
     private CallbackManager callbackManager;
 
+    // Preferencias para controlar flujo del admin
     private static final String PREFS = "app_prefs";
     private static final String KEY_COMPANY_DONE = "admin_company_done";
 
@@ -372,6 +372,7 @@ public class MainActivity extends AppCompatActivity {
         Intent next;
 
         switch (u.getRole()) {
+
             case CLIENT:
                 if (u.isClientProfileCompleted())
                     next = new Intent(this, ClientHomeActivity.class);
@@ -386,24 +387,20 @@ public class MainActivity extends AppCompatActivity {
                     next = new Intent(this, GuidePendingApprovalActivity.class);
                 break;
 
-            case ADMIN:
-                AdminRepository.Company c = AdminRepository.get().getOrCreateCompany();
-                boolean incomplete = c == null ||
-                        TextUtils.isEmpty(c.name) ||
-                        TextUtils.isEmpty(c.email) ||
-                        TextUtils.isEmpty(c.phone) ||
-                        TextUtils.isEmpty(c.address);
-
+            case ADMIN: {
                 SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
-                boolean saved = sp.getBoolean(KEY_COMPANY_DONE, false);
+                boolean companyCompleted = sp.getBoolean(KEY_COMPANY_DONE, false);
 
-                if (incomplete || !saved) {
+                if (!companyCompleted) {
+                    // Primera vez → llenar datos de empresa
                     next = new Intent(this, AdminCompanyDetailActivity.class)
                             .putExtra("firstRun", true);
                 } else {
+                    // Después de la primera vez → AdminToursActivity es el home
                     next = new Intent(this, AdminToursActivity.class);
                 }
                 break;
+            }
 
             case SUPERADMIN:
                 next = new Intent(this, SuperAdminHomeActivity.class);

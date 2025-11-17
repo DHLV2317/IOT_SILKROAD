@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <!-- Permisos básicos -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- HARDWARE & PERMISOS -->
+
+    <!-- Cámara (no obligatoria en todos los dispositivos) -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- MAPS & LOCATION -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Si luego quisieras tracking en background:
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    -->
+
+    <!-- QR / Cámara -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -13,20 +30,30 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SILKROAD_IOT">
-        <activity
-            android:name=".ui.auth.ForgotPasswordVerifyActivity"
-            android:exported="false" />
-        <!-- 🌐 CONFIG FACEBOOK SDK (IOT_SILKROAD) -->
+
+        <!-- ⭐ Google Maps API KEY -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCVSbpXhCTRqLggm43VUePwvuNS0Pps6xY" />
+
+        <!-- Google Play Services (maps / location) -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <!-- ================= FACEBOOK ================= -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
-            android:value="@string/facebook_client_token" /> <!-- Activities internas de Facebook -->
+            android:value="@string/facebook_client_token" />
+
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name" />
+
         <activity
             android:name="com.facebook.CustomTabActivity"
             android:exported="true">
@@ -38,9 +65,9 @@
 
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
-        </activity> <!-- ===================== -->
-        <!-- ADMIN -->
-        <!-- ===================== -->
+        </activity>
+
+        <!-- ================= ADMIN ================= -->
         <activity
             android:name=".ui.admin.AdminCompanyDetailActivity"
             android:exported="false" />
@@ -76,168 +103,119 @@
             android:exported="false" />
         <activity
             android:name=".ui.admin.AdminProfileActivity"
-            android:exported="false" /> <!-- ===================== -->
-        <!-- SUPERADMIN -->
-        <!-- ===================== -->
+            android:exported="false" />
+
+        <!-- ================= SUPERADMIN ================= -->
         <activity
             android:name=".ui.superadmin.SuperAdminHomeActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.AdministradoresActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.CrearAdministradorActivity"
-            android:exported="false"
-            android:label="Crear Administrador"
-            android:parentActivityName=".ui.superadmin.AdministradoresActivity"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesAdministradorActivity"
-            android:exported="false"
-            android:label="Editar Administrador"
-            android:parentActivityName=".ui.superadmin.AdministradoresActivity"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.GuiasActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesGuiaActivity"
-            android:exported="false"
-            android:label="Editar Guia"
-            android:parentActivityName=".ui.superadmin.GuiasActivity"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.SolicitudesGuiasActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesSolicitudGuiaActivity"
-            android:exported="false"
-            android:label="Solicitud de guía"
-            android:parentActivityName=".ui.superadmin.SolicitudesGuiasActivity"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.ClientesActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesClienteActivity"
-            android:exported="false"
-            android:label="Editar Cliente"
-            android:parentActivityName=".ui.superadmin.ClientesActivity"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.LogsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesLogActivity"
-            android:exported="false"
-            android:label="Evento"
-            android:parentActivityName=".ui.superadmin.LogsActivity"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.ReportesActivity"
-            android:exported="false"
-            android:theme="@style/Theme.SuperAdminTheme" />
+            android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesReporteActivity"
-            android:exported="false"
-            android:label="Reporte"
-            android:parentActivityName=".ui.superadmin.ReportesActivity"
-            android:theme="@style/Theme.SuperAdminTheme" /> <!-- ===================== -->
-        <!-- GUIDE -->
-        <!-- ===================== -->
+            android:exported="false" />
+
+        <!-- ================= GUIDE ================= -->
         <activity
             android:name=".ui.guide.GuideHomeActivity"
             android:exported="false" />
         <activity
             android:name=".ui.guide.GuideTourOffersActivity"
-            android:exported="false"
-            android:label="Ofertas de Tours"
-            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+            android:exported="false" />
         <activity
             android:name=".ui.guide.GuideLocationTrackingActivity"
-            android:exported="false"
-            android:label="Registrar Ubicación"
-            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+            android:exported="false" />
         <activity
             android:name=".ui.guide.GuideQRScannerActivity"
-            android:exported="false"
-            android:label="Escanear QR"
-            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+            android:exported="false" />
         <activity
             android:name=".ui.guide.GuidePendingApprovalActivity"
-            android:exported="false"
-            android:label="Cuenta Pendiente" />
+            android:exported="false" />
         <activity
             android:name=".ui.guide.GuideProfileActivity"
-            android:exported="false"
-            android:label="Mi Perfil"
-            android:parentActivityName=".ui.guide.GuideHomeActivity" />
+            android:exported="false" />
         <activity
             android:name=".ui.guide.GuideHistoryActivity"
-            android:exported="false"
-            android:label="Historial de Tours"
-            android:parentActivityName=".ui.guide.GuideProfileActivity" /> <!-- ===================== -->
-        <!-- CLIENT -->
-        <!-- ===================== -->
+            android:exported="false" />
+
+        <!-- ================= CLIENT ================= -->
         <activity
             android:name=".ui.client.ClientHomeActivity"
-            android:exported="false"
-            android:label="Inicio Cliente" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.ClientOnboardingActivity"
-            android:exported="false"
-            android:label="Verificación de datos" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.ToursActivity"
-            android:exported="false"
-            android:label="tours" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.TourDetailActivity"
-            android:exported="false"
-            android:label="tours" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.ConfirmTourActivity"
-            android:exported="false"
-            android:label="tours" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.TourHistoryActivity"
-            android:exported="false"
-            android:label="tours" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.OrderDetailActivity"
-            android:exported="false"
-            android:label="tours" />
+            android:exported="false" />
         <activity
             android:name=".ui.client.StopsActivity"
-            android:exported="false"
-            android:label="tours" /> <!-- ===================== -->
-        <!-- AUTH -->
-        <!-- ===================== -->
+            android:exported="false" />
+
+        <!-- ================= AUTH ================= -->
         <activity
             android:name=".ui.auth.RegisterActivity"
-            android:exported="false"
-            android:label="Registro" />
+            android:exported="false" />
         <activity
             android:name=".ui.auth.GuideRegisterActivity"
-            android:exported="false"
-            android:label="Registro Guía"
-            android:parentActivityName=".ui.auth.RegisterActivity" />
+            android:exported="false" />
         <activity
             android:name=".ui.auth.RegisterVerifyActivity"
-            android:exported="false"
-            android:label="Verificación de registro" />
+            android:exported="false" />
         <activity
             android:name=".ui.auth.ForgotPasswordActivity"
-            android:exported="false"
-            android:label="Recuperar contraseña" /> <!-- ===================== -->
-        <!-- MAIN / LAUNCH -->
-        <!-- ===================== -->
+            android:exported="false" />
+        <activity
+            android:name=".ui.auth.ForgotPasswordVerifyActivity"
+            android:exported="false" />
+
+        <!-- LAUNCHER -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -248,6 +226,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

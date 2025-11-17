@@ -40,6 +40,9 @@ import java.util.concurrent.Executors;
  * Escáner REAL de QR para reservas.
  * No dependemos de reservaId en el texto.
  * Buscamos directamente en la colección "tours_history" por el campo "qrData".
+ *
+ * Además:
+ *  - El guía solo puede escanear reservas del tour que tiene asignado (tourIdAsignado).
  */
 public class GuideQRScannerActivity extends AppCompatActivity {
 
@@ -48,6 +51,10 @@ public class GuideQRScannerActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private String guideDocId;
+
+    // 🔹 Tour asignado al guía
+    private String guideTourId;     // ID real del tour
+    private String guideTourName;   // nombre del tour actual
 
     // CameraX + ML Kit
     private ExecutorService cameraExecutor;
@@ -193,6 +200,12 @@ public class GuideQRScannerActivity extends AppCompatActivity {
     // -------------------------------------------------------------
 
     private void onQrDecoded(String text) {
+        // 🔹 Validar que el guía tenga un tour asignado
+        if (guideTourId == null || guideTourId.trim().isEmpty()) {
+            showMessage("No tienes un tour asignado. Pide al administrador que te asigne uno.");
+            return;
+        }
+
         if (text == null) text = "";
         text = text.trim();
 
@@ -221,8 +234,15 @@ public class GuideQRScannerActivity extends AppCompatActivity {
 
                     String reservaDocId = doc.getId(); // ID real de la reserva
                     String estadoActual = doc.getString("estado");
-                    String tourId       = doc.getString("idTour");
-                    String userId       = doc.getString("idUsuario");
+
+                    // 🔹 id_tour / idTour (por compatibilidad)
+                    String tourId = doc.contains("id_tour")
+                            ? doc.getString("id_tour")
+                            : doc.getString("idTour");
+
+                    String userId = doc.contains("id_usuario")
+                            ? doc.getString("id_usuario")
+                            : doc.getString("idUsuario");
 
                     Long paxLong = doc.getLong("pax");
                     int pax = (paxLong == null ? 1 : paxLong.intValue());
@@ -251,12 +271,26 @@ public class GuideQRScannerActivity extends AppCompatActivity {
      *   check-in   -> check-out
      *   check-out  -> finalizada
      *   finalizada / cancelado / rechazado -> NO cambia
+     *
+     * Además:
+     *   - Solo permite cambiar estado si la reserva corresponde al tour asignado al guía.
      */
     private void updateReservationState(String reservaDocId,
                                         String estadoActual,
                                         String tourId,
                                         String userId,
                                         int pax) {
+
+        // 🔹 Validar que el QR sea del tour asignado al guía
+        if (tourId == null || !tourId.equals(guideTourId)) {
+            String nombreTour = (guideTourName == null || guideTourName.isEmpty())
+                    ? "tu tour asignado"
+                    : guideTourName;
+
+            showMessage("Este código QR pertenece a otro tour.\n\n" +
+                    "Solo puedes registrar check-in/check-out para: " + nombreTour);
+            return;
+        }
 
         if (estadoActual == null) estadoActual = "pendiente";
         String estadoLower = estadoActual.toLowerCase();
@@ -349,7 +383,7 @@ public class GuideQRScannerActivity extends AppCompatActivity {
         db.collection("guias").whereEqualTo("email", email).limit(1).get()
                 .addOnSuccessListener(snap -> {
                     if (!snap.isEmpty()) {
-                        guideDocId = snap.getDocuments().get(0).getId();
+                        bindGuideDoc(snap.getDocuments().get(0));
                     } else {
                         // Fallback por si guardaste 'correo'
                         db.collection("guias").whereEqualTo("correo", email)
@@ -357,11 +391,17 @@ public class GuideQRScannerActivity extends AppCompatActivity {
                                 .get()
                                 .addOnSuccessListener(snap2 -> {
                                     if (!snap2.isEmpty()) {
-                                        guideDocId = snap2.getDocuments().get(0).getId();
+                                        bindGuideDoc(snap2.getDocuments().get(0));
                                     }
                                 });
                     }
                 });
+    }
+
+    private void bindGuideDoc(DocumentSnapshot d) {
+        guideDocId    = d.getId();
+        guideTourName = d.getString("tourActual");
+        guideTourId   = d.getString("tourIdAsignado");
     }
 
     // ----------------- Toolbar back & cleanup -----------------

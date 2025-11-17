@@ -20,7 +20,6 @@ public class AdminProfileActivity extends BaseDrawerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Inserta layout dentro del drawer y usa el toolbar del drawer
         setupDrawer(R.layout.activity_admin_profile, R.menu.menu_drawer_admin, "Perfil");
 
         ImageView img   = findViewById(R.id.imgProfile);
@@ -28,26 +27,28 @@ public class AdminProfileActivity extends BaseDrawerActivity {
         TextView tEmail = findViewById(R.id.tEmail);
         Button btn      = findViewById(R.id.btnEditCompany);
 
-        var prefs   = getSharedPreferences(PREFS, MODE_PRIVATE);
-        String name = prefs.getString(KEY_ADMIN_NAME,  "Admin");
-        String mail = prefs.getString(KEY_ADMIN_EMAIL, "admin@demo.com");
-        String photo= prefs.getString(KEY_ADMIN_PHOTO, null);
+        var prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String name  = prefs.getString(KEY_ADMIN_NAME,  "Admin");
+        String email = prefs.getString(KEY_ADMIN_EMAIL, "admin@demo.com");
+        String photo = prefs.getString(KEY_ADMIN_PHOTO, "");
 
-        tName.setText(name == null ? "Admin" : name);
-        tEmail.setText(mail == null ? "admin@demo.com" : mail);
+        tName.setText(name);
+        tEmail.setText(email);
 
         Glide.with(this)
-                .load(photo == null || photo.trim().isEmpty() ? R.drawable.ic_person_24 : photo)
+                .load(photo.isEmpty() ? R.drawable.ic_person_24 : photo)
                 .placeholder(R.drawable.ic_person_24)
                 .error(R.drawable.ic_person_24)
                 .into(img);
 
-        Runnable goCompany = () ->
-                startActivity(new Intent(this, AdminCompanyDetailActivity.class));
-        img.setOnClickListener(v -> goCompany.run());
-        if (btn != null) btn.setOnClickListener(v -> goCompany.run());
+        img.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminCompanyDetailActivity.class))
+        );
+        btn.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminCompanyDetailActivity.class))
+        );
     }
 
-    // No hay item "Perfil" en el menú; no marcamos ninguno
-    @Override protected int defaultMenuId() { return 0; }
+    @Override
+    protected int defaultMenuId() { return 0; }
 }

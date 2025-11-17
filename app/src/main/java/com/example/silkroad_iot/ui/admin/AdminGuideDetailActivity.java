@@ -11,9 +11,13 @@ import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.GuideFb;
 import com.example.silkroad_iot.databinding.ActivityAdminGuideDetailBinding;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AdminGuideDetailActivity extends AppCompatActivity {
 
@@ -60,6 +64,7 @@ public class AdminGuideDetailActivity extends AppCompatActivity {
                     guide = doc.toObject(GuideFb.class);
                     if (guide != null) guide.setId(doc.getId());
                     pintarUI();
+                    cargarUbicaciones(); // 👈 ahora también cargamos paradas
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -92,7 +97,7 @@ public class AdminGuideDetailActivity extends AppCompatActivity {
         b.tPhone.setText(textOrDash(guide.getTelefono()));
         b.tCurrentTour.setText(TextUtils.isEmpty(guide.getTourActual()) ? "Ninguno" : guide.getTourActual());
 
-        // Historial
+        // Historial (texto de tours previos, si existe)
         b.boxHistory.removeAllViews();
         List<String> hist = guide.getHistorial();
         if (hist != null && !hist.isEmpty()) {
@@ -101,11 +106,73 @@ public class AdminGuideDetailActivity extends AppCompatActivity {
                 tv.setText("• " + s);
                 b.boxHistory.addView(tv);
             }
-            b.tNoHistory.setVisibility(android.view.View.GONE);
-        } else {
-            b.tNoHistory.setVisibility(android.view.View.VISIBLE);
         }
+        // tNoHistory se decide luego de ver también las ubicaciones
+        b.tNoHistory.setVisibility(android.view.View.GONE);
     }
 
-    private String textOrDash(String s) { return TextUtils.isEmpty(s) ? "—" : s; }
+    // Cargar paradas/ubicaciones registradas del guía
+    private void cargarUbicaciones() {
+        if (guide == null || guide.getId() == null) return;
+
+        db.collection("guias")
+                .document(guide.getId())
+                .collection("ubicaciones")
+                .orderBy("timestamp")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault());
+
+                    int existingChildCount = b.boxHistory.getChildCount();
+                    int count = snap.size();
+
+                    if (count == 0 && existingChildCount == 0) {
+                        b.tNoHistory.setText("Sin historial de tours ni paradas registradas.");
+                        b.tNoHistory.setVisibility(android.view.View.VISIBLE);
+                        return;
+                    }
+
+                    if (count > 0) {
+                        // Título para la sección de paradas
+                        TextView header = new TextView(this);
+                        header.setText("\nParadas registradas:");
+                        header.setTextSize(16f);
+                        header.setTextColor(getResources().getColor(android.R.color.black));
+                        header.setTypeface(header.getTypeface(), android.graphics.Typeface.BOLD);
+                        b.boxHistory.addView(header);
+
+                        int idx = 1;
+                        for (DocumentSnapshot d : snap.getDocuments()) {
+                            Double lat = d.getDouble("lat");
+                            Double lng = d.getDouble("lng");
+                            Long ts = d.getLong("timestamp");
+
+                            if (lat == null || lng == null || ts == null) continue;
+
+                            String line = String.format(
+                                    Locale.getDefault(),
+                                    "• Parada #%d\n   %s\n   Lat: %.6f, Lng: %.6f",
+                                    idx++,
+                                    sdf.format(new Date(ts)),
+                                    lat, lng
+                            );
+                            TextView tv = new TextView(this);
+                            tv.setText(line);
+                            b.boxHistory.addView(tv);
+                        }
+                    }
+
+                    b.tNoHistory.setVisibility(android.view.View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    if (b.boxHistory.getChildCount() == 0) {
+                        b.tNoHistory.setText("No se pudo cargar el historial.");
+                        b.tNoHistory.setVisibility(android.view.View.VISIBLE);
+                    }
+                });
+    }
+
+    private String textOrDash(String s) {
+        return TextUtils.isEmpty(s) ? "—" : s;
+    }
 }

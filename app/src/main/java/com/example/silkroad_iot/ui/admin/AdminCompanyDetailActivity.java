@@ -21,6 +21,7 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
     private EmpresaFb empresa;
     private boolean firstRun;
 
+    // Preferencias
     private static final String PREFS = "app_prefs";
     private static final String KEY_COMPANY_DONE = "admin_company_done";
 
@@ -30,7 +31,6 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         b = ActivityAdminCompanyDetailBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
-        // Toolbar
         setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Empresa");
@@ -39,25 +39,20 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         b.toolbar.setNavigationOnClickListener(v -> finish());
 
         db = FirebaseFirestore.getInstance();
-
         firstRun = getIntent().getBooleanExtra("firstRun", false);
-        String id = getIntent().getStringExtra("id");
 
-        if (!TextUtils.isEmpty(id)) {
-            cargarEmpresaDesdeFirestore(id);
+        String empresaId = getIntent().getStringExtra("id");
+
+        if (!TextUtils.isEmpty(empresaId)) {
+            cargarEmpresaDesdeFirestore(empresaId);
         } else {
             empresa = new EmpresaFb();
-            // Imagen por defecto en header
-            Glide.with(this)
-                    .load(R.drawable.ic_image_24)
-                    .into(b.imgLogo);
+            Glide.with(this).load(R.drawable.ic_image_24).into(b.imgLogo);
         }
 
         b.btnSaveCompany.setOnClickListener(v -> guardarEmpresaEnFirestore());
-
-        // (Opcional) Cambiar logo: aquí abrirías un picker y luego subes a Storage
         b.btnChangePhoto.setOnClickListener(v ->
-                Toast.makeText(this, "Implementar picker de imagen y subir a Storage", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Implementar selector de imágenes", Toast.LENGTH_SHORT).show()
         );
     }
 
@@ -66,20 +61,18 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) {
                         empresa = doc.toObject(EmpresaFb.class);
-                        if (empresa != null) empresa.setId(doc.getId());
+                        if (empresa != null) empresa.setId(id);
                         rellenarCampos();
                     } else {
-                        Toast.makeText(this, "No se encontró la empresa", Toast.LENGTH_SHORT).show();
                         empresa = new EmpresaFb();
+                        Toast.makeText(this, "Empresa no encontrada", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error al cargar datos: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void rellenarCampos() {
-        if (empresa == null) return;
-
         b.inputCompanyName.setText(n(empresa.getNombre()));
         b.inputEmail.setText(n(empresa.getEmail()));
         b.inputPhone.setText(n(empresa.getTelefono()));
@@ -87,20 +80,16 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         b.inputLat.setText(String.valueOf(empresa.getLat()));
         b.inputLng.setText(String.valueOf(empresa.getLng()));
 
-        // Título bajo el header
-        b.txtCompanyTitle.setText(n(empresa.getNombre()).isEmpty() ? "Nombre de la empresa" : empresa.getNombre());
+        b.txtCompanyTitle.setText(
+                n(empresa.getNombre()).isEmpty() ? "Nombre de la empresa" : empresa.getNombre()
+        );
 
-        // Cargar imagen (campo 'imagen')
-        if (!TextUtils.isEmpty(empresa.getImagen())) {
-            Glide.with(this)
-                    .load(empresa.getImagen())
-                    .placeholder(R.drawable.ic_image_24)
-                    .error(R.drawable.ic_image_24)
-                    .centerCrop()
-                    .into(b.imgLogo);
-        } else {
-            Glide.with(this).load(R.drawable.ic_image_24).into(b.imgLogo);
-        }
+        Glide.with(this)
+                .load(n(empresa.getImagen()))
+                .placeholder(R.drawable.ic_image_24)
+                .error(R.drawable.ic_image_24)
+                .centerCrop()
+                .into(b.imgLogo);
     }
 
     private void guardarEmpresaEnFirestore() {
@@ -108,18 +97,15 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         String email = b.inputEmail.getText().toString().trim();
         String phone = b.inputPhone.getText().toString().trim();
         String address = b.inputAddress.getText().toString().trim();
-        String sLat = b.inputLat.getText().toString().trim();
-        String sLng = b.inputLng.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name)) { b.inputCompanyName.setError("Requerido"); return; }
-        if (TextUtils.isEmpty(email)) { b.inputEmail.setError("Requerido"); return; }
-        if (TextUtils.isEmpty(phone)) { b.inputPhone.setError("Requerido"); return; }
-        if (TextUtils.isEmpty(address)) { b.inputAddress.setError("Requerido"); return; }
+        if (name.isEmpty()) { b.inputCompanyName.setError("Requerido"); return; }
+        if (email.isEmpty()) { b.inputEmail.setError("Requerido"); return; }
+        if (phone.isEmpty()) { b.inputPhone.setError("Requerido"); return; }
+        if (address.isEmpty()) { b.inputAddress.setError("Requerido"); return; }
 
-        double lat = pDouble(sLat);
-        double lng = pDouble(sLng);
+        double lat = pDouble(b.inputLat.getText().toString().trim());
+        double lng = pDouble(b.inputLng.getText().toString().trim());
 
-        if (empresa == null) empresa = new EmpresaFb();
         empresa.setNombre(name);
         empresa.setEmail(email);
         empresa.setTelefono(phone);
@@ -127,9 +113,9 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
         empresa.setLat(lat);
         empresa.setLng(lng);
 
-        // Guardar/actualizar
         if (!TextUtils.isEmpty(empresa.getId())) {
-            db.collection("empresas").document(empresa.getId())
+            db.collection("empresas")
+                    .document(empresa.getId())
                     .set(empresa)
                     .addOnSuccessListener(aVoid -> onSaveSuccess("Empresa actualizada"))
                     .addOnFailureListener(e -> showError(e.getMessage()));
@@ -144,13 +130,13 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
 
     private void onSaveSuccess(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
         getSharedPreferences(PREFS, MODE_PRIVATE)
                 .edit().putBoolean(KEY_COMPANY_DONE, true).apply();
 
         if (firstRun) {
-            Intent i = new Intent(this, AdminToursActivity.class)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(i);
+            startActivity(new Intent(this, AdminToursActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK));
             finishAffinity();
         } else {
             finish();
@@ -158,6 +144,6 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
     }
 
     private void showError(String m) { Toast.makeText(this, "Error: " + m, Toast.LENGTH_LONG).show(); }
-    private String n(String s) { return s == null ? "" : s; }
     private double pDouble(String s) { try { return Double.parseDouble(s); } catch (Exception e) { return 0d; } }
+    private String n(String s) { return s == null ? "" : s; }
 }
