@@ -24,10 +24,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.bumptech.glide.Glide;
+import com.example.silkroad_iot.MainActivity;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.User;
 import com.google.android.material.navigation.NavigationView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -209,6 +211,10 @@ public class AdministradoresActivity extends AppCompatActivity
             startActivity(new Intent(this, ReportesActivity.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(this, LogsActivity.class));
+        } else if (id == R.id.nav_cerrar_sesion) {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;

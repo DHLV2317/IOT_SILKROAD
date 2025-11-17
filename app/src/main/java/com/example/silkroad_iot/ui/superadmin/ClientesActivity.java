@@ -19,10 +19,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.silkroad_iot.MainActivity;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.databinding.ActivitySuperadminClientesBinding;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -70,7 +72,7 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
     private void cargarLista() {
         data.clear();
         //db.collection("users")
-        db.collection("usuarios")
+        db.collection("usuarios")//utilizando usuarios
                 .whereEqualTo("role", "CLIENT")
                 .get()
                 .addOnSuccessListener(snap -> {
@@ -101,6 +103,11 @@ public class ClientesActivity extends AppCompatActivity implements NavigationVie
         else if (id == R.id.nav_clientes) { /* aquí */ }
         else if (id == R.id.nav_reportes) startActivity(new Intent(this, ReportesActivity.class));
         else if (id == R.id.nav_logs) startActivity(new Intent(this, LogsActivity.class));
+        else if (id == R.id.nav_cerrar_sesion) {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
