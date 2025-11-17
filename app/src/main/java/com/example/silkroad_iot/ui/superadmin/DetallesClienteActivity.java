@@ -23,6 +23,7 @@ public class DetallesClienteActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String docId;
 
+    private User cliente;
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySuperadminDetallesClienteBinding.inflate(getLayoutInflater());
@@ -31,7 +32,7 @@ public class DetallesClienteActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         Intent i = getIntent();
-        User cliente = (User) i.getSerializableExtra("cliente");
+        cliente = (User) i.getSerializableExtra("cliente");
         if (cliente == null) { Toast.makeText(this, "Cliente no encontrado", Toast.LENGTH_SHORT).show(); finish(); return; }
 
         docId = cliente.getEmail();
@@ -132,7 +133,28 @@ public class DetallesClienteActivity extends AppCompatActivity {
         } else {
             //db.collection("users").document(docId).update(up)
             db.collection("usuarios").document(docId).update(up)
-                    .addOnSuccessListener(v -> { Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show(); finish(); })
+                    .addOnSuccessListener(v -> {
+                        Toast.makeText(this, "Actualizado", Toast.LENGTH_SHORT).show();
+                        // Datos para el log
+                        Map<String, Object> logData = new HashMap<>();
+                        logData.put("tipo", "Edición");
+                        logData.put("tipoUsuario", "Cliente");
+                        logData.put("nombre", "De SuperAdministrador");
+                        logData.put("usuario", cliente.getName()+" "+cliente.getLastName());
+                        logData.put("descripcion", "Se ha actualizado el cliente de nombre " + cliente.getName() + " " + cliente.getLastName() + " con el correo " + correo);
+                        logData.put("fecha", System.currentTimeMillis());
+                        db.collection("logs").document()
+                                .set(logData)
+                                .addOnSuccessListener(aVoid3 -> {
+                                    Toast.makeText(DetallesClienteActivity.this, "Cliente editado con éxito", Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(DetallesClienteActivity.this, ClientesActivity.class));
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(this, "Cliente editado, pero falló el log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    finish();
+                                });
+                    })
                     .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show());
         }
         startActivity(new Intent(this, ClientesActivity.class));
