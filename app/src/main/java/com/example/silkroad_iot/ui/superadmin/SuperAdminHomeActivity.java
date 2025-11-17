@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -25,6 +26,8 @@ import com.example.silkroad_iot.databinding.ActivitySuperadminAdministradoresBin
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,6 +56,9 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        Button button = findViewById(R.id.button);
+        button.setOnClickListener(v -> cambiarContrasenia());
+
         toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
@@ -80,7 +86,7 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
     }
 
     public void cambiarContrasenia() {
-        // 1. Obtener la instancia del usuario de Firebase Authentication
+        // Obtener la instancia del usuario de Firebase Authentication
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String email = "";
         if (user != null) {
@@ -104,32 +110,38 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
             return;
         }
 
-        String contraseniaActual = binding.textInputLayout2.getEditText().getText().toString().trim();
-        String contraseniaNueva = binding.textInputLayout4.getEditText().getText().toString().trim();
+        TextInputLayout contraseniaActual = findViewById(R.id.textInputLayout2);
+        String contraseniaActualString = contraseniaActual.getEditText().getText().toString().trim();
 
-        if(contraseniaActual.isEmpty()){
+        TextInputLayout contraseniaNueva = findViewById(R.id.textInputLayout4);
+        String contraseniaNuevaString = contraseniaNueva.getEditText().getText().toString().trim();
+
+
+
+        if(contraseniaActualString.isEmpty()){
             Toast.makeText(this, "Introduce tu contraseña actual.", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(contraseniaNueva.isEmpty()){
+        if(contraseniaNuevaString.isEmpty()){
             Toast.makeText(this, "Introduce tu nueva contraseña.", Toast.LENGTH_SHORT).show();
             return;
-        }else if(contraseniaNueva.length() < 6){
+        }else if(contraseniaNuevaString.length() < 6){
             Toast.makeText(this, "La contraseña debe tener al menos 6 caracteres.", Toast.LENGTH_SHORT).show();
             return;
         }
         if(email!=null){
             AuthCredential credential = EmailAuthProvider
-                    .getCredential(email, contraseniaActual);
+                    .getCredential(email, contraseniaActualString);
             user.reauthenticate(credential)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             Log.d(TAG, "User re-authenticated.");
                         }
+
                     });
 
-            user.updatePassword(contraseniaNueva)
+            user.updatePassword(contraseniaNuevaString)
                     .addOnSuccessListener(aVoid -> {
                         // Éxito
                         Toast.makeText(SuperAdminHomeActivity.this, "Contraseña actualizada correctamente.", Toast.LENGTH_SHORT).show();
@@ -138,6 +150,9 @@ public class SuperAdminHomeActivity extends AppCompatActivity implements Navigat
                         // Fallo
                         Log.e("CambiarContrasenia", "Error al actualizar", e);
                         Toast.makeText(SuperAdminHomeActivity.this, "Error al actualizar: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(SuperAdminHomeActivity.this, SuperAdminHomeActivity.class);
+                        startActivity(intent);
+                        finish();
                         // NOTA: Esta operación es sensible. Si falla con un error de "requiere inicio de sesión reciente",
                         // se necesita un flujo de reautenticación más complejo.
                     });

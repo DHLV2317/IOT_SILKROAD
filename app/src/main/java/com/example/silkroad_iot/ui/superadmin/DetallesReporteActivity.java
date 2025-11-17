@@ -1,13 +1,20 @@
 package com.example.silkroad_iot.ui.superadmin;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.EmpresaFb;
@@ -23,6 +30,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -33,6 +44,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+
+import android.os.Environment;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 
 public class DetallesReporteActivity extends AppCompatActivity {
 
@@ -96,43 +120,8 @@ public class DetallesReporteActivity extends AppCompatActivity {
             });
         });
 
-
-
-
-        /*puedes mostrar titulo/descripcion en tu layout si existen TextViews
-        LineChart chart = binding.lchart;
-        //LineDataSet ds1 = new LineDataSet(getEntries7days(ids), "Últimos 7 días");
-        //ds1.setColor(Color.BLUE);
-
-        //LineDataSet ds2 = new LineDataSet(getEntries7months(), "Últimos 7 meses");
-        //ds2.setColor(Color.RED);
-
-        //LineDataSet ds3 = new LineDataSet(getEntries7years(), "Últimos 7 años");
-        //ds2.setColor(Color.RED);
-
-        //LineData lineData= new LineData(ds1, ds2, ds3);
-        //LineData lineData= getEntries7(ids);;
-
-        chart.setData(lineData);
-        chart.invalidate();
-
-        setSupportActionBar(binding.toolbar3);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);*/
-
     }
 
-    /*private ArrayList<String> obtenerIdsTours(){
-        ArrayList<String> ids = new ArrayList<>();
-        db.collection("tours")
-                .whereEqualTo("id", id)
-                .get()
-                .addOnSuccessListener(snap -> {
-                    for (QueryDocumentSnapshot d : snap){
-                        ids.add(d.getId());
-                    }
-                });
-        return ids;
-    }*/
 
     private void obtenerIdsTours(FirestoreCallback firestoreCallback){
         db.collection("tours")
@@ -156,38 +145,6 @@ public class DetallesReporteActivity extends AppCompatActivity {
     private interface FirestoreCallback {
         void onCallback(ArrayList<String> ids);
     }
-    /*private LineData getEntries7(ArrayList<String> ids) {
-        ArrayList<Entry> entries = new ArrayList<>();
-        Timestamp timestampFromDate = new Timestamp(new Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000));
-
-        for(int i=0; i<ids.size(); i++){
-            db.collection("tours_history")
-                    .whereEqualTo("id_tour", ids.get(i))
-                    .whereEqualTo("estado", "finalizada")
-                    .get()
-                    .addOnSuccessListener(snap -> {
-                        for (QueryDocumentSnapshot d : snap) {
-                            d.getTimestamp("fechaReserva");
-                            if(d.getDouble("precio")!=null)
-                                data.put(d.getTimestamp("fechaReserva"), d.getDouble("precio"));
-                            else
-                                data.put(d.getTimestamp("fechaReserva"), 1.0);
-                        }
-                    });
-        }
-
-
-        //LineDataSet ds1 = new LineDataSet(getEntries7days(), "Últimos 7 días");
-        //ds1.setColor(Color.BLUE);
-
-        //LineDataSet ds2 = new LineDataSet(getEntries7months(), "Últimos 7 meses");
-        //ds2.setColor(Color.RED);
-
-        //LineDataSet ds3 = new LineDataSet(getEntries7years(), "Últimos 7 años");
-        //ds2.setColor(Color.RED);
-        LineData lineData= new LineData();
-        return lineData;
-    }*/
 
     // Modifica getEntries7 (ahora lo llamaremos cargarDatosReporte)
     private void cargarDatosReporte(ArrayList<String> ids, final DataCallback callback) {
@@ -200,22 +157,20 @@ public class DetallesReporteActivity extends AppCompatActivity {
         HashMap<Timestamp, Double> data = new HashMap<>();
         final int[] tasksCompleted = {0}; // Contador para saber cuándo han terminado todas las tareas
 
+        String finalizada="finalizada";
         for(String tourId : ids){
             //Log.d(TAG, "Tour ID: " + tourId);
             db.collection("tours_history")
                     .whereEqualTo("id_tour", tourId)
-                    .whereEqualTo("estado", "finalizada")
+                    .whereEqualTo("estado", finalizada)
                     .get()
-                    .addOnCompleteListener(task -> { // Usamos onCompleteListener para manejar éxito y fallo
+                    .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot d : task.getResult()) {
                                 Timestamp fecha = d.getTimestamp("fechaReserva");
                                 Log.d(TAG, "Fecha: " + fecha);
-                                Double fix = d.getDouble("pax");//XD funciona pax pero no precio ffffff
-                                if (fecha != null) {
-                                    data.put(fecha, (fix != null) ? fix : 0.0);
-                                    Log.d(TAG, "Precio: " + fix);
-                                }
+                                Double fix = d.getDouble("precio") != null ? d.getDouble("precio") : 0.0;//XD funciona pax pero no precio ffffff
+                                data.put(fecha, fix);
                             }
                         }
                         tasksCompleted[0]++;
@@ -314,5 +269,139 @@ public class DetallesReporteActivity extends AppCompatActivity {
     }
 
 
+    /*Excel*/
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permiso concedido. Iniciar la descarga de datos.
+                    Toast.makeText(this, "Permiso concedido. Iniciando descarga...", Toast.LENGTH_SHORT).show();
+                    iniciarProcesoDeExportacion();
+                } else {
+                    // Permiso denegado. Informar al usuario.
+                    Toast.makeText(this, "Permiso de almacenamiento denegado. No se puede exportar el archivo.", Toast.LENGTH_LONG).show();
+                }
+            });
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.descargar_excel) { // Asegúrate de que este es el ID de tu item
+            verificarYExportar();
+            return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            onBackPressed(); // Maneja el clic en la flecha de "atrás"
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void verificarYExportar() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            // Ya tienes el permiso, inicia la exportación.
+            iniciarProcesoDeExportacion();
+        } else {
+            // No tienes el permiso, solicítalo.
+            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+    }
+    private void iniciarProcesoDeExportacion() {
+        obtenerIdsTours(ids -> {
+            // Este callback se ejecuta cuando los IDs están listos
+            obtenerDatosParaExcel(ids, this::crearArchivoExcel);
+        });
+    }
+
+    // Obtener todos los datos necesarios para el Excel
+    private void obtenerDatosParaExcel(ArrayList<String> ids, final ExcelDataCallback callback) {
+        if (ids == null || ids.isEmpty()) {
+            callback.onDataReady(new ArrayList<>()); // Devuelve lista vacía
+            return;
+        }
+
+        ArrayList<Map<String, Object>> reportData = new ArrayList<>();
+        final int[] tasksCompleted = {0};
+
+        for (String tourId : ids) {
+            db.collection("tours_history")
+                    .whereEqualTo("id_tour", tourId)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot d : task.getResult()) {
+                                Map<String, Object> rowData = new HashMap<>();
+                                rowData.put("fecha", d.getTimestamp("fechaReserva"));
+                                rowData.put("precio", d.getDouble("precio") != null ? d.getDouble("precio") : 0.0);
+                                rowData.put("estado", d.getString("estado"));
+                                reportData.add(rowData);
+                            }
+                        }
+
+                        tasksCompleted[0]++;
+                        if (tasksCompleted[0] == ids.size()) {
+                            callback.onDataReady(reportData);
+                        }
+                    });
+        }
+    }
+
+    private interface ExcelDataCallback {
+        void onDataReady(ArrayList<Map<String, Object>> data);
+    }
+
+    private void crearArchivoExcel(ArrayList<Map<String, Object>> reportData) {
+       if (reportData.isEmpty()) {
+            Toast.makeText(this, "No hay datos para exportar.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Historial de Tours");
+
+        // Crea la fila de encabezado
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Fecha");
+        headerRow.createCell(1).setCellValue("Precio");
+        headerRow.createCell(2).setCellValue("Estado");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+
+        int rowNum = 1;
+        for (Map<String, Object> rowData : reportData) {
+            Row row = sheet.createRow(rowNum++);
+            Timestamp fechaTimestamp = (Timestamp) rowData.get("fecha");
+            String fechaFormateada = (fechaTimestamp != null) ? sdf.format(fechaTimestamp.toDate()) : "N/A";
+
+            Double precio = (Double) rowData.get("precio");
+            double precioValor = (precio != null) ? precio : 0.0;
+
+            String estado = (String) rowData.get("estado");
+
+            row.createCell(0).setCellValue(fechaFormateada);
+            row.createCell(1).setCellValue(precioValor);
+            row.createCell(2).setCellValue(estado);
+        }
+
+        try {
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs();
+            }
+
+            String fileName = "Reporte_SilkRoad_" + System.currentTimeMillis() + ".xlsx";
+            File file = new File(downloadsDir, fileName);
+
+            FileOutputStream outputStream = new FileOutputStream(file);
+            workbook.write(outputStream);
+            workbook.close();
+            outputStream.close();
+
+            runOnUiThread(() -> Toast.makeText(this, "Reporte guardado en Descargas/" + fileName, Toast.LENGTH_LONG).show());
+
+        } catch (IOException e) {
+            Log.e(TAG, "Error al escribir el archivo de Excel", e);
+            runOnUiThread(() -> Toast.makeText(this, "Error al guardar el archivo: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        }
+    }
 
 }

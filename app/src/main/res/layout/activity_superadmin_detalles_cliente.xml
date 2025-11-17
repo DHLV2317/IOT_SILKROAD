@@ -113,7 +113,7 @@
                     android:id="@+id/inputBirthDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Fecha de nacimiento (AAAA-MM-DD)"
+                    android:hint="Fecha de nacimiento (DD-MM-AAAA)"
                     android:singleLine="true" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -167,7 +167,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:endIconMode="password_toggle">
+                app:endIconMode="password_toggle"
+                android:focusable="false">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputPassword"
@@ -182,7 +183,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:endIconMode="password_toggle">
+                app:endIconMode="password_toggle"
+                android:focusable="false">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputPasswordRepeat"

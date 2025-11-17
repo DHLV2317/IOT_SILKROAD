@@ -65,7 +65,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-analytics'   // opcional
-
+    implementation 'com.google.firebase:firebase-storage'
     // ----------------------------------------------------------
     // 🔵 GOOGLE SIGN-IN
     // ----------------------------------------------------------
@@ -96,7 +96,6 @@ dependencies {
 
 // ML Kit Barcode (QR)
     implementation "com.google.mlkit:barcode-scanning:17.2.0"
-
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
     implementation 'com.google.android.gms:play-services-location:21.2.0'
 
@@ -104,4 +103,8 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+
+    //APACHE POI
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
 }
