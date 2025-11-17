@@ -6,6 +6,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,6 +35,9 @@ public class AdminToursActivity extends BaseDrawerActivity {
     private final List<TourFB> allTours = new ArrayList<>();
     private AdminToursAdapter adapter;
 
+    // Empresa actual del admin (se obtiene desde usuarios/{uid})
+    private String empresaId;
+
     @Override
     protected void onCreate(@Nullable Bundle s) {
         super.onCreate(s);
@@ -57,17 +61,32 @@ public class AdminToursActivity extends BaseDrawerActivity {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Añadir nuevo tour
-        c.btnAdd.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminTourWizardActivity.class)));
+        // Añadir nuevo tour (pasando empresaId al wizard)
+        c.btnAdd.setOnClickListener(v -> {
+            if (empresaId == null || empresaId.trim().isEmpty()) {
+                Toast.makeText(
+                        this,
+                        "Aún no se ha cargado tu empresa. Espera un momento e inténtalo de nuevo.",
+                        Toast.LENGTH_SHORT
+                ).show();
+                startListeningTours(); // reintento suave
+                return;
+            }
+
+            Intent it = new Intent(this, AdminTourWizardActivity.class);
+            it.putExtra("empresaId", empresaId);
+            startActivity(it);
+        });
     }
 
-    @Override protected void onResume() {
+    @Override
+    protected void onResume() {
         super.onResume();
         startListeningTours();
     }
 
-    @Override protected void onPause() {
+    @Override
+    protected void onPause() {
         super.onPause();
         if (reg != null) { reg.remove(); reg = null; }
     }
@@ -103,7 +122,7 @@ public class AdminToursActivity extends BaseDrawerActivity {
             return;
         }
 
-        String empresaId = doc.getString("empresaId");
+        empresaId = doc.getString("empresaId"); // guardamos la empresa para el botón +
 
         if (empresaId == null || empresaId.isEmpty()) {
             c.progress.setVisibility(View.GONE);
@@ -111,7 +130,7 @@ public class AdminToursActivity extends BaseDrawerActivity {
             return;
         }
 
-        // 2) Cargar tours según empresaId
+        // 2) Cargar tours según empresaId en tiempo real
         if (reg != null) { reg.remove(); }
         reg = db.collection("tours")
                 .whereEqualTo("empresaId", empresaId)
@@ -125,8 +144,10 @@ public class AdminToursActivity extends BaseDrawerActivity {
                     allTours.clear();
                     for (QueryDocumentSnapshot d : snap) {
                         TourFB t = d.toObject(TourFB.class);
-                        t.setId(d.getId());
-                        allTours.add(t);
+                        if (t != null) {
+                            t.setId(d.getId());
+                            allTours.add(t);
+                        }
                     }
 
                     applyData();
@@ -145,16 +166,19 @@ public class AdminToursActivity extends BaseDrawerActivity {
     }
 
     private void filter(CharSequence s) {
-        String q = s == null ? "" : s.toString().trim().toLowerCase();
+        String q = (s == null) ? "" : s.toString().trim().toLowerCase();
         List<TourFB> filtered = new ArrayList<>();
         for (TourFB t : allTours) {
-            String name = safe(t.getDisplayName());
-            String city = safe(t.getCiudad());
-            String desc = safe(t.getDescription());
+            String name   = safe(t.getDisplayName());
+            String city   = safe(t.getCiudad());
+            String desc   = safe(t.getDescription());
+            String estado = safe(t.getEstado());
+
             if (q.isEmpty()
                     || name.toLowerCase().contains(q)
                     || city.toLowerCase().contains(q)
-                    || desc.toLowerCase().contains(q)) {
+                    || desc.toLowerCase().contains(q)
+                    || estado.toLowerCase().contains(q)) {
                 filtered.add(t);
             }
         }
@@ -171,5 +195,6 @@ public class AdminToursActivity extends BaseDrawerActivity {
 
     private static String safe(String s) { return s == null ? "" : s; }
 
-    @Override protected int defaultMenuId() { return R.id.m_tours; }
+    @Override
+    protected int defaultMenuId() { return R.id.m_tours; }
 }

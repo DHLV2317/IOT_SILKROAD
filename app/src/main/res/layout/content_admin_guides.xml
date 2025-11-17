@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ⭐ Mapa -->
+    <!-- ⭐ Mapa con ubicación de guías -->
     <fragment
         android:id="@+id/mapAdmin"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        android:hint="Buscar guía">
+        android:hint="Buscar guía (nombre, idioma, estado)">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputSearch"
@@ -36,7 +36,7 @@
         android:layout_gravity="center_horizontal"
         android:visibility="gone"/>
 
-    <!-- Mensaje -->
+    <!-- Mensaje vacío -->
     <TextView
         android:id="@+id/tEmpty"
         android:layout_width="match_parent"
@@ -46,7 +46,7 @@
         android:layout_margin="12dp"
         android:visibility="gone"/>
 
-    <!-- Lista -->
+    <!-- Lista de guías -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"

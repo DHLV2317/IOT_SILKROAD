@@ -1,10 +1,12 @@
 package com.example.silkroad_iot.ui.admin;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -108,9 +110,9 @@ public class AdminGuidesActivity extends BaseDrawerActivity implements OnMapRead
             Object tag = marker.getTag();
             if (tag instanceof String) {
                 String guideId = (String) tag;
-                loadGuidePath(guideId, marker);
+                loadGuidePath(guideId);
             }
-            return false; // para que igual muestre la info window
+            return false;
         });
 
         refreshMarkers();
@@ -119,78 +121,55 @@ public class AdminGuidesActivity extends BaseDrawerActivity implements OnMapRead
     private void refreshMarkers() {
         if (!isMapReady || mMap == null) return;
 
+        markers.clear();
+
         for (GuideFb g : guides) {
             if (g.getLatActual() == null || g.getLngActual() == null) continue;
 
             LatLng pos = new LatLng(g.getLatActual(), g.getLngActual());
-            Marker mk = markers.get(g.getId());
 
-            if (mk == null) {
-                mk = mMap.addMarker(new MarkerOptions()
-                        .position(pos)
-                        .title(g.getNombre())
-                        .snippet("Estado: " + g.getEstado()));
-                if (mk != null) mk.setTag(g.getId());
+            Marker mk = mMap.addMarker(new MarkerOptions()
+                    .position(pos)
+                    .title(g.getNombre())
+                    .snippet("Estado: " + g.getEstado()));
+
+            if (mk != null) {
+                mk.setTag(g.getId());
                 markers.put(g.getId(), mk);
-            } else {
-                mk.setPosition(pos);
-                mk.setTitle(g.getNombre());
-                mk.setSnippet("Estado: " + g.getEstado());
             }
         }
     }
 
-    // Carga las paradas (ubicaciones) del guía y dibuja Polyline
-    private void loadGuidePath(String guideId, Marker marker) {
+    private void loadGuidePath(String guideId) {
         db.collection("guias")
                 .document(guideId)
                 .collection("ubicaciones")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(snap -> {
-                    if (!isMapReady || mMap == null) return;
 
-                    // Eliminar polyline anterior del mismo guía
                     Polyline old = guidePolylines.get(guideId);
-                    if (old != null) {
-                        old.remove();
-                    }
+                    if (old != null) old.remove();
 
                     List<LatLng> points = new ArrayList<>();
                     for (DocumentSnapshot d : snap.getDocuments()) {
                         Double lat = d.getDouble("lat");
                         Double lng = d.getDouble("lng");
-                        if (lat != null && lng != null) {
-                            points.add(new LatLng(lat, lng));
-                        }
+                        if (lat != null && lng != null) points.add(new LatLng(lat, lng));
                     }
 
                     if (points.isEmpty()) {
-                        Toast.makeText(this,
-                                "Este guía aún no tiene paradas registradas.",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Sin recorrido registrado.", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    PolylineOptions opts = new PolylineOptions()
-                            .addAll(points)
-                            .width(8f);
-
-                    Polyline poly = mMap.addPolyline(opts);
+                    Polyline poly = mMap.addPolyline(
+                            new PolylineOptions().addAll(points).width(8f)
+                    );
                     guidePolylines.put(guideId, poly);
 
-                    // Centrar cámara en la última parada
-                    LatLng last = points.get(points.size() - 1);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(last, 16f));
-
-                    Toast.makeText(this,
-                            "Mostrando recorrido (" + points.size() + " paradas).",
-                            Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this,
-                            "Error al cargar recorrido: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            points.get(points.size() - 1), 16f));
                 });
     }
 
@@ -211,7 +190,6 @@ public class AdminGuidesActivity extends BaseDrawerActivity implements OnMapRead
             }
 
             guides.clear();
-            markers.clear();
             for (DocumentSnapshot d : snap.getDocuments()) {
                 GuideFb g = d.toObject(GuideFb.class);
                 if (g != null) {
@@ -234,21 +212,87 @@ public class AdminGuidesActivity extends BaseDrawerActivity implements OnMapRead
     // ============================================================
 
     private void preloadTours() {
-        db.collection("tours").get().addOnSuccessListener(snap -> {
-            toursCache.clear();
-            for (DocumentSnapshot d : snap) {
-                TourFB t = d.toObject(TourFB.class);
-                if (t != null) {
-                    if (t.getId() == null) t.setId(d.getId());
-                    toursCache.add(t);
-                }
-            }
-        });
+        db.collection("tours")
+                .whereEqualTo("status", "PENDING")
+                .whereEqualTo("assignedGuideId", null)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    toursCache.clear();
+                    for (DocumentSnapshot d : snap) {
+                        TourFB t = d.toObject(TourFB.class);
+                        if (t != null) {
+                            t.setId(d.getId());
+                            toursCache.add(t);
+                        }
+                    }
+                });
     }
 
+    // ============================================================
+    //   ASIGNAR TOUR
+    // ============================================================
+
     public void showAssignTourDialog(int idx) {
-        // Dejas tu implementación actual aquí
+        GuideFb guide = guides.get(idx);
+
+        if (toursCache.isEmpty()) {
+            Toast.makeText(this, "No hay tours pendientes para asignar.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        List<String> nombres = new ArrayList<>();
+        for (TourFB t : toursCache) nombres.add(t.getDisplayName());
+
+        ArrayAdapter<String> ad = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1, nombres);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Asignar Tour")
+                .setAdapter(ad, (dialog, pos) -> {
+                    assignTourToGuide(guide, toursCache.get(pos));
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
+
+    private void assignTourToGuide(GuideFb guide, TourFB tour) {
+
+        Map<String, Object> upd = new HashMap<>();
+        upd.put("assignedGuideId", guide.getId());
+        upd.put("assignedGuideName", guide.getNombre());
+        upd.put("status", "EN_CURSO");
+
+        db.collection("tours")
+                .document(tour.getId())
+                .update(upd)
+                .addOnSuccessListener(unused -> {
+
+                    Map<String, Object> hist = new HashMap<>();
+                    hist.put("tourId", tour.getId());
+                    hist.put("tourName", tour.getDisplayName());
+                    hist.put("timestamp", System.currentTimeMillis());
+                    hist.put("status", "EN_CURSO");
+
+                    db.collection("guias")
+                            .document(guide.getId())
+                            .collection("historial")
+                            .add(hist);
+
+                    Toast.makeText(this,
+                            "Tour asignado a " + guide.getNombre(),
+                            Toast.LENGTH_LONG).show();
+
+                    preloadTours();
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+    }
+
+    // ============================================================
+    //   DETALLE
+    // ============================================================
 
     public void showGuideDetail(int idx) {
         GuideFb g = guides.get(idx);

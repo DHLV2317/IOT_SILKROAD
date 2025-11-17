@@ -60,7 +60,7 @@ public class TourDetailActivity extends AppCompatActivity {
             b.tTourDateTo.setText("Fin: -");
 
         //b.tTourDuration.setText("Duración: " + (tour.getDuration() != null ? tour.getDuration() : "-"));
-        b.tTourDuration.setText("Paradas: " + (tour.getId_paradas() != null ? tour.getId_paradas() : "-"));
+        b.tTourDuration.setText("Paradas: " + (tour.getIdParadasList() != null ? tour.getIdParadasList() : "-"));
         // Acción del botón
         b.btnAdd.setOnClickListener(v -> {
             Intent i = new Intent(this, ConfirmTourActivity.class);

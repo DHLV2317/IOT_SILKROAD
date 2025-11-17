@@ -58,10 +58,11 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
 
         String name   = t.getDisplayName();
         String desc   = t.getDescription() == null ? "" : t.getDescription();
-        double price  = t.getPrecio();
-        int people    = t.getCantidad_personas();
+        double price  = t.getDisplayPrice();
+        int people    = t.getDisplayPeople();
         String imgUrl = t.getDisplayImageUrl();
 
+        // Fechas
         String fecha = "sin fecha";
         if (t.getDateFrom() != null && t.getDateTo() != null) {
             fecha = sdf.format(t.getDateFrom()) + " - " + sdf.format(t.getDateTo());
@@ -71,12 +72,22 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
             fecha = sdf.format(t.getDateTo());
         }
 
+        // Estado legible
+        String estado = t.getEstado();
+        String prettyEstado = (estado == null || estado.trim().isEmpty())
+                ? "pendiente"
+                : estado;
+
         h.tTitle.setText(name == null || name.isEmpty() ? "Sin nombre" : name);
 
-        String meta = "S/ " + String.format(Locale.getDefault(),"%.2f", price) + " · " + people + " personas";
+        String meta = "S/ " + String.format(Locale.getDefault(),"%.2f", price)
+                + " · " + people + " personas";
         h.tSubtitle.setText(desc.isEmpty() ? meta : meta + " · " + desc);
-        h.tDate.setText(fecha);
 
+        // Fecha + estado
+        h.tDate.setText(fecha + " · " + prettyEstado);
+
+        // Imagen
         if (imgUrl == null || imgUrl.isEmpty()) {
             h.img.setImageResource(R.drawable.ic_menu_24);
         } else {
@@ -87,6 +98,7 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
                     .into(h.img);
         }
 
+        // Ver detalle
         h.btnDetail.setOnClickListener(v -> {
             Intent it = new Intent(v.getContext(), AdminTourDetailViewActivity.class);
             it.putExtra("tourId", t.getId());

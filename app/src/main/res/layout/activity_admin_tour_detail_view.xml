@@ -56,6 +56,13 @@
                     android:layout_marginTop="4dp" />
 
                 <TextView
+                    android:id="@+id/tCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Ciudad: —" />
+
+                <TextView
                     android:id="@+id/tDuration"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,6 +92,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Personas: —" />
+
+                <!-- Estado del tour (status / estado) -->
+                <TextView
+                    android:id="@+id/tStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Estado: —" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -227,7 +243,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="@android:color/holo_red_light"
-                android:text="Eliminar tour"
+                android:text="Finalizar tour"
                 android:textColor="@android:color/white" />
         </LinearLayout>
 

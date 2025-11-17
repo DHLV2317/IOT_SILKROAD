@@ -63,7 +63,8 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         }
     }
 
-    @NonNull @Override
+    @NonNull
+    @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_admin_guide, parent, false);
@@ -74,11 +75,21 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
     public void onBindViewHolder(@NonNull VH h, int position) {
         GuideFb g = data.get(position);
 
+        // Foto
         String foto = safe(g.getFotoUrl());
-        Glide.with(h.itemView)
-                .load(foto.isEmpty() ? R.drawable.ic_person_24 : foto)
-                .into(h.img);
+        if (foto.isEmpty()) {
+            Glide.with(h.itemView)
+                    .load(R.drawable.ic_person_24)
+                    .into(h.img);
+        } else {
+            Glide.with(h.itemView)
+                    .load(foto)
+                    .placeholder(R.drawable.ic_person_24)
+                    .error(R.drawable.ic_person_24)
+                    .into(h.img);
+        }
 
+        // Datos principales
         String name   = safe(g.getNombre());
         String langs  = safe(g.getLangs());
         String state  = safe(g.getEstado());
@@ -86,14 +97,34 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
 
         h.tName.setText(name.isEmpty() ? "(Sin nombre)" : name);
         h.tSubtitle.setText(langs.isEmpty() ? "—" : langs);
-        h.tStatus.setText(state.isEmpty() ? "—" : state);
 
+        // Estado amigable
+        String estadoUi;
+        if (!actual.isEmpty()) {
+            estadoUi = "En tour";
+        } else if (!state.isEmpty()) {
+            estadoUi = state;
+        } else {
+            estadoUi = "Disponible";
+        }
+        h.tStatus.setText(estadoUi);
+
+        // Historial / tour actual
         int hist = (g.getHistorial() == null) ? 0 : g.getHistorial().size();
-        h.tExtra.setText(
-                actual.isEmpty()
-                        ? hist + " tours"
-                        : hist + " tours • Actual: " + actual
-        );
+        if (actual.isEmpty()) {
+            h.tExtra.setText(hist + " tours completados");
+        } else {
+            h.tExtra.setText(hist + " tours completados • Actual: " + actual);
+        }
+
+        // Lógica de habilitar / deshabilitar asignación
+        boolean ocupado = !actual.isEmpty()
+                || estadoUi.equalsIgnoreCase("EN_CURSO")
+                || estadoUi.equalsIgnoreCase("Ocupado")
+                || estadoUi.equalsIgnoreCase("Busy");
+
+        h.btnAssign.setEnabled(!ocupado);
+        h.btnAssign.setAlpha(ocupado ? 0.5f : 1f);
 
         h.btnAssign.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();
@@ -106,7 +137,10 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         });
     }
 
-    @Override public int getItemCount() { return data.size(); }
+    @Override
+    public int getItemCount() {
+        return data.size();
+    }
 
     public void filter(String q) {
         String s = q == null ? "" : q.toLowerCase(Locale.getDefault()).trim();
