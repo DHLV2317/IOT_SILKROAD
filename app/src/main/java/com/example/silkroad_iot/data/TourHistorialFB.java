@@ -7,7 +7,8 @@ import java.util.Date;
 
 /**
  * Modelo Firestore para historial de tours realizados.
- * Guarda qué tour, quién lo reservó, fechas, estado y datos del QR.
+ * Guarda qué tour, quién lo reservó, fechas, estado, datos del QR
+ * y rating/comentario del cliente (si califica).
  *
  * Formato sugerido de qrData:
  *   RESERVA|<id_reserva>|<id_tour>|<id_usuario>|PAX:<pax>
@@ -21,7 +22,7 @@ public class TourHistorialFB implements Serializable {
     private Date fechaReserva;    // Fecha en la que se hizo la reserva
     private Date fecha_realizado; // Fecha de realización del tour (si aplica)
 
-    private String estado;        // pendiente, check-in, check-out, finalizada, cancelado
+    private String estado;        // pendiente, aceptado, rechazado, check-in, check-out, finalizada, cancelado
     private int pax;              // cantidad de personas reservadas
 
     /**
@@ -30,6 +31,10 @@ public class TourHistorialFB implements Serializable {
      * RESERVA|<id_reserva>|<id_tour>|<id_usuario>|PAX:<pax>
      */
     private String qrData;
+
+    // ⭐ Nuevo: rating del cliente (0–5) y comentario
+    private Float rating;
+    private String comentario;
 
     public TourHistorialFB() {}
 
@@ -86,6 +91,13 @@ public class TourHistorialFB implements Serializable {
     public String getQrData() { return qrData; }
     public void setQrData(String qrData) { this.qrData = qrData; }
 
+    // --- Rating / Comentario ---
+    public Float getRating() { return rating; }
+    public void setRating(Float rating) { this.rating = rating; }
+
+    public String getComentario() { return comentario; }
+    public void setComentario(String comentario) { this.comentario = comentario; }
+
     @Override
     public String toString() {
         return "TourHistorialFB{" +
@@ -95,6 +107,7 @@ public class TourHistorialFB implements Serializable {
                 ", fechaReserva=" + fechaReserva +
                 ", estado='" + estado + '\'' +
                 ", pax=" + pax +
+                ", rating=" + rating +
                 '}';
     }
 }

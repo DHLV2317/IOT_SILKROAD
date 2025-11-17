@@ -40,8 +40,13 @@ public class PdfReportUtil {
                 String st     = get(r,"status");
                 String total  = get(r,"total");
                 String date   = getDate(r,"date");
+                String rating = get(r,"rating");
+
+                String ratingPart = rating.isEmpty() ? "" : " | ⭐ " + rating;
+
                 String line = (i+1)+". "+(tour.isEmpty()?"(Sin tour)":tour)+" | "+cli+" | "+date+
-                        " | S/ "+(total.isEmpty()?"0":total)+" | "+(st.isEmpty()?"pendiente":st);
+                        " | S/ "+(total.isEmpty()?"0":total)+" | "+(st.isEmpty()?"pendiente":st) + ratingPart;
+
                 y += 16;
                 if (y > pageHeight-40){
                     pdf.finishPage(page);
@@ -66,9 +71,15 @@ public class PdfReportUtil {
     }
 
     private static String get(Object o, String n){
-        try { var f=o.getClass().getDeclaredField(n); f.setAccessible(true); Object v=f.get(o); return v==null? "" : String.valueOf(v); }
+        try {
+            var f=o.getClass().getDeclaredField(n);
+            f.setAccessible(true);
+            Object v=f.get(o);
+            return v==null? "" : String.valueOf(v);
+        }
         catch(Throwable ignore){ return ""; }
     }
+
     private static String getDate(Object o, String n){
         try {
             var f=o.getClass().getDeclaredField(n); f.setAccessible(true);

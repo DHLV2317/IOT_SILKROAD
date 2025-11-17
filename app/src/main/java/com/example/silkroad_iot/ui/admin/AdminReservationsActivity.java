@@ -14,6 +14,7 @@ import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.databinding.ContentAdminReservationsBinding;
 import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
+import com.example.silkroad_iot.ui.util.PdfReportUtil;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -58,7 +59,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
             }
         });
 
-        // ===== Filtro por estado (ahora con todos los estados) =====
+        // ===== Filtro por estado =====
         String[] estados = new String[]{
                 "Todos",
                 "pendiente",
@@ -84,6 +85,13 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
             adapter.filter(q, sel);
         });
 
+        // Botón generar PDF
+        b.btnReport.setOnClickListener(v -> {
+            List<Object> items = new ArrayList<>();
+            items.addAll(fullList);     // usamos todas las reservas de la empresa
+            PdfReportUtil.createReservationsPdf(this, items);
+        });
+
         // Carga inicial
         loadData();
     }
@@ -103,8 +111,8 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
                 .getString(KEY_EMPRESA_ID, null);
 
         if (empresaId == null) {
-            // si no hay empresa asociada, no hay nada que listar
             adapter.replace(new ArrayList<>());
+            fullList.clear();
             return;
         }
 
@@ -124,6 +132,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
 
                     if (tourMap.isEmpty()) {
                         adapter.replace(new ArrayList<>());
+                        fullList.clear();
                         return;
                     }
 
@@ -140,8 +149,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
 
                                     TourFB tour = tourMap.get(r.getIdTour());
                                     if (tour == null) {
-                                        // la reserva es de otro tour/empresa
-                                        continue;
+                                        continue; // reserva de otra empresa
                                     }
 
                                     fullList.add(new ReservaWithTour(r, tour));

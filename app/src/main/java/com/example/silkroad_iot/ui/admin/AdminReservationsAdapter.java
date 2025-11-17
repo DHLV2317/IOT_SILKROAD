@@ -63,13 +63,9 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
         TourHistorialFB r = item.getReserva();
         TourFB tour       = item.getTour();
 
-        // ------- datos principales (tour) -------
         String tourName = tour != null ? tour.getDisplayName() : "(Sin tour)";
-
-        // ------- cliente -------
         String clientName = r.getIdUsuario() != null ? r.getIdUsuario() : "Cliente sin nombre";
 
-        // ------- pax / total -------
         int pax = r.getPax() > 0
                 ? r.getPax()
                 : (tour != null && tour.getDisplayPeople() > 0 ? tour.getDisplayPeople() : 1);
@@ -77,7 +73,6 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
         double precioUnit = tour != null ? tour.getDisplayPrice() : 0.0;
         double total = precioUnit * pax;
 
-        // ------- estado / fecha -------
         String status = r.getEstado();
         if (status == null || status.trim().isEmpty()) status = "pendiente";
 
@@ -85,27 +80,37 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
                 ? r.getFechaReserva()
                 : r.getFechaRealizado();
 
-        // ------- imagen -------
         String imageUrl = tour != null ? tour.getImageUrl() : null;
 
-        // ------- bind UI -------
+        // Datos auxiliares para PDF
+        item.tourName   = tourName;
+        item.clientName = clientName;
+        item.status     = status;
+        item.total      = total;
+        item.date       = (date == null ? null : date.getTime());
+        item.rating     = r.getRating();
+
+        // Bind UI
         h.tTitle.setText(tourName);
 
-        String paxText = pax + " pax";
-        String money   = "S/ " + String.format(Locale.getDefault(), "%.2f", total);
-        h.tSub.setText(clientName + " · " + paxText + " · " + money);
+        String money = "S/ " + String.format(Locale.getDefault(), "%.2f", total);
+        String baseSub = clientName + " · " + pax + " pax · " + money;
 
+        if (r.getRating() != null) {
+            baseSub += " · ⭐ " + String.format(Locale.getDefault(), "%.1f", r.getRating());
+        }
+
+        h.tSub.setText(baseSub);
         h.tDate.setText(date == null ? "—" : sdf.format(date));
         h.tStatus.setText(status);
 
-        // Color según estado
         int bg = R.color.pill_gray;
         String st = status.toLowerCase(Locale.getDefault());
         if (st.contains("check-in") || st.contains("check-out")
                 || st.contains("final") || st.contains("acept")) {
-            bg = R.color.teal_200;                // verde/teal para aceptado / finalizada / check
+            bg = R.color.teal_200;
         } else if (st.contains("rech") || st.contains("cancel")) {
-            bg = android.R.color.holo_red_light;  // rojo para cancelado / rechazado
+            bg = android.R.color.holo_red_light;
         }
         h.tStatus.setBackgroundResource(bg);
 
@@ -122,7 +127,6 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
                     .into(h.img);
         }
 
-        // ------- botón detalle (pasamos el objeto entero) -------
         h.btnDetail.setOnClickListener(v -> {
             Intent it = new Intent(v.getContext(), AdminReservationDetailActivity.class);
             it.putExtra("reserva", item);
@@ -132,9 +136,6 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
 
     @Override public int getItemCount(){ return data.size(); }
 
-    // =========================================================
-    // Filtro texto + estado
-    // =========================================================
     public void filter(String query, String status){
         String q  = query  == null ? "" : query.trim().toLowerCase(Locale.getDefault());
         String stFilter = status == null ? "Todos" : status.toLowerCase(Locale.getDefault());

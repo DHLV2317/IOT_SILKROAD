@@ -3,6 +3,7 @@ package com.example.silkroad_iot.ui.client;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -38,17 +39,26 @@ public class OrderDetailActivity extends AppCompatActivity {
         setContentView(b.getRoot());
 
         setSupportActionBar(b.toolbar);
-        if (getSupportActionBar()!=null) getSupportActionBar().setTitle("Detalle de Orden");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Detalle de Orden");
+        }
 
         String historialId = getIntent().getStringExtra("historialId");
+        final String finalHistorialId = historialId;
+
         TourFB tour = (TourFB) getIntent().getSerializableExtra("tourFB");
         TourHistorialFB historial = (TourHistorialFB) getIntent().getSerializableExtra("historialFB");
 
-        if (tour == null || historial == null) { finish(); return; }
+        if (tour == null || historial == null) {
+            finish();
+            return;
+        }
 
+        // ====== DATOS BÁSICOS DEL TOUR / RESERVA ======
         b.tvCompany.setText(tour.getDisplayName());
         b.tvTourName.setText(tour.getDisplayName());
         b.tvTourPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice()));
+
         int pax = historial.getPax() > 0 ? historial.getPax() : 1;
         b.tvQuantity.setText("Cantidad de usuarios: " + pax);
         b.tvServices.setText("Servicios adicionales :     S./0.00");
@@ -67,25 +77,24 @@ public class OrderDetailActivity extends AppCompatActivity {
             b.tvHour.setText("Por definir");
         }
 
-        b.tvStatus.setText("Estado: " + (historial.getEstado() == null ? "desconocido" : historial.getEstado()));
+        String estado = (historial.getEstado() == null ? "desconocido" : historial.getEstado());
+        b.tvStatus.setText("Estado: " + estado);
 
         // ========= GENERAR / MOSTRAR QR =========
         String qrData = historial.getQrData();
-        if (qrData == null || qrData.isEmpty()) {
-            if (historialId != null && !historialId.isEmpty()) {
-                qrData = "RESERVA|" +
-                        historialId + "|" +
-                        historial.getIdTour() + "|" +
-                        historial.getIdUsuario() + "|PAX:" + pax;
+        if ((qrData == null || qrData.isEmpty()) && finalHistorialId != null && !finalHistorialId.isEmpty()) {
+            qrData = "RESERVA|" +
+                    finalHistorialId + "|" +
+                    historial.getIdTour() + "|" +
+                    historial.getIdUsuario() + "|PAX:" + pax;
 
-                historial.setQrData(qrData);
-                historial.setPax(pax);
+            historial.setQrData(qrData);
+            historial.setPax(pax);
 
-                FirebaseFirestore.getInstance()
-                        .collection("tours_history")
-                        .document(historialId)
-                        .update("qrData", qrData, "pax", pax);
-            }
+            FirebaseFirestore.getInstance()
+                    .collection("tours_history")
+                    .document(finalHistorialId)
+                    .update("qrData", qrData, "pax", pax);
         }
 
         if (qrData != null && !qrData.isEmpty()) {
@@ -94,14 +103,18 @@ public class OrderDetailActivity extends AppCompatActivity {
             b.imgQrCode.setImageResource(R.drawable.qr_code_24);
         }
 
-        // Ver Paradas
+        // ========= SECCIÓN DE CALIFICACIÓN =========
+        setupRatingSection(historial, finalHistorialId);
+
+        // ========= VER PARADAS =========
         b.btnPlaces.setOnClickListener(v -> {
             if (tour.getId() == null || tour.getId().isEmpty()) {
                 Toast.makeText(this, "Tour sin ID", Toast.LENGTH_SHORT).show();
                 return;
             }
             FirebaseFirestore.getInstance()
-                    .collection("tours").document(tour.getId())
+                    .collection("tours")
+                    .document(tour.getId())
                     .collection("paradas")
                     .orderBy("orden")
                     .get()
@@ -123,17 +136,20 @@ public class OrderDetailActivity extends AppCompatActivity {
                     });
         });
 
-        // Cancelar reserva
-        String finalHistorialId = historialId;
+        // ========= CANCELAR RESERVA =========
         b.btnCancelar.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Confirmar cancelación")
                     .setMessage("¿Estás seguro de que quieres cancelar esta reserva?")
                     .setPositiveButton("Sí, cancelar", (dialog, which) -> {
                         b.tvStatus.setText("Estado: CANCELADO");
-                        if (finalHistorialId == null || finalHistorialId.isEmpty()) { finish(); return; }
+                        if (finalHistorialId == null || finalHistorialId.isEmpty()) {
+                            finish();
+                            return;
+                        }
                         FirebaseFirestore.getInstance()
-                                .collection("tours_history").document(finalHistorialId)
+                                .collection("tours_history")
+                                .document(finalHistorialId)
                                 .update("estado", "cancelado")
                                 .addOnSuccessListener(aVoid -> {
                                     Intent it = new Intent(this, ClientHomeActivity.class);
@@ -146,6 +162,63 @@ public class OrderDetailActivity extends AppCompatActivity {
                     })
                     .setNegativeButton("No", null)
                     .show();
+        });
+    }
+
+    /**
+     * Sección de calificación:
+     * - Solo tours finalizados (o check-out)
+     * - Si ya tiene rating en Firestore, no se vuelve a mostrar el formulario
+     */
+    private void setupRatingSection(TourHistorialFB historial, String historialId) {
+        // Estado normalizado
+        String estado = historial.getEstado() != null
+                ? historial.getEstado().toLowerCase(Locale.ROOT)
+                : "";
+
+        boolean esFinalizado =
+                estado.contains("finalizada") ||
+                        estado.contains("finalizado") ||
+                        estado.contains("check-out") ||
+                        estado.contains("checkout");
+
+        // Ya calificado si rating != null
+        boolean yaCalificado = historial.getRating() != null;
+
+        if (!esFinalizado || yaCalificado) {
+            b.layoutRating.setVisibility(View.GONE);
+            return;
+        }
+
+        // Mostrar UI de calificación
+        b.layoutRating.setVisibility(View.VISIBLE);
+        b.rbRating.setRating(0f);
+
+        b.btnCalificar.setOnClickListener(v -> {
+            if (historialId == null || historialId.isEmpty()) {
+                Toast.makeText(this, "No se puede calificar: falta ID de reserva.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            float ratingValue = b.rbRating.getRating();
+            if (ratingValue <= 0f) {
+                Toast.makeText(this, "Por favor, selecciona una calificación.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            FirebaseFirestore.getInstance()
+                    .collection("tours_history")
+                    .document(historialId)
+                    .update("rating", ratingValue)
+                    .addOnSuccessListener(aVoid -> {
+                        historial.setRating(ratingValue);
+                        Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show();
+                        // Ocultamos sección para evitar nueva calificación
+                        b.layoutRating.setVisibility(View.GONE);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Error al guardar la calificación: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
         });
     }
 

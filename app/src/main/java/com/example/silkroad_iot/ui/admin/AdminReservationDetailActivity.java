@@ -48,7 +48,6 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        // Obtenemos el paquete (Reserva + Tour)
         ReservaWithTour item = (ReservaWithTour) getIntent().getSerializableExtra("reserva");
         if (item == null) {
             finish();
@@ -79,7 +78,6 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
                 ? reserva.getFechaReserva()
                 : reserva.getFechaRealizado();
 
-        // --- Pintar en UI ---
         b.tTourName.setText(tourName);
         b.tDate.setText(date == null ? "—" : sdf.format(date));
         b.tAmount.setText("S/ " + (precioUnit * pax));
@@ -90,10 +88,9 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         b.tPhone.setText("—");
         b.tDni.setText("—");
 
-        // Color del pill según estado
         pintarEstado(status);
 
-        // ========= QR: usamos qrData de Firestore, o lo generamos si falta =========
+        // QR
         String qrData = reserva.getQrData();
         if ((qrData == null || qrData.isEmpty())
                 && reserva.getId() != null && !reserva.getId().isEmpty()) {
@@ -120,12 +117,22 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
 
         b.tQrMessage.setText("Muestra este QR en el punto de encuentro para hacer check-in.");
 
-        // Rating oculto por ahora
-        b.cardRating.setVisibility(View.GONE);
-        RatingBar rb = b.tRating;
-        if (rb != null) rb.setRating(5f);
+        // Rating
+        if (reserva.getRating() != null) {
+            b.cardRating.setVisibility(View.VISIBLE);
+            RatingBar rb = b.tRating;
+            if (rb != null) rb.setRating(reserva.getRating());
 
-        // Si ya está aceptada / cancelada / finalizada -> ocultar botones
+            String comment = reserva.getComentario();
+            b.tRatingComment.setText(
+                    (comment == null || comment.trim().isEmpty())
+                            ? "Sin comentario."
+                            : comment
+            );
+        } else {
+            b.cardRating.setVisibility(View.GONE);
+        }
+
         String st = status.toLowerCase(Locale.getDefault());
         if (st.contains("acept") || st.contains("final")
                 || st.contains("cancel") || st.contains("rech")) {
@@ -137,10 +144,7 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
     }
 
     private void setupButtons() {
-        // Aceptar reserva
         b.btnAccept.setOnClickListener(v -> cambiarEstado("aceptado"));
-
-        // Rechazar reserva
         b.btnReject.setOnClickListener(v -> cambiarEstado("rechazado"));
     }
 
@@ -157,11 +161,8 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
                     reserva.setEstado(nuevoEstado);
                     b.tStatus.setText(nuevoEstado);
                     pintarEstado(nuevoEstado);
-
-                    // 🔥 OCULTAR BOTONES DESPUÉS DE CAMBIAR ESTADO
                     b.btnAccept.setVisibility(View.GONE);
                     b.btnReject.setVisibility(View.GONE);
-
                     Toast.makeText(this,
                             "Estado actualizado a " + nuevoEstado,
                             Toast.LENGTH_SHORT).show();
@@ -183,9 +184,9 @@ public class AdminReservationDetailActivity extends AppCompatActivity {
         String st = status.toLowerCase(Locale.getDefault());
         if (st.contains("check-in") || st.contains("check-out")
                 || st.contains("final") || st.contains("acept")) {
-            bg = R.color.teal_200;                // verde/teal para aceptado y finalizado
+            bg = R.color.teal_200;
         } else if (st.contains("cancel") || st.contains("rech")) {
-            bg = android.R.color.holo_red_light;  // rojo para cancelado / rechazado
+            bg = android.R.color.holo_red_light;
         }
         b.tStatus.setBackgroundResource(bg);
     }
