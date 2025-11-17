@@ -17,6 +17,8 @@ import androidx.appcompat.widget.Toolbar;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class CrearAdministradorActivity extends AppCompatActivity {
 
@@ -50,6 +52,8 @@ public class CrearAdministradorActivity extends AppCompatActivity {
         String correo     = binding.textInputLayout3.getEditText().getText().toString().trim();
         String telefono   = binding.textInputLayout4.getEditText().getText().toString().trim();
         String ubicacion  = binding.textInputLayout5.getEditText().getText().toString().trim();
+        String direccion = "Dirección por definir";
+        String emailEmpresa = "emailEmpresa por definir";
         String pass       = binding.textInputLayout6.getEditText().getText().toString().trim();
         String passRepeat = binding.textInputLayout7.getEditText().getText().toString().trim();
 
@@ -65,44 +69,86 @@ public class CrearAdministradorActivity extends AppCompatActivity {
 
         //String hashedPass = Hashing.sha256().hashString(pass, StandardCharsets.UTF_8).toString();
 
-        // Guardamos como documento en /users con docId = correo
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", nombre);
-        data.put("email", correo);
-        data.put("password", pass);         // (ojo: en producción no se guarda en claro)
-        data.put("role", User.Role.ADMIN.name());
-        data.put("phone", telefono);
-        data.put("address", ubicacion);  //latitud-longitud
-        data.put("companyId", empresa);     // usamos companyId para guardar el nombre/ID de la empresa
-        data.put("active", true);           // campo opcional de estado
 
-        //db.collection("users").document(correo)
-        db.collection("usuarios").document(correo)//con correo
-                .set(data)
-                .addOnSuccessListener(v -> {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        mAuth.createUserWithEmailAndPassword(correo, pass)
+                .addOnSuccessListener(authResult -> {
+                    FirebaseUser firebaseUser = authResult.getUser();
+                    if (firebaseUser == null) {
+                        Toast.makeText(this, "No se pudo obtener el usuario recién creado.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    String nuevoAdminUID = firebaseUser.getUid();
+
+                    Map<String, Object> dataUsuario = new HashMap<>();
+                    dataUsuario.put("name", nombre);
+                    dataUsuario.put("email", correo);
+                    dataUsuario.put("password", pass); // hashear
+                    dataUsuario.put("role", User.Role.ADMIN.name());
+                    dataUsuario.put("phone", telefono);
+                    dataUsuario.put("address", ubicacion);
+                    dataUsuario.put("companyId", nuevoAdminUID); // Usuario vinculado con el ID de la empresa
+                    dataUsuario.put("active", true);         // campo opcional de estado
+
+                    // Datos para la colección 'empresas'
+                    Map<String, Object> dataEmpresa = new HashMap<>();
+                    dataEmpresa.put("id", nuevoAdminUID); // UID como ID del documento
+                    dataEmpresa.put("nombre", empresa);
+
+                    //dataEmpresa.put("correo_contacto", correo); // 'correo_contacto' para evitar confusión
+                    dataEmpresa.put("correo", correo); //del administrador
+                    dataEmpresa.put("direccion", "Dirección por definir");
+                    dataEmpresa.put("email", "emailEmpresa por definir");
+                    dataEmpresa.put("imagen", "porDefinir");
+                    dataEmpresa.put("latitud", "porDefinir");
+                    dataEmpresa.put("longitud", "porDefinir");
+                    dataEmpresa.put("telefono", telefono);
+                    //dataEmpresa.put("administrador_uid", nuevoAdminUID); // Guardamos el UID del admin a cargo
+
+                    dataEmpresa.put("administrador_nombre", nombre);     // Y su nombre para fácil acceso
+
+                    // Datos para el log
                     Map<String, Object> logData = new HashMap<>();
                     logData.put("tipo", "Creación");
                     logData.put("tipoUsuario", "Administrador");
                     logData.put("nombre", "De SuperAdministrador");
                     logData.put("usuario", nombre);
-                    logData.put("descripcion", "Se ha creado el administrador de nombre " + nombre + " con el correo " + correo + " asignado a la empresa " + empresa);
+                    logData.put("descripcion", "Se ha creado el administrador de nombre " + nombre + " con el correo " + correo + " y se asignó a la empresa " + empresa);
                     logData.put("fecha", System.currentTimeMillis());
-                    //Toast.makeText(this, "Administrador creado", Toast.LENGTH_SHORT).show(); finish(); })
-                    db.collection("logs").document()
-                            .set(logData)
+
+                    db.collection("empresas").document(nuevoAdminUID) // Usamos el UID como ID del documento
+                            .set(dataEmpresa)
                             .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(CrearAdministradorActivity.this, "Administrador creado", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(this, AdministradoresActivity.class));
-                                finish();
+                                db.collection("usuarios").document(nuevoAdminUID)//con correo...
+                                        .set(dataUsuario)
+                                        .addOnSuccessListener(aVoid2 -> {
+                                            db.collection("logs").document()
+                                                    .set(logData)
+                                                    .addOnSuccessListener(aVoid3 -> {
+                                                        Toast.makeText(CrearAdministradorActivity.this, "Administrador y empresa creados con éxito", Toast.LENGTH_SHORT).show();
+                                                        startActivity(new Intent(CrearAdministradorActivity.this, AdministradoresActivity.class));
+                                                        finish();
+                                                    })
+                                                    .addOnFailureListener(e -> {
+                                                        Toast.makeText(this, "Creado, pero falló el log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                                        finish();
+                                                    });
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Falló la creación del usuario en Firestore: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                            finish();
+                                        });
                             })
                             .addOnFailureListener(e -> {
-                                Toast.makeText(CrearAdministradorActivity.this, "Admin creado, pero falló el registro del log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(this, "Falló la creación de la empresa en Firestore: " + e.getMessage(), Toast.LENGTH_LONG).show();
                                 finish();
                             });
 
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(CrearAdministradorActivity.this, "Error al crear administrador: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    // Falló la creación del usuario en Firebase Auth
+                    Toast.makeText(CrearAdministradorActivity.this, "Error al crear administrador en Auth: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
+
     }
 }

@@ -114,40 +114,47 @@
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.CrearAdministradorActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.AdministradoresActivity"/>
         <activity
             android:name=".ui.superadmin.DetallesAdministradorActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.AdministradoresActivity"/>
         <activity
             android:name=".ui.superadmin.GuiasActivity"
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesGuiaActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.GuiasActivity"/>
         <activity
             android:name=".ui.superadmin.SolicitudesGuiasActivity"
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesSolicitudGuiaActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.SolicitudesGuiasActivity"/>
         <activity
             android:name=".ui.superadmin.ClientesActivity"
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesClienteActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.ClientesActivity"/>
         <activity
             android:name=".ui.superadmin.LogsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesLogActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.LogsActivity"/>
         <activity
             android:name=".ui.superadmin.ReportesActivity"
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesReporteActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".ui.superadmin.ReportesActivity"/>
 
         <!-- ================= GUIDE ================= -->
         <activity

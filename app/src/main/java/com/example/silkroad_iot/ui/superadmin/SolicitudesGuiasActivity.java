@@ -18,11 +18,13 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.silkroad_iot.MainActivity;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.databinding.ActivitySuperadminSolicitudesGuiasBinding;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -90,7 +92,7 @@ public class SolicitudesGuiasActivity extends AppCompatActivity
         userIds.clear();
         adapter.notifyDataSetChanged();
 
-        db.collection("usuarios")
+        db.collection("usuarios")// colección "guias" o "usuarios(usando)"
                 .whereEqualTo("rol", "GUIDE")                  // campo "rol" en tu BD
                 .whereEqualTo("guideApprovalStatus", "PENDING") // solo pendientes
                 .get()
@@ -193,6 +195,11 @@ public class SolicitudesGuiasActivity extends AppCompatActivity
             startActivity(new Intent(this, ReportesActivity.class));
         } else if (id == R.id.nav_logs) {
             startActivity(new Intent(this, LogsActivity.class));
+        }
+        else if (id == R.id.nav_cerrar_sesion) {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
