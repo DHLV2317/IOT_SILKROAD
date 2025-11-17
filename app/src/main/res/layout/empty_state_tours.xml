@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty tours state layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <!-- Empty state illustration -->
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:src="@drawable/empty_state_background"
+        android:contentDescription="No tours" />
+
+    <TextView
+        style="@style/TextAppearance.SilkRoad.Headline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No hay tours disponibles"
+        android:layout_marginTop="24dp"
+        android:textAlignment="center" />
+
+    <TextView
+        style="@style/TextAppearance.SilkRoad.Body2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Explora nuevos destinos pronto"
+        android:layout_marginTop="8dp"
+        android:textAlignment="center" />
+
+    <com.google.android.material.button.MaterialButton
+        style="@style/Button.SilkRoad.Tonal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Explorar"
+        android:layout_marginTop="24dp"
+        app:icon="@drawable/ic_search_24"
+        app:iconGravity="textStart" />
+
+</LinearLayout>

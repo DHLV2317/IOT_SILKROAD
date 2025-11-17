@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Detalles del guía"
-            app:backgroundTint="@color/brand_celeste"
+            app:backgroundTint="@color/primary"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:navigationIconTint="@android:color/white" />
@@ -24,7 +24,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="24dp">
@@ -183,7 +183,7 @@
             android:layout_margin="16dp"
             android:text="Volver"
             android:textColor="@android:color/white"
-            app:backgroundTint="@color/brand_celeste" />
+            app:backgroundTint="@color/primary" />
 
     </LinearLayout>
 </ScrollView>

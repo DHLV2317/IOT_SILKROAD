@@ -78,13 +78,14 @@ public class GuideHomeActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        b.cardTourOffers.setOnClickListener(v ->
-                startActivity(new android.content.Intent(this, GuideTourOffersActivity.class)));
-        b.cardLocationTracking.setOnClickListener(v ->
-                startActivity(new android.content.Intent(this, GuideLocationTrackingActivity.class)));
-        b.cardQRScanner.setOnClickListener(v ->
-                startActivity(new android.content.Intent(this, GuideQRScannerActivity.class)));
-        b.cardProfile.setOnClickListener(v ->
-                startActivity(new android.content.Intent(this, GuideProfileActivity.class)));
+        // Los IDs de los cards no existen en el layout actual
+        // b.cardTourOffers.setOnClickListener(v ->
+        //         startActivity(new android.content.Intent(this, GuideTourOffersActivity.class)));
+        // b.cardLocationTracking.setOnClickListener(v ->
+        //         startActivity(new android.content.Intent(this, GuideLocationTrackingActivity.class)));
+        // b.cardQRScanner.setOnClickListener(v ->
+        //         startActivity(new android.content.Intent(this, GuideQRScannerActivity.class)));
+        // b.cardProfile.setOnClickListener(v ->
+        //         startActivity(new android.content.Intent(this, GuideProfileActivity.class)));
     }
 }

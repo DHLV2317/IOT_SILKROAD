@@ -1,16 +1,95 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<resources>
+    <!-- ============================================= -->
+    <!-- 🎨 TEMA BASE - MATERIAL DESIGN 3 -->
+    <!-- ============================================= -->
     <style name="Base.Theme.SILKROAD_IOT" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Colores Primarios -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="colorPrimaryInverse">@color/primary_light</item>
+        <!-- Colores Secundarios -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="colorSecondaryContainer">@color/secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/on_secondary_container</item>
+        <!-- Colores Terciarios -->
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorOnTertiary">@color/on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/on_tertiary_container</item>
+        <!-- Colores de Error -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/on_error</item>
+        <item name="colorErrorContainer">@color/error_container</item>
+        <item name="colorOnErrorContainer">@color/error</item>
+        <!-- Colores de Superficie y Fondo -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+        <item name="colorSurfaceInverse">@color/neutral_800</item>
+        <item name="colorOnSurfaceInverse">@color/neutral_50</item>
+        <!-- Background -->
+        <item name="android:colorBackground">@color/surface</item>
+        <item name="colorOnBackground">@color/on_surface</item>
+        <!-- Outline -->
+        <item name="colorOutline">@color/neutral_300</item>
+        <item name="colorOutlineVariant">@color/neutral_200</item>
+        <!-- Tipografía Global -->
+        <item name="fontFamily">@font/poppins</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <!-- Text Appearances -->
+        <item name="textAppearanceDisplayLarge">@style/TextAppearance.SilkRoad.DisplayLarge</item>
+        <item name="textAppearanceDisplayMedium">@style/TextAppearance.SilkRoad.DisplayMedium</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.SilkRoad.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.SilkRoad.Headline1</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.SilkRoad.Headline2</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.SilkRoad.Headline3</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.SilkRoad.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.SilkRoad.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.SilkRoad.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.SilkRoad.Body1</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.SilkRoad.Body2</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.SilkRoad.Caption</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.SilkRoad.LabelLarge</item>
+        <!-- Shapes -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.SilkRoad.SmallComponent</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.SilkRoad.MediumComponent</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.SilkRoad.LargeComponent</item>
+        <!-- Barras del Sistema -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <!-- Elevación y Overlay -->
+        <item name="elevationOverlayEnabled">true</item>
+        <item name="elevationOverlayColor">@color/primary</item>
+        <!-- Ripple -->
+        <item name="android:colorControlHighlight">@color/ripple_light</item>
     </style>
-
+    <!-- Tema principal de la aplicación -->
     <style name="Theme.SILKROAD_IOT" parent="Base.Theme.SILKROAD_IOT" />
-
-    <style name="Theme.SuperAdminTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-        <item name="colorPrimary">@color/brand_celeste</item>
+    <!-- ============================================= -->
+    <!-- 🎨 TEMA SUPERADMIN -->
+    <!-- ============================================= -->
+    <style name="Theme.SuperAdminTheme" parent="Base.Theme.SILKROAD_IOT">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="android:statusBarColor">@color/primary</item>
     </style>
-
+    <!-- ============================================= -->
+    <!-- 📐 SHAPE APPEARANCES -->
+    <!-- ============================================= -->
+    <style name="ShapeAppearance.SilkRoad.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+    <style name="ShapeAppearance.SilkRoad.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="ShapeAppearance.SilkRoad.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
 </resources>

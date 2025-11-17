@@ -13,7 +13,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:backgroundTint="@color/brand_celeste"
+            app:backgroundTint="@color/primary"
             app:titleTextColor="@color/white" />
 
         <!-- Header con foto de perfil -->
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="24dp"
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             android:gravity="center">
 
             <ImageView
@@ -307,7 +307,7 @@
                     android:layout_height="wrap_content"
                     android:text="📜 Ver Historial Completo"
                     style="@style/Widget.Material3.Button.OutlinedButton"
-                    app:strokeColor="@color/brand_celeste" />
+                    app:strokeColor="@color/primary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

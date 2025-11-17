@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -15,6 +16,8 @@ import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.ReservaWithTour;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
+import com.example.silkroad_iot.databinding.ItemAdminReservationBinding;
+import com.example.silkroad_iot.ui.util.AnimationHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,25 +39,21 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        ImageView img;
-        TextView tTitle, tSub, tDate, tStatus, btnDetail;
-        VH(View v){
-            super(v);
-            img       = v.findViewById(R.id.aImg);
-            tTitle    = v.findViewById(R.id.aTitle);
-            tSub      = v.findViewById(R.id.aSubtitle);
-            tDate     = v.findViewById(R.id.aDate);
-            tStatus   = v.findViewById(R.id.aStatus);
-            btnDetail = v.findViewById(R.id.btnDetail);
+        ItemAdminReservationBinding binding;
+        
+        VH(ItemAdminReservationBinding binding){
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
-        View v = LayoutInflater.from(p.getContext())
-                .inflate(R.layout.item_admin_reservation, p, false);
-        return new VH(v);
+        ItemAdminReservationBinding binding = ItemAdminReservationBinding.inflate(
+            LayoutInflater.from(p.getContext()), p, false
+        );
+        return new VH(binding);
     }
 
     @Override
@@ -88,58 +87,61 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
         // ------- imagen -------
         String imageUrl = tour != null ? tour.getImageUrl() : null;
 
-        // ------- bind UI -------
-        h.tTitle.setText(tourName);
+        // ------- bind UI con ViewBinding -------
+        h.binding.aTitle.setText(tourName);
 
         String paxText = pax + " pax";
         String money   = "S/ " + String.format(Locale.getDefault(), "%.2f", total);
-        h.tSub.setText(clientName + " · " + paxText + " · " + money);
+        h.binding.aSubtitle.setText(clientName + " · " + paxText + " · " + money);
 
-        h.tDate.setText(date == null ? "—" : sdf.format(date));
-        h.tStatus.setText(status);
+        h.binding.aDate.setText(date == null ? "—" : sdf.format(date));
+        h.binding.aStatus.setText(status);
 
         // Color según estado
         int bg = R.color.pill_gray;
         String st = status.toLowerCase(Locale.getDefault());
         if (st.contains("check-in") || st.contains("check-out")
                 || st.contains("final") || st.contains("acept")) {
-            bg = R.color.teal_200;                // verde/teal para aceptado / finalizada / check
+            bg = R.color.teal_200;
         } else if (st.contains("rech") || st.contains("cancel")) {
-            bg = android.R.color.holo_red_light;  // rojo para cancelado / rechazado
+            bg = android.R.color.holo_red_light;
         }
-        h.tStatus.setBackgroundResource(bg);
+        h.binding.aStatus.setBackgroundResource(bg);
 
         if (imageUrl == null || imageUrl.trim().isEmpty()){
             Glide.with(h.itemView)
-                    .load(R.drawable.ic_menu_24)
-                    .error(R.drawable.ic_menu_24)
-                    .into(h.img);
+                    .load(R.drawable.placeholder_image_cool)
+                    .into(h.binding.aImg);
         } else {
             Glide.with(h.itemView)
                     .load(imageUrl)
-                    .placeholder(R.drawable.ic_menu_24)
-                    .error(R.drawable.ic_menu_24)
-                    .into(h.img);
+                    .placeholder(R.drawable.placeholder_image_cool)
+                    .error(R.drawable.placeholder_image_cool)
+                    .centerCrop()
+                    .into(h.binding.aImg);
         }
 
-        // ------- botón detalle (pasamos el objeto entero) -------
-        h.btnDetail.setOnClickListener(v -> {
-            Intent it = new Intent(v.getContext(), AdminReservationDetailActivity.class);
-            it.putExtra("reserva", item);
-            v.getContext().startActivity(it);
+        // ------- botón detalle con animación -------
+        h.binding.btnDetail.setOnClickListener(v -> {
+            AnimationHelper.bounce(v);
+            v.postDelayed(() -> {
+                Intent it = new Intent(v.getContext(), AdminReservationDetailActivity.class);
+                it.putExtra("reserva", item);
+                v.getContext().startActivity(it);
+            }, 200);
         });
     }
 
     @Override public int getItemCount(){ return data.size(); }
 
     // =========================================================
-    // Filtro texto + estado
+    // Filtro texto + estado con DiffUtil
     // =========================================================
     public void filter(String query, String status){
         String q  = query  == null ? "" : query.trim().toLowerCase(Locale.getDefault());
         String stFilter = status == null ? "Todos" : status.toLowerCase(Locale.getDefault());
 
-        data.clear();
+        List<ReservaWithTour> filtered = new ArrayList<>();
         for (ReservaWithTour item : all){
 
             TourHistorialFB r = item.getReserva();
@@ -158,9 +160,17 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
             boolean matchStatus = stFilter.equals("todos")
                     || sLower.equals(stFilter);
 
-            if (matchText && matchStatus) data.add(item);
+            if (matchText && matchStatus) filtered.add(item);
         }
-        notifyDataSetChanged();
+        
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+            new ReservationDiffCallback(this.data, filtered)
+        );
+        
+        this.data.clear();
+        this.data.addAll(filtered);
+        
+        diffResult.dispatchUpdatesTo(this);
     }
 
     public void setStatusFilter(String status){
@@ -170,10 +180,87 @@ public class AdminReservationsAdapter extends RecyclerView.Adapter<AdminReservat
     public String getStatusFilter(){ return statusFilter; }
 
     public void replace(List<ReservaWithTour> newItems) {
+        if (newItems == null) newItems = new ArrayList<>();
+        
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+            new ReservationDiffCallback(this.data, newItems)
+        );
+        
         all.clear();
-        data.clear();
         all.addAll(newItems);
+        data.clear();
         data.addAll(newItems);
-        notifyDataSetChanged();
+        
+        diffResult.dispatchUpdatesTo(this);
+    }
+
+    /**
+     * DiffUtil.Callback para comparar reservaciones
+     */
+    private static class ReservationDiffCallback extends DiffUtil.Callback {
+        private final List<ReservaWithTour> oldList;
+        private final List<ReservaWithTour> newList;
+
+        ReservationDiffCallback(List<ReservaWithTour> oldList, List<ReservaWithTour> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            ReservaWithTour oldItem = oldList.get(oldItemPosition);
+            ReservaWithTour newItem = newList.get(newItemPosition);
+            
+            TourHistorialFB oldReserva = oldItem.getReserva();
+            TourHistorialFB newReserva = newItem.getReserva();
+            
+            if (oldReserva.getId() != null && newReserva.getId() != null) {
+                return oldReserva.getId().equals(newReserva.getId());
+            }
+            
+            // Fallback: compara por tour + usuario
+            String oldKey = (oldItem.getTour() != null ? oldItem.getTour().getId() : "") + 
+                           "_" + oldReserva.getIdUsuario();
+            String newKey = (newItem.getTour() != null ? newItem.getTour().getId() : "") + 
+                           "_" + newReserva.getIdUsuario();
+            return oldKey.equals(newKey);
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            ReservaWithTour oldItem = oldList.get(oldItemPosition);
+            ReservaWithTour newItem = newList.get(newItemPosition);
+            
+            TourHistorialFB oldReserva = oldItem.getReserva();
+            TourHistorialFB newReserva = newItem.getReserva();
+            
+            boolean statusEquals = safeEquals(oldReserva.getEstado(), newReserva.getEstado());
+            boolean paxEquals = oldReserva.getPax() == newReserva.getPax();
+            boolean dateEquals = datesEqual(oldReserva.getFechaReserva(), newReserva.getFechaReserva());
+            
+            return statusEquals && paxEquals && dateEquals;
+        }
+
+        private boolean safeEquals(String s1, String s2) {
+            if (s1 == null && s2 == null) return true;
+            if (s1 == null || s2 == null) return false;
+            return s1.equals(s2);
+        }
+
+        private boolean datesEqual(Date d1, Date d2) {
+            if (d1 == null && d2 == null) return true;
+            if (d1 == null || d2 == null) return false;
+            return d1.equals(d2);
+        }
     }
 }

@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             app:title="Detalle del tour"
             app:titleTextColor="@android:color/white" />
 
@@ -217,7 +217,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:backgroundTint="@color/brand_celeste"
+                android:backgroundTint="@color/primary"
                 android:text="Editar tour"
                 android:textColor="@android:color/white" />
 

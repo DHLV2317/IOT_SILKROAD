@@ -64,7 +64,7 @@
             android:layout_marginTop="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:backgroundTint="@color/brand_celeste"
+            app:backgroundTint="@color/primary"
             app:icon="@drawable/ic_add_24"
             app:iconTint="@android:color/white"
             android:textColor="@android:color/white" />

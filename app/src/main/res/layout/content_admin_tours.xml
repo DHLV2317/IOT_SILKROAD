@@ -42,7 +42,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:startIconDrawable="@drawable/ic_search_24"
-                    app:startIconTint="@color/brand_celeste">
+                    app:startIconTint="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputSearch"
@@ -64,7 +64,8 @@
             android:layout_marginBottom="96dp"
             android:clipToPadding="false"
             android:paddingBottom="8dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1"
+            android:layoutAnimation="@anim/layout_animation_fall_down"/>
     </LinearLayout>
 
     <!-- Empty & Progress overlay -->
@@ -80,15 +81,13 @@
             android:layout_gravity="center"
             android:visibility="gone"/>
 
-        <TextView
+        <!-- Empty state mejorado -->
+        <include
             android:id="@+id/empty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Aún no has creado tours."
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_gravity="center"
-            android:visibility="gone"/>
+            layout="@layout/empty_state_tours"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
     </FrameLayout>
 
     <!-- FAB Añadir -->
@@ -99,7 +98,7 @@
         android:contentDescription="Añadir tour"
         app:srcCompat="@drawable/ic_add_24"
         app:tint="@android:color/white"
-        app:backgroundTint="@color/brand_celeste"
+        app:backgroundTint="@color/primary"
         android:layout_margin="16dp"
         app:layout_anchor="@id/contentInner"
         app:layout_anchorGravity="bottom|end"/>

@@ -24,7 +24,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:backgroundTint="@color/brand_celeste"
+        app:backgroundTint="@color/primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/sideBar"
         app:layout_constraintTop_toTopOf="parent"
@@ -236,7 +236,7 @@
                 android:textAllCaps="true"
                 android:textColor="@color/white"
                 app:cornerRadius="14dp"
-                app:backgroundTint="@color/brand_celeste" />
+                app:backgroundTint="@color/primary" />
 
         </LinearLayout>
     </ScrollView>

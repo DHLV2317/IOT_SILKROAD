@@ -1,150 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Modern login/register activity with hero gradient, centered logo, elevated buttons and iconified input fields -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_primary">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:padding="16dp"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:title="Iniciar sesión"
-            app:backgroundTint="@color/brand_celeste"
-            app:titleTextColor="@color/white" />
-
-        <ImageView
-            android:id="@+id/imgLogo"
-            android:layout_width="180dp"
-            android:layout_height="180dp"
-            android:layout_marginTop="20dp"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/logo_silkroad"
-            android:contentDescription="@string/app_name" />
-
-        <TextView
-            android:id="@+id/tvHola"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="¡Hola!"
-            android:textStyle="bold"
-            android:textSize="22sp"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/brand_celeste" />
-
-        <TextView
-            android:id="@+id/tvSubtitulo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ingresa con tu cuenta para continuar"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp"
-            android:textColor="@android:color/darker_gray" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:hint="@string/email_hint"
+        <LinearLayout
+            android:orientation="vertical"
+            android:padding="24dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
+            android:gravity="center_horizontal">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/inputEmail"
-                android:inputType="textEmailAddress"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                app:cardCornerRadius="100dp"
+                app:cardElevation="8dp"
+                android:layout_marginTop="24dp">
+
+                <ImageView
+                    android:id="@+id/imgLogo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/logo_silkroad"
+                    android:contentDescription="@string/hero_logo_desc"
+                    android:padding="12dp"
+                    android:scaleType="centerInside" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/tvHola"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:layout_marginTop="16dp"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/tvSubtitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_subtitle"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/overlay_light" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/TextInputLayout.SilkRoad"
+                android:hint="@string/email_hint"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:startIconDrawable="@drawable/ic_person_24">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:hint="@string/password_hint"
-            app:endIconMode="password_toggle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputEmail"
+                    android:inputType="textEmailAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/inputPass"
-                android:inputType="textPassword"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/TextInputLayout.SilkRoad"
+                android:hint="@string/password_hint"
+                app:endIconMode="password_toggle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:startIconDrawable="@drawable/phone_enabled_24px">
 
-        <TextView
-            android:id="@+id/tvForgot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/forgot_password"
-            android:textStyle="bold"
-            android:textColor="@color/brand_celeste"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_marginTop="8dp" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputPass"
+                    android:inputType="textPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogin"
-            android:text="@string/login"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/brand_celeste"
-            android:textColor="@color/white" />
+            <TextView
+                android:id="@+id/tvForgot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/forgot_password"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginTop="8dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGoRegister"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:text="@string/register"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogin"
+                style="@style/Button.SilkRoad.Primary"
+                android:text="@string/login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp" />
 
-        <TextView
-            android:id="@+id/tvSeparator"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/continue_with"
-            android:gravity="center"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="16dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoRegister"
+                style="@style/Button.SilkRoad.Outlined"
+                android:text="@string/create_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" />
 
-        <!-- Botón Google -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGoogle"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/sign_in_with_google"
-            app:icon="@drawable/ic_google"
-            app:iconGravity="start"
-            app:iconPadding="8dp"
-            app:iconTint="@null" />
+            <TextView
+                android:id="@+id/tvSeparator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/continue_with"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textColor="@color/overlay_light"
+                android:layout_marginTop="16dp" />
 
-        <!-- Botón Facebook -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFacebook"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/sign_in_with_facebook"
-            android:backgroundTint="#1877F2"
-            android:textColor="@android:color/white"
-            app:icon="@drawable/ic_facebook"
-            app:iconGravity="start"
-            app:iconPadding="8dp"
-            app:iconTint="@android:color/white" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoogle"
+                style="@style/Button.SilkRoad.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/sign_in_with_google"
+                android:textColor="@color/on_surface"
+                app:icon="@drawable/ic_google"
+                app:iconGravity="textStart"
+                app:iconTint="@null" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
-    </LinearLayout>
-</ScrollView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFacebook"
+                style="@style/Button.SilkRoad.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/sign_in_with_facebook"
+                app:backgroundTint="#1877F2"
+                android:textColor="@color/white"
+                app:icon="@drawable/ic_facebook"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

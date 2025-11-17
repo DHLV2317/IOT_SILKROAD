@@ -2,20 +2,21 @@ package com.example.silkroad_iot.ui.admin;
 
 import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.TourFB;
+import com.example.silkroad_iot.databinding.ItemAdminTourBinding;
+import com.example.silkroad_iot.ui.util.AnimationHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,29 +28,33 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
     public AdminToursAdapter(List<TourFB> items){ replace(items); }
 
     public void replace(List<TourFB> items){
-        data.clear();
-        if (items != null) data.addAll(items);
-        notifyDataSetChanged();
+        if (items == null) items = new ArrayList<>();
+        
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+            new TourDiffCallback(this.data, items)
+        );
+        
+        this.data.clear();
+        this.data.addAll(items);
+        
+        diffResult.dispatchUpdatesTo(this);
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tTitle, tSubtitle, tDate, btnDetail;
-        ImageView img;
-        VH(@NonNull View v){
-            super(v);
-            tTitle    = v.findViewById(R.id.aTitle);
-            tSubtitle = v.findViewById(R.id.aSubtitle);
-            tDate     = v.findViewById(R.id.aDate);
-            btnDetail = v.findViewById(R.id.btnDetail);
-            img       = v.findViewById(R.id.aImg);
+        ItemAdminTourBinding binding;
+
+        VH(ItemAdminTourBinding binding){
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup p, int vt){
-        View v = LayoutInflater.from(p.getContext())
-                .inflate(R.layout.item_admin_tour, p, false);
-        return new VH(v);
+        ItemAdminTourBinding binding = ItemAdminTourBinding.inflate(
+            LayoutInflater.from(p.getContext()), p, false
+        );
+        return new VH(binding);
     }
 
     @Override
@@ -71,28 +76,90 @@ public class AdminToursAdapter extends RecyclerView.Adapter<AdminToursAdapter.VH
             fecha = sdf.format(t.getDateTo());
         }
 
-        h.tTitle.setText(name == null || name.isEmpty() ? "Sin nombre" : name);
+        h.binding.aTitle.setText(name == null || name.isEmpty() ? "Sin nombre" : name);
 
         String meta = "S/ " + String.format(Locale.getDefault(),"%.2f", price) + " · " + people + " personas";
-        h.tSubtitle.setText(desc.isEmpty() ? meta : meta + " · " + desc);
-        h.tDate.setText(fecha);
+        h.binding.aSubtitle.setText(desc.isEmpty() ? meta : meta + " · " + desc);
+        h.binding.aDate.setText(fecha);
 
-        if (imgUrl == null || imgUrl.isEmpty()) {
-            h.img.setImageResource(R.drawable.ic_menu_24);
-        } else {
-            Glide.with(h.itemView)
-                    .load(imgUrl)
-                    .placeholder(R.drawable.ic_menu_24)
-                    .error(android.R.drawable.ic_menu_report_image)
-                    .into(h.img);
-        }
+        Glide.with(h.binding.aImg.getContext())
+                .load(imgUrl)
+                .placeholder(R.drawable.placeholder_image_warm)
+                .error(R.drawable.placeholder_image_warm)
+                .centerCrop()
+                .into(h.binding.aImg);
 
-        h.btnDetail.setOnClickListener(v -> {
-            Intent it = new Intent(v.getContext(), AdminTourDetailViewActivity.class);
-            it.putExtra("tourId", t.getId());
-            v.getContext().startActivity(it);
+        h.binding.btnDetail.setOnClickListener(v -> {
+            AnimationHelper.bounce(v);
+            v.postDelayed(() -> {
+                Intent it = new Intent(v.getContext(), AdminTourDetailViewActivity.class);
+                it.putExtra("tourId", t.getId());
+                v.getContext().startActivity(it);
+            }, 200);
         });
     }
 
     @Override public int getItemCount(){ return data.size(); }
+
+    /**
+     * DiffUtil.Callback para AdminToursAdapter
+     */
+    private static class TourDiffCallback extends DiffUtil.Callback {
+        private final List<TourFB> oldList;
+        private final List<TourFB> newList;
+
+        TourDiffCallback(List<TourFB> oldList, List<TourFB> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            TourFB oldTour = oldList.get(oldItemPosition);
+            TourFB newTour = newList.get(newItemPosition);
+            
+            if (oldTour.getId() != null && newTour.getId() != null) {
+                return oldTour.getId().equals(newTour.getId());
+            }
+            
+            return oldTour.getDisplayName().equals(newTour.getDisplayName());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            TourFB oldTour = oldList.get(oldItemPosition);
+            TourFB newTour = newList.get(newItemPosition);
+            
+            boolean nameEquals = oldTour.getDisplayName().equals(newTour.getDisplayName());
+            boolean priceEquals = oldTour.getDisplayPrice() == newTour.getDisplayPrice();
+            boolean peopleEquals = oldTour.getDisplayPeople() == newTour.getDisplayPeople();
+            boolean imageEquals = safeEquals(oldTour.getDisplayImageUrl(), newTour.getDisplayImageUrl());
+            boolean dateEquals = datesEqual(oldTour.getDateFrom(), newTour.getDateFrom()) &&
+                                 datesEqual(oldTour.getDateTo(), newTour.getDateTo());
+            
+            return nameEquals && priceEquals && peopleEquals && imageEquals && dateEquals;
+        }
+
+        private boolean safeEquals(String s1, String s2) {
+            if (s1 == null && s2 == null) return true;
+            if (s1 == null || s2 == null) return false;
+            return s1.equals(s2);
+        }
+
+        private boolean datesEqual(Date d1, Date d2) {
+            if (d1 == null && d2 == null) return true;
+            if (d1 == null || d2 == null) return false;
+            return d1.equals(d2);
+        }
+    }
 }

@@ -1,80 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Modern Admin Guide Item: premium card with profile picture and action buttons -->
+<com.google.android.material.card.MaterialCardView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card.SilkRoad.Premium"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    app:cardUseCompatPadding="true">
+    android:layout_margin="8dp">
 
     <LinearLayout
-        android:padding="12dp"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/aImg"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_person_24"
-            app:tint="@android:color/darker_gray" />
+        <!-- Profile Picture -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="12dp"
+            app:cardCornerRadius="36dp"
+            app:cardElevation="4dp">
 
+            <ImageView
+                android:id="@+id/aImg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_person_24"
+                android:padding="16dp"
+                android:background="@color/primary_container"
+                app:tint="@color/on_primary_container"
+                android:contentDescription="Guide profile" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Guide Info -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="12dp">
+            android:layout_marginEnd="12dp">
 
             <TextView
+                style="@style/TextAppearance.SilkRoad.TitleMedium"
                 android:id="@+id/aTitle"
                 android:text="Nombre"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-            <TextView
-                android:id="@+id/aSubtitle"
-                android:text="Idiomas"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
 
-            <TextView
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_map"
+                    app:tint="@color/on_surface_variant"
+                    android:contentDescription="Languages" />
+
+                <TextView
+                    style="@style/TextAppearance.SilkRoad.Body2"
+                    android:id="@+id/aSubtitle"
+                    android:text="Idiomas"
+                    android:layout_marginStart="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <!-- Status Chip -->
+            <com.google.android.material.chip.Chip
+                style="@style/Chip.SilkRoad"
                 android:id="@+id/aStatus"
                 android:text="Disponible"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                app:chipBackgroundColor="@color/success_container"
+                android:textColor="@color/success" />
 
             <TextView
+                style="@style/TextAppearance.SilkRoad.Caption"
                 android:id="@+id/aExtra"
-                android:text="0 tours"
+                android:text="0 tours completados"
+                android:layout_marginTop="4dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
+        <!-- Action Buttons -->
         <LinearLayout
-            android:gravity="center"
             android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp">
 
             <com.google.android.material.button.MaterialButton
+                style="@style/Button.SilkRoad.Primary"
                 android:id="@+id/btnAssign"
-                android:text="Asignar tour"
-                android:textColor="@android:color/white"
-                app:backgroundTint="@color/brand_celeste"
+                android:text="Asignar"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_add_24"
+                app:iconGravity="textStart" />
 
             <com.google.android.material.button.MaterialButton
+                style="@style/Button.SilkRoad.Outlined"
                 android:id="@+id/btnDetail"
                 android:text="Detalles"
-                android:textColor="@android:color/white"
-                app:backgroundTint="@color/brand_celeste"
                 android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
     </LinearLayout>

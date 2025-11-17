@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         b = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
-        setSupportActionBar(b.toolbar);
+        // setSupportActionBar(b.toolbar); // MainActivity no tiene toolbar
 
         // Firebase
         FirebaseApp.initializeApp(this);

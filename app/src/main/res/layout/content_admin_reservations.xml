@@ -47,7 +47,8 @@
         android:layout_weight="1"
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="8dp"
+        android:layoutAnimation="@anim/layout_animation_fall_down" />
 
     <!-- Botón de generar reporte -->
     <com.google.android.material.button.MaterialButton
@@ -55,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Generar reporte"
-        android:backgroundTint="@color/brand_celeste"
+        android:backgroundTint="@color/primary"
         android:textColor="@android:color/white"
         android:layout_marginTop="12dp" />
 </LinearLayout>

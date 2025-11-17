@@ -69,9 +69,17 @@ public abstract class BaseDrawerActivity extends AppCompatActivity
             tEmail.setText(u.getEmail());
             String photo = u.getPhotoUri();
             if (photo != null && !photo.isEmpty()) {
-                Glide.with(this).load(photo).circleCrop().into(img);
+                Glide.with(this)
+                    .load(photo)
+                    .placeholder(R.drawable.ic_person_24)
+                    .error(R.drawable.ic_person_24)
+                    .circleCrop()
+                    .into(img);
             } else {
-                Glide.with(this).load(R.drawable.ic_person_24).circleCrop().into(img);
+                Glide.with(this)
+                    .load(R.drawable.ic_person_24)
+                    .circleCrop()
+                    .into(img);
             }
         }
 

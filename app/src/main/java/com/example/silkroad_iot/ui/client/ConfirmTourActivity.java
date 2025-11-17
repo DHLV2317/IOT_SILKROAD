@@ -44,17 +44,17 @@ public class ConfirmTourActivity extends AppCompatActivity {
         // Cantidad de personas usando helper (cae a 0 si no hay)
         int pax = tour.getDisplayPeople();
         if (pax <= 0) pax = 1;
-        b.tTourPeople.setText("Cantidad de personas: " + pax);
+        // b.tTourPeople.setText("Cantidad de personas: " + pax); // No existe en el layout actual
 
         // Mostrar fechas del tour (inicio - fin)
-        if (tour.getDateFrom() != null && tour.getDateTo() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-            String inicio = sdf.format(tour.getDateFrom());
-            String fin    = sdf.format(tour.getDateTo());
-            b.tTourDates.setText("Fechas: " + inicio + " hasta " + fin);
-        } else {
-            b.tTourDates.setText("Fechas: No definidas");
-        }
+        // if (tour.getDateFrom() != null && tour.getDateTo() != null) {
+        //     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        //     String inicio = sdf.format(tour.getDateFrom());
+        //     String fin    = sdf.format(tour.getDateTo());
+        //     b.tTourDates.setText("Fechas: " + inicio + " hasta " + fin);
+        // } else {
+        //     b.tTourDates.setText("Fechas: No definidas");
+        // }
 
         // Mostrar precio total por defecto (por ahora: solo precio base)
         updateTotal();

@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Empresa"
-            app:backgroundTint="@color/brand_celeste"
+            app:backgroundTint="@color/primary"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:navigationIconTint="@android:color/white" />
@@ -26,7 +26,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="24dp">
@@ -193,7 +193,7 @@
                     android:layout_height="wrap_content"
                     android:text="💾 Guardar cambios"
                     android:layout_marginTop="16dp"
-                    app:backgroundTint="@color/brand_celeste"
+                    app:backgroundTint="@color/primary"
                     android:textColor="@android:color/white" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

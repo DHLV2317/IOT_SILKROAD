@@ -66,7 +66,7 @@ public class DetallesClienteActivity extends AppCompatActivity {
     /*private void updateEstadoUI(boolean activo) {
         int verde = ContextCompat.getColor(this, R.color.brand_verde);
         int rojo  = ContextCompat.getColor(this, R.color.red);
-        int base  = ContextCompat.getColor(this, R.color.brand_celeste);
+        int base  = ContextCompat.getColor(this, R.color.primary);
         binding.en.setBackgroundColor(activo ? verde : base);
         binding.di.setBackgroundColor(activo ? base  : rojo);
     }*/

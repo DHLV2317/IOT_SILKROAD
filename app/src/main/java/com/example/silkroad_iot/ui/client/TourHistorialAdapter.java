@@ -4,14 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.databinding.ItemTourOrderBinding;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,24 +30,21 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
     }
 
     public static class VH extends RecyclerView.ViewHolder {
-        TextView tvTourName, tvDate, tvStatus, tvTotalPrice,tvOrderDate;
+        ItemTourOrderBinding binding;
 
-        public VH(@NonNull View v) {
-            super(v);
-            tvTourName = v.findViewById(R.id.tvCompanyName); // ✅ CAMBIA AQUÍ
-            tvDate = v.findViewById(R.id.tvTourDate);
-            tvStatus = v.findViewById(R.id.tvStatus);
-            tvTotalPrice= v.findViewById(R.id.tvTotalPrice);
-            tvOrderDate= v.findViewById(R.id.tvOrderDate);
-
+        public VH(ItemTourOrderBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_tour_order, parent, false);
-        return new VH(v);
+        ItemTourOrderBinding binding = ItemTourOrderBinding.inflate(
+            LayoutInflater.from(parent.getContext()), parent, false
+        );
+        return new VH(binding);
     }
 
     @Override
@@ -61,22 +56,22 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
         // 🕒 Fecha del tour (fechaRealizado)
         Date fechaTour = historial.getFechaRealizado();
         if (fechaTour != null) {
-            holder.tvDate.setText("Inicio del Tour: " + sdf.format(fechaTour));
+            holder.binding.tvTourDate.setText("Inicio del Tour: " + sdf.format(fechaTour));
         } else {
-            holder.tvDate.setText("Inicio del Tour: -");
+            holder.binding.tvTourDate.setText("Inicio del Tour: -");
             Log.w("HISTORIAL", "⚠️ fechaRealizado es null en posición " + position);
         }
 
         // 📅 Fecha de reserva
         Date fechaReserva = historial.getFechaReserva();
         if (fechaReserva != null) {
-            holder.tvOrderDate.setText("Reservado el: " + sdf.format(fechaReserva));
+            holder.binding.tvOrderDate.setText("Reservado el: " + sdf.format(fechaReserva));
         } else {
-            holder.tvOrderDate.setText("Reservado el: -");
+            holder.binding.tvOrderDate.setText("Reservado el: -");
             Log.w("HISTORIAL", "⚠️ fechaReserva es null en posición " + position);
         }
 
-        holder.tvStatus.setText("Estado: " + historial.getEstado());
+        holder.binding.tvStatus.setText("Estado: " + historial.getEstado());
 
         // ✅ Cargar datos del tour una sola vez
         FirebaseFirestore.getInstance()
@@ -98,13 +93,13 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
                     }
 
                     // ✅ Validación por seguridad
-                    holder.tvTourName.setText(tour.getNombre() != null ? tour.getNombre() : "Sin nombre");
+                    holder.binding.tvCompanyName.setText(tour.getNombre() != null ? tour.getNombre() : "Sin nombre");
 
                     Double precio = tour.getPrecio();
                     if (precio != null) {
-                        holder.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/ %.2f", precio));
+                        holder.binding.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/ %.2f", precio));
                     } else {
-                        holder.tvTotalPrice.setText("S/ -");
+                        holder.binding.tvTotalPrice.setText("S/ -");
                     }
 
                     holder.itemView.setOnClickListener(v -> {
@@ -117,8 +112,8 @@ public class TourHistorialAdapter extends RecyclerView.Adapter<TourHistorialAdap
                 })
 
                 .addOnFailureListener(e -> {
-                    holder.tvTourName.setText("Error cargando tour");
-                    holder.tvTotalPrice.setText("S/ -");
+                    holder.binding.tvCompanyName.setText("Error cargando tour");
+                    holder.binding.tvTotalPrice.setText("S/ -");
                 });
     }
 

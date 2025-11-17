@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    EJEMPLO DE USO DEL NUEVO SISTEMA DE DISEÑO
+    Este archivo demuestra cómo usar todos los componentes del sistema
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 1: TIPOGRAFÍA -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ejemplo de Tipografía"
+            style="@style/TextAppearance.SilkRoad.Headline1"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Headline 2 - Subtítulo importante"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Body 1 - Este es un texto de cuerpo normal que se usa para párrafos y contenido principal."
+            style="@style/TextAppearance.SilkRoad.Body1"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Caption - Texto pequeño para detalles adicionales"
+            style="@style/TextAppearance.SilkRoad.Caption"
+            android:layout_marginBottom="24dp" />
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 2: BOTONES -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ejemplos de Botones"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Botón Primario -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Botón Primario"
+            style="@style/Button.SilkRoad.Primary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Botón Secundario -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Botón Secundario"
+            style="@style/Button.SilkRoad.Secondary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Botón Outlined -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Botón Outlined"
+            style="@style/Button.SilkRoad.Outlined"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Botón Tonal -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Botón Tonal"
+            style="@style/Button.SilkRoad.Tonal"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Botón Text -->
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Botón Text"
+            style="@style/Button.SilkRoad.Text"
+            android:layout_marginBottom="24dp" />
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 3: CARDS -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ejemplos de Cards"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Card Estándar -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Card.SilkRoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Card Estándar"
+                    style="@style/TextAppearance.SilkRoad.TitleMedium"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Esta es una card con elevación estándar de 4dp y bordes redondeados de 16dp."
+                    style="@style/TextAppearance.SilkRoad.Body2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card Outlined -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Card.SilkRoad.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Card Outlined"
+                    style="@style/TextAppearance.SilkRoad.TitleMedium"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Card con borde, sin elevación."
+                    style="@style/TextAppearance.SilkRoad.Body2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card Premium -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Card.SilkRoad.Premium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Card Premium"
+                    style="@style/TextAppearance.SilkRoad.TitleMedium"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Card con elevación alta (8dp) y bordes extra redondeados (20dp)."
+                    style="@style/TextAppearance.SilkRoad.Body2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 4: INPUTS -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ejemplos de Inputs"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="16dp" />
+
+        <!-- TextInputLayout Outlined -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayout.SilkRoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Correo electrónico"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- TextInputLayout Filled -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayout.SilkRoad.Filled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contraseña"
+            app:endIconMode="password_toggle"
+            android:layout_marginBottom="24dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 5: CHIPS Y BADGES -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chips y Badges"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Chips -->
+        <com.google.android.material.chip.ChipGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:singleSelection="false">
+
+            <com.google.android.material.chip.Chip
+                style="@style/Chip.SilkRoad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cusco" />
+
+            <com.google.android.material.chip.Chip
+                style="@style/Chip.SilkRoad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lima" />
+
+            <com.google.android.material.chip.Chip
+                style="@style/Chip.SilkRoad.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Arequipa" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- Badges -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_new"
+                android:text="NUEVO"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_popular"
+                android:text="POPULAR"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_discount"
+                android:text="OFERTA"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_badge_premium"
+                android:text="PREMIUM"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 6: COLORES SEMÁNTICOS -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Colores Semánticos"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp">
+
+            <!-- Success -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/success_container"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✓"
+                    android:textColor="@color/success"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Operación exitosa"
+                    android:textColor="@color/success"
+                    style="@style/TextAppearance.SilkRoad.Body1" />
+            </LinearLayout>
+
+            <!-- Warning -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/warning_container"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚠"
+                    android:textColor="@color/warning"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Advertencia importante"
+                    android:textColor="@color/warning_dark"
+                    style="@style/TextAppearance.SilkRoad.Body1" />
+            </LinearLayout>
+
+            <!-- Error -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/error_container"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✕"
+                    android:textColor="@color/error"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ha ocurrido un error"
+                    android:textColor="@color/error"
+                    style="@style/TextAppearance.SilkRoad.Body1" />
+            </LinearLayout>
+
+            <!-- Info -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/info_container"
+                android:padding="12dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ℹ"
+                    android:textColor="@color/info"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Información adicional"
+                    android:textColor="@color/info"
+                    style="@style/TextAppearance.SilkRoad.Body1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ========================================== -->
+        <!-- SECCIÓN 7: GRADIENTES -->
+        <!-- ========================================== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ejemplos de Gradientes"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Gradiente Principal -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@drawable/gradient_primary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Gradiente Cálido -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@drawable/gradient_warm"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Gradiente Frío -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@drawable/gradient_cool"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Gradiente Sunset -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@drawable/gradient_sunset"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎉 ¡Sistema de Diseño Implementado!"
+            style="@style/TextAppearance.SilkRoad.Headline2"
+            android:textColor="@color/success"
+            android:layout_gravity="center_horizontal" />
+
+    </LinearLayout>
+</ScrollView>
+

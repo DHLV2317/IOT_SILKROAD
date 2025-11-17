@@ -1,27 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ============================================= -->
+    <!-- 🎨 SISTEMA DE COLORES MODERNO - SILKROAD IOT -->
+    <!-- ============================================= -->
+
     <!-- Android básicos -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-
-    <!-- Marca / UI  (elige 1 valor para brand_celeste) -->
-    <color name="brand_celeste">#26C6DA</color>  <!-- usa este o cambia al #00BCD4 -->
-    <color name="brand_dark">#008C9E</color>
-    <color name="brand_light">#B2EBF2</color>
-    <color name="brand_verde">#4CAF50</color>
     <color name="transparent">#00000000</color>
 
-    <!-- Auxiliares -->
-    <color name="pill_gray">#FFE0E0E0</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- ============================================= -->
+    <!-- 🌊 COLORES PRIMARIOS (Inspiración: Aventura, Viajes, Descubrimiento) -->
+    <!-- ============================================= -->
+    <color name="primary">#0EA5E9</color>              <!-- Sky Blue - Principal -->
+    <color name="primary_dark">#0284C7</color>         <!-- Sky Blue Oscuro -->
+    <color name="primary_light">#7DD3FC</color>        <!-- Sky Blue Claro -->
+    <color name="primary_container">#E0F2FE</color>    <!-- Sky Blue Container -->
+    <color name="on_primary">#FFFFFF</color>           <!-- Texto sobre primary -->
+    <color name="on_primary_container">#075985</color> <!-- Texto sobre container -->
 
-    <!-- Superadmin -->
-    <color name="seda">#FF2DAEBC</color>
-    <color name="gris">#FF808080</color>
-    <color name="base">#FFEFEEFE</color>
-    <color name="base2">#FFEFEEFF</color>
-    <color name="green">#FF00FF00</color>
-    <color name="red">#FFFF0000</color>
-    <color name="ab">#FFAABBEE</color>
+    <!-- ============================================= -->
+    <!-- 🌅 COLORES SECUNDARIOS (Calor, Energía, Acción) -->
+    <!-- ============================================= -->
+    <color name="secondary">#F59E0B</color>            <!-- Amber - Secundario -->
+    <color name="secondary_dark">#D97706</color>       <!-- Amber Oscuro -->
+    <color name="secondary_light">#FCD34D</color>      <!-- Amber Claro -->
+    <color name="secondary_container">#FEF3C7</color>  <!-- Amber Container -->
+    <color name="on_secondary">#FFFFFF</color>         <!-- Texto sobre secondary -->
+    <color name="on_secondary_container">#92400E</color> <!-- Texto sobre container -->
+
+    <!-- ============================================= -->
+    <!-- 🎯 COLORES TERCIARIOS (Acento, Destacado) -->
+    <!-- ============================================= -->
+    <color name="tertiary">#8B5CF6</color>             <!-- Violet - Terciario -->
+    <color name="tertiary_dark">#7C3AED</color>        <!-- Violet Oscuro -->
+    <color name="tertiary_light">#C4B5FD</color>       <!-- Violet Claro -->
+    <color name="tertiary_container">#EDE9FE</color>   <!-- Violet Container -->
+    <color name="on_tertiary">#FFFFFF</color>          <!-- Texto sobre tertiary -->
+    <color name="on_tertiary_container">#5B21B6</color> <!-- Texto sobre container -->
+
+    <!-- ============================================= -->
+    <!-- ✅ COLORES SEMÁNTICOS (Estados, Feedback) -->
+    <!-- ============================================= -->
+    <!-- Success / Éxito -->
+    <color name="success">#10B981</color>              <!-- Green 500 -->
+    <color name="success_dark">#059669</color>         <!-- Green 600 -->
+    <color name="success_light">#6EE7B7</color>        <!-- Green 300 -->
+    <color name="success_container">#D1FAE5</color>    <!-- Green 100 -->
+    <color name="on_success">#FFFFFF</color>
+
+    <!-- Warning / Advertencia -->
+    <color name="warning">#F59E0B</color>              <!-- Amber 500 -->
+    <color name="warning_dark">#D97706</color>         <!-- Amber 600 -->
+    <color name="warning_light">#FCD34D</color>        <!-- Amber 300 -->
+    <color name="warning_container">#FEF3C7</color>    <!-- Amber 100 -->
+    <color name="on_warning">#FFFFFF</color>
+
+    <!-- Error / Error -->
+    <color name="error">#EF4444</color>                <!-- Red 500 -->
+    <color name="error_dark">#DC2626</color>           <!-- Red 600 -->
+    <color name="error_light">#FCA5A5</color>          <!-- Red 300 -->
+    <color name="error_container">#FEE2E2</color>      <!-- Red 100 -->
+    <color name="on_error">#FFFFFF</color>
+
+    <!-- Info / Información -->
+    <color name="info">#3B82F6</color>                 <!-- Blue 500 -->
+    <color name="info_dark">#2563EB</color>            <!-- Blue 600 -->
+    <color name="info_light">#93C5FD</color>           <!-- Blue 300 -->
+    <color name="info_container">#DBEAFE</color>       <!-- Blue 100 -->
+    <color name="on_info">#FFFFFF</color>
+
+    <!-- ============================================= -->
+    <!-- 🎨 COLORES DE SUPERFICIE (Backgrounds, Cards) -->
+    <!-- ============================================= -->
+    <color name="surface">#FFFFFF</color>              <!-- Superficie base -->
+    <color name="surface_variant">#F8FAFC</color>      <!-- Slate 50 -->
+    <color name="surface_container">#F1F5F9</color>    <!-- Slate 100 -->
+    <color name="surface_container_low">#FAFAFA</color> <!-- Gray 50 -->
+    <color name="surface_container_high">#E2E8F0</color> <!-- Slate 200 -->
+    <color name="surface_tint">#0EA5E9</color>         <!-- Tint para elevation -->
+
+    <color name="on_surface">#0F172A</color>           <!-- Slate 900 - Texto principal -->
+    <color name="on_surface_variant">#64748B</color>   <!-- Slate 500 - Texto secundario -->
+
+    <!-- ============================================= -->
+    <!-- 🌈 GRADIENTES (Para backgrounds modernos) -->
+    <!-- ============================================= -->
+    <color name="gradient_start">#0EA5E9</color>       <!-- Sky Blue -->
+    <color name="gradient_center">#06B6D4</color>      <!-- Cyan -->
+    <color name="gradient_end">#14B8A6</color>         <!-- Teal -->
+
+    <color name="gradient_warm_start">#F59E0B</color>  <!-- Amber -->
+    <color name="gradient_warm_end">#EF4444</color>    <!-- Red -->
+
+    <color name="gradient_cool_start">#8B5CF6</color>  <!-- Violet -->
+    <color name="gradient_cool_end">#3B82F6</color>    <!-- Blue -->
+
+    <color name="gradient_sunset_start">#F97316</color> <!-- Orange -->
+    <color name="gradient_sunset_end">#EC4899</color>   <!-- Pink -->
+
+    <!-- ============================================= -->
+    <!-- 🎯 COLORES NEUTROS (Grises Modernos) -->
+    <!-- ============================================= -->
+    <color name="neutral_50">#F8FAFC</color>           <!-- Slate 50 -->
+    <color name="neutral_100">#F1F5F9</color>          <!-- Slate 100 -->
+    <color name="neutral_200">#E2E8F0</color>          <!-- Slate 200 -->
+    <color name="neutral_300">#CBD5E1</color>          <!-- Slate 300 -->
+    <color name="neutral_400">#94A3B8</color>          <!-- Slate 400 -->
+    <color name="neutral_500">#64748B</color>          <!-- Slate 500 -->
+    <color name="neutral_600">#475569</color>          <!-- Slate 600 -->
+    <color name="neutral_700">#334155</color>          <!-- Slate 700 -->
+    <color name="neutral_800">#1E293B</color>          <!-- Slate 800 -->
+    <color name="neutral_900">#0F172A</color>          <!-- Slate 900 -->
+
+    <!-- ============================================= -->
+    <!-- 🌓 DARK MODE COLORS -->
+    <!-- ============================================= -->
+    <color name="surface_dark">#0F172A</color>         <!-- Slate 900 -->
+    <color name="surface_variant_dark">#1E293B</color> <!-- Slate 800 -->
+    <color name="on_surface_dark">#F8FAFC</color>      <!-- Slate 50 -->
+    <color name="on_surface_variant_dark">#CBD5E1</color> <!-- Slate 300 -->
+
+    <!-- ============================================= -->
+    <!-- 🎭 OVERLAYS Y EFECTOS -->
+    <!-- ============================================= -->
+    <color name="overlay_dark">#80000000</color>       <!-- Negro 50% -->
+    <color name="overlay_light">#4DFFFFFF</color>      <!-- Blanco 30% -->
+    <color name="scrim">#B3000000</color>              <!-- Negro 70% -->
+    <color name="ripple_light">#1F000000</color>       <!-- Negro 12% -->
+    <color name="ripple_dark">#1FFFFFFF</color>        <!-- Blanco 12% -->
+
+    <!-- ============================================= -->
+    <!-- 💎 COLORES ESPECIALES (Badges, Highlights) -->
+    <!-- ============================================= -->
+    <color name="premium_gold">#F59E0B</color>         <!-- Dorado -->
+    <color name="verified_blue">#3B82F6</color>        <!-- Azul verificado -->
+    <color name="new_badge">#EF4444</color>            <!-- Rojo "Nuevo" -->
+    <color name="popular_purple">#8B5CF6</color>       <!-- Morado "Popular" -->
+    <color name="discount_green">#10B981</color>       <!-- Verde "Oferta" -->
+
+    <!-- ============================================= -->
+    <!-- 🔄 COMPATIBILIDAD CON CÓDIGO EXISTENTE -->
+    <!-- ============================================= -->
+    <color name="brand_celeste">#0EA5E9</color>        <!-- Mapeo a primary -->
+    <color name="brand_dark">#0284C7</color>           <!-- Mapeo a primary_dark -->
+    <color name="brand_light">#7DD3FC</color>          <!-- Mapeo a primary_light -->
+    <color name="brand_verde">#10B981</color>          <!-- Mapeo a success -->
+    <color name="pill_gray">#E2E8F0</color>            <!-- Actualizado a neutral_200 -->
+    <color name="teal_200">#5EEAD4</color>             <!-- Teal moderno -->
+    <color name="teal_700">#0F766E</color>             <!-- Teal oscuro moderno -->
+    <color name="seda">#0EA5E9</color>                 <!-- Mapeo a primary -->
+    <color name="gris">#64748B</color>                 <!-- Mapeo a neutral_500 -->
+    <color name="base">#F8FAFC</color>                 <!-- Mapeo a neutral_50 -->
+    <color name="base2">#F1F5F9</color>                <!-- Mapeo a neutral_100 -->
+    <color name="green">#10B981</color>                <!-- Actualizado a success -->
+    <color name="red">#EF4444</color>                  <!-- Actualizado a error -->
+    <color name="ab">#93C5FD</color>                   <!-- Actualizado a info_light -->
 </resources>

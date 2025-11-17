@@ -247,6 +247,6 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="24dp"
             android:textColor="@android:color/white"
-            android:backgroundTint="@color/brand_celeste"/>
+            android:backgroundTint="@color/primary"/>
     </LinearLayout>
 </ScrollView>

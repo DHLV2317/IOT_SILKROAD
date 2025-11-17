@@ -1,16 +1,14 @@
 package com.example.silkroad_iot.ui.client;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.databinding.ItemStopBinding;
 import com.example.silkroad_iot.data.ParadaFB;
 
 import java.lang.reflect.Method;
@@ -26,24 +24,20 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvName, tvAddress, tvTime, tvCost;
-        ImageView ivMap;
+        ItemStopBinding binding;
 
-        VH(View v) {
-            super(v);
-            tvName    = v.findViewById(R.id.tvStopName);
-            tvAddress = v.findViewById(R.id.tvStopAddress);
-            tvTime    = v.findViewById(R.id.tvStopTime);
-            tvCost    = v.findViewById(R.id.tvStopCost);
-            ivMap     = v.findViewById(R.id.ivMapImage);
+        VH(ItemStopBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_stop, parent, false);
-        return new VH(v);
+        ItemStopBinding binding = ItemStopBinding.inflate(
+            LayoutInflater.from(parent.getContext()), parent, false
+        );
+        return new VH(binding);
     }
 
     @Override
@@ -53,13 +47,13 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
         // Nombre (requerido en ParadaFB)
         String nombre = nz(p.getNombre());
         if (nombre.isEmpty()) nombre = "(Sin nombre)";
-        h.tvName.setText(String.format(Locale.getDefault(), "%d° Parada: %s", position + 1, nombre));
+        h.binding.tvStopName.setText(String.format(Locale.getDefault(), "%d° Parada: %s", position + 1, nombre));
 
         // Dirección/Descripción (ParadaFB tiene 'descripcion'; si tuvieses 'address' la priorizamos)
         String address = nz(safeGetString(p, "getAddress"));
         if (address.isEmpty()) address = nz(p.getDescripcion());
         if (address.isEmpty()) address = "—";
-        h.tvAddress.setText("Dirección: " + address);
+        h.binding.tvStopAddress.setText("Dirección: " + address);
 
         // Tiempo (si en el futuro agregas getMinutes o getTime)
         String time = nz(safeGetString(p, "getTime"));
@@ -67,7 +61,7 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
             Integer minutes = safeGetInt(p, "getMinutes");
             time = minutes == null ? "—" : (minutes + " min");
         }
-        h.tvTime.setText("Tiempo: " + time);
+        h.binding.tvStopTime.setText("Tiempo: " + time);
 
         // Costo (opcional; si no existe mostramos —)
         String costText = "—";
@@ -75,18 +69,18 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
         if (cost != null) {
             costText = String.format(Locale.getDefault(), "S/. %.2f", cost);
         }
-        h.tvCost.setText("Costo: " + costText);
+        h.binding.tvStopCost.setText("Costo: " + costText);
 
         // Imagen opcional (si existiera getImageUrl() en ParadaFB)
         String imageUrl = nz(safeGetString(p, "getImageUrl"));
         if (!imageUrl.isEmpty()) {
-            Glide.with(h.itemView.getContext())
+            Glide.with(h.binding.ivMapImage.getContext())
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_map_placeholder)
                     .error(R.drawable.ic_map_placeholder)
-                    .into(h.ivMap);
+                    .into(h.binding.ivMapImage);
         } else {
-            h.ivMap.setImageResource(R.drawable.ic_map_placeholder);
+            h.binding.ivMapImage.setImageResource(R.drawable.ic_map_placeholder);
         }
     }
 

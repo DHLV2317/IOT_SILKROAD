@@ -14,7 +14,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             app:title="Detalle de reserva"
             app:titleTextColor="@android:color/white" />
 
@@ -211,7 +211,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Aceptar reserva"
-                android:backgroundTint="@color/brand_celeste"
+                android:backgroundTint="@color/primary"
                 android:textColor="@android:color/white" />
 
             <com.google.android.material.button.MaterialButton
@@ -270,7 +270,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Volver a reservas"
-            android:backgroundTint="@color/brand_celeste"
+            android:backgroundTint="@color/primary"
             android:textColor="@android:color/white" />
 
     </LinearLayout>

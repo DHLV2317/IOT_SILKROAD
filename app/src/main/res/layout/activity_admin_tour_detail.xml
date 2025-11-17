@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Detalle de tour"
-            app:backgroundTint="@color/brand_celeste"
+            app:backgroundTint="@color/primary"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:navigationIconTint="@android:color/white" />
@@ -25,7 +25,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:background="@color/brand_celeste">
+            android:background="@color/primary">
 
             <ImageView
                 android:id="@+id/imgHeader"
@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:text="Cargar imagen"
                 android:layout_marginTop="8dp"
-                app:backgroundTint="@color/brand_celeste"
+                app:backgroundTint="@color/primary"
                 android:textColor="@android:color/white" />
 
             <!-- Nombre -->
@@ -219,7 +219,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    app:backgroundTint="@color/brand_celeste"
+                    app:backgroundTint="@color/primary"
                     android:textColor="@android:color/white" />
             </LinearLayout>
 

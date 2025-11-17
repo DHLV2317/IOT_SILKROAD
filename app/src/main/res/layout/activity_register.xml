@@ -15,23 +15,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:title="Registro Cliente"
-            app:backgroundTint="@color/brand_celeste"
+            android:background="@drawable/gradient_primary"
             app:titleTextColor="@color/white" />
 
         <TextView
+            style="@style/TextAppearance.SilkRoad.Headline2"
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Crear cuenta"
-            android:textStyle="bold"
-            android:textSize="22sp"
-            android:textColor="@color/brand_celeste"
-            android:layout_marginTop="12dp" />
+            android:textColor="@color/primary"
+            android:layout_marginTop="16dp" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayout.SilkRoad"
             android:hint="Nombre completo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputName"
@@ -40,9 +41,11 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayout.SilkRoad"
             android:hint="Correo electrónico"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputEmail"
@@ -52,10 +55,12 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayout.SilkRoad"
             android:hint="Crear contraseña"
             app:endIconMode="password_toggle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputPass1"
@@ -65,19 +70,19 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
+            style="@style/TextAppearance.SilkRoad.Caption"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Mínimo 8 caracteres, 1 número y 1 símbolo."
-            android:textSize="12sp"
-            android:layout_marginTop="4dp"
-            android:textColor="@android:color/darker_gray" />
+            android:layout_marginTop="4dp" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/TextInputLayout.SilkRoad"
             android:hint="Confirmar contraseña"
             app:endIconMode="password_toggle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputPass2"
@@ -94,18 +99,17 @@
             android:layout_marginTop="8dp" />
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Button.SilkRoad.Primary"
             android:id="@+id/btnContinue"
             android:text="Continuar"
-            android:backgroundTint="@color/brand_celeste"
-            android:textColor="@color/white"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp" />
 
         <com.google.android.material.button.MaterialButton
+            style="@style/Button.SilkRoad.Outlined"
             android:id="@+id/btnRegisterGuide"
             android:text="Registrarse como Guía"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />

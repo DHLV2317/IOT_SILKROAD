@@ -1,18 +1,16 @@
 package com.example.silkroad_iot.ui.admin;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.GuideFb;
-import com.google.android.material.button.MaterialButton;
+import com.example.silkroad_iot.databinding.ItemAdminGuideBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,36 +36,35 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
     }
 
     public void updateData(List<GuideFb> items) {
+        if (items == null) items = new ArrayList<>();
+        
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+            new GuideDiffCallback(this.data, items)
+        );
+        
         all.clear();
         data.clear();
-        if (items != null) {
-            all.addAll(items);
-            data.addAll(items);
-        }
-        notifyDataSetChanged();
+        all.addAll(items);
+        data.addAll(items);
+        
+        diffResult.dispatchUpdatesTo(this);
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        ImageView img;
-        TextView tName, tSubtitle, tStatus, tExtra;
-        MaterialButton btnAssign, btnDetail;
-        VH(View v) {
-            super(v);
-            img       = v.findViewById(R.id.aImg);
-            tName     = v.findViewById(R.id.aTitle);
-            tSubtitle = v.findViewById(R.id.aSubtitle);
-            tStatus   = v.findViewById(R.id.aStatus);
-            tExtra    = v.findViewById(R.id.aExtra);
-            btnAssign = v.findViewById(R.id.btnAssign);
-            btnDetail = v.findViewById(R.id.btnDetail);
+        ItemAdminGuideBinding binding;
+
+        VH(ItemAdminGuideBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
         }
     }
 
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_admin_guide, parent, false);
-        return new VH(v);
+        ItemAdminGuideBinding binding = ItemAdminGuideBinding.inflate(
+            LayoutInflater.from(parent.getContext()), parent, false
+        );
+        return new VH(binding);
     }
 
     @Override
@@ -75,32 +72,35 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
         GuideFb g = data.get(position);
 
         String foto = safe(g.getFotoUrl());
-        Glide.with(h.itemView)
+        Glide.with(h.binding.aImg.getContext())
                 .load(foto.isEmpty() ? R.drawable.ic_person_24 : foto)
-                .into(h.img);
+                .placeholder(R.drawable.placeholder_image_warm)
+                .error(R.drawable.ic_person_24)
+                .centerCrop()
+                .into(h.binding.aImg);
 
         String name   = safe(g.getNombre());
         String langs  = safe(g.getLangs());
         String state  = safe(g.getEstado());
         String actual = safe(g.getTourActual());
 
-        h.tName.setText(name.isEmpty() ? "(Sin nombre)" : name);
-        h.tSubtitle.setText(langs.isEmpty() ? "—" : langs);
-        h.tStatus.setText(state.isEmpty() ? "—" : state);
+        h.binding.aTitle.setText(name.isEmpty() ? "(Sin nombre)" : name);
+        h.binding.aSubtitle.setText(langs.isEmpty() ? "—" : langs);
+        h.binding.aStatus.setText(state.isEmpty() ? "—" : state);
 
         int hist = (g.getHistorial() == null) ? 0 : g.getHistorial().size();
-        h.tExtra.setText(
+        h.binding.aExtra.setText(
                 actual.isEmpty()
                         ? hist + " tours"
                         : hist + " tours • Actual: " + actual
         );
 
-        h.btnAssign.setOnClickListener(v -> {
+        h.binding.btnAssign.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();
             if (pos != RecyclerView.NO_POSITION && cb != null) cb.onAssignClicked(pos);
         });
 
-        h.btnDetail.setOnClickListener(v -> {
+        h.binding.btnDetail.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();
             if (pos != RecyclerView.NO_POSITION && cb != null) cb.onDetailClicked(pos);
         });
@@ -110,21 +110,77 @@ public class AdminGuidesAdapter extends RecyclerView.Adapter<AdminGuidesAdapter.
 
     public void filter(String q) {
         String s = q == null ? "" : q.toLowerCase(Locale.getDefault()).trim();
-        data.clear();
+        
+        List<GuideFb> filtered = new ArrayList<>();
         if (s.isEmpty()) {
-            data.addAll(all);
+            filtered.addAll(all);
         } else {
             for (GuideFb g : all) {
                 String name  = safe(g.getNombre()).toLowerCase(Locale.getDefault());
                 String langs = safe(g.getLangs()).toLowerCase(Locale.getDefault());
                 String state = safe(g.getEstado()).toLowerCase(Locale.getDefault());
                 if (name.contains(s) || langs.contains(s) || state.contains(s)) {
-                    data.add(g);
+                    filtered.add(g);
                 }
             }
         }
-        notifyDataSetChanged();
+        
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
+            new GuideDiffCallback(this.data, filtered)
+        );
+        
+        data.clear();
+        data.addAll(filtered);
+        
+        diffResult.dispatchUpdatesTo(this);
     }
 
     private static String safe(String s) { return s == null ? "" : s; }
+
+    /**
+     * DiffUtil.Callback para comparar guías
+     */
+    private static class GuideDiffCallback extends DiffUtil.Callback {
+        private final List<GuideFb> oldList;
+        private final List<GuideFb> newList;
+
+        GuideDiffCallback(List<GuideFb> oldList, List<GuideFb> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            GuideFb oldGuide = oldList.get(oldItemPosition);
+            GuideFb newGuide = newList.get(newItemPosition);
+            
+            if (oldGuide.getId() != null && newGuide.getId() != null) {
+                return oldGuide.getId().equals(newGuide.getId());
+            }
+            
+            return safe(oldGuide.getNombre()).equals(safe(newGuide.getNombre()));
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            GuideFb oldGuide = oldList.get(oldItemPosition);
+            GuideFb newGuide = newList.get(newItemPosition);
+            
+            return safe(oldGuide.getNombre()).equals(safe(newGuide.getNombre())) &&
+                   safe(oldGuide.getLangs()).equals(safe(newGuide.getLangs())) &&
+                   safe(oldGuide.getEstado()).equals(safe(newGuide.getEstado())) &&
+                   oldGuide.getHistorial() == newGuide.getHistorial() &&
+                   oldGuide.getTourActual() == newGuide.getTourActual();
+        }
+    }
 }

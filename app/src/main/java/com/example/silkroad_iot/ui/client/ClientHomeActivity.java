@@ -59,8 +59,28 @@ public class ClientHomeActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         companyAdapter = new CompanyAdapter(empresasFB);
 
-        b.rvCompanies.setLayoutManager(new LinearLayoutManager(this));
+        // Mostrar companies en Staggered Grid (Pinterest style)
+        androidx.recyclerview.widget.StaggeredGridLayoutManager sglm = new androidx.recyclerview.widget.StaggeredGridLayoutManager(2, androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL);
+        b.rvCompanies.setLayoutManager(sglm);
         b.rvCompanies.setAdapter(companyAdapter);
+
+        // Recommended tours (horizontal carousel)
+        List<com.example.silkroad_iot.data.TourFB> recommended = new ArrayList<>();
+        com.example.silkroad_iot.ui.client.TourAdapter recommendedAdapter = new com.example.silkroad_iot.ui.client.TourAdapter(recommended);
+        b.rvRecommendedTours.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+        b.rvRecommendedTours.setAdapter(recommendedAdapter);
+
+        // Cargar recomendaciones simples desde Firestore (colección "tours" con limit 10)
+        db.collection("tours").limit(10).get().addOnSuccessListener(qs -> {
+            List<com.example.silkroad_iot.data.TourFB> list = new ArrayList<>();
+            for (DocumentSnapshot doc : qs) {
+                com.example.silkroad_iot.data.TourFB t = doc.toObject(com.example.silkroad_iot.data.TourFB.class);
+                if (t != null) { t.setId(doc.getId()); list.add(t); }
+            }
+            runOnUiThread(() -> {
+                recommendedAdapter.updateData(list);
+            });
+        }).addOnFailureListener(e -> Log.e("RECOMMENDED", "Error loading tours", e));
 
         // Cargar empresas desde Firestore
         cargarEmpresasDesdeFirebase();
@@ -75,11 +95,11 @@ public class ClientHomeActivity extends AppCompatActivity {
         });
 
         // Botón historial
-        Button btnHistory = findViewById(R.id.btnHistory);
-        btnHistory.setOnClickListener(v -> {
-            Intent i = new Intent(this, TourHistoryActivity.class);
-            startActivity(i);
-        });
+        // Button btnHistory = findViewById(R.id.btnHistory); // No existe en el layout actual
+        // btnHistory.setOnClickListener(v -> {
+        //     Intent i = new Intent(this, TourHistoryActivity.class);
+        //     startActivity(i);
+        // });
     }
 
     private void cargarEmpresasDesdeFirebase() {

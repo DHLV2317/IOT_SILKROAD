@@ -38,29 +38,42 @@ public class TourDetailActivity extends AppCompatActivity {
         b.tTourName.setText(tour.getNombre());
         b.btnAdd.setText("Agregar S/. " + tour.getPrecio());
 
-        Glide.with(this)
-                .load(tour.getImagen())
-                .into(b.imgTour);
+        // Gallery: construir lista de imágenes usando imagen principal y posibles imageUrl
+        java.util.List<String> images = new java.util.ArrayList<>();
+        if (tour.getImagen() != null && !tour.getImagen().isEmpty()) images.add(tour.getImagen());
+        if (tour.getImageUrl() != null && !tour.getImageUrl().isEmpty() && !images.contains(tour.getImageUrl())) images.add(tour.getImageUrl());
+        // Las paradas no tienen imágenes en el modelo actual
+        // if (tour.getParadas() != null) {
+        //     for (com.example.silkroad_iot.data.ParadaFB p : tour.getParadas()) {
+        //         if (p.getImagen() != null && !p.getImagen().isEmpty()) images.add(p.getImagen());
+        //     }
+        // }
+
+        if (!images.isEmpty()) {
+            GalleryAdapter ga = new GalleryAdapter(images);
+            b.vpGallery.setAdapter(ga);
+        }
+        // El layout ya muestra la galería con vpGallery, no necesitamos imgTour
 
         // Mostrar descripción
-        b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "Bug?");
+        b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "");
 
         // Mostrar campos adicionales
-       // b.tTourLangs.setText("Idiomas: " + (tour.getLangs() != null ? tour.getLangs() : "No especificado"));
-        b.tTourPeople.setText("Personas: " + tour.getCantidad_personas() + " personas");
+        b.tTourPeople.setText(tour.getCantidad_personas() + " personas");
+        
+        // Las fechas se muestran en la UI de otra forma o no se muestran en este layout
+        // if (tour.getDateFrom() != null)
+        //     b.tTourDateFrom.setText("Inicio: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateFrom()));
+        // else
+        //     b.tTourDateFrom.setText("Inicio: -");
+        //
+        // if (tour.getDateTo() != null)
+        //     b.tTourDateTo.setText("Fin: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateTo()));
+        // else
+        //     b.tTourDateTo.setText("Fin: -");
 
-        if (tour.getDateFrom() != null)
-            b.tTourDateFrom.setText("Inicio: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateFrom()));
-        else
-            b.tTourDateFrom.setText("Inicio: -");
-
-        if (tour.getDateTo() != null)
-            b.tTourDateTo.setText("Fin: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateTo()));
-        else
-            b.tTourDateTo.setText("Fin: -");
-
-        //b.tTourDuration.setText("Duración: " + (tour.getDuration() != null ? tour.getDuration() : "-"));
-        b.tTourDuration.setText("Paradas: " + (tour.getId_paradas() != null ? tour.getId_paradas() : "-"));
+        b.tTourDuration.setText((tour.getId_paradas() != null ? tour.getId_paradas().size() : 0) + " paradas");
+        
         // Acción del botón
         b.btnAdd.setOnClickListener(v -> {
             Intent i = new Intent(this, ConfirmTourActivity.class);

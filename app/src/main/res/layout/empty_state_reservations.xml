@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty reservations state -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        app:cardCornerRadius="80dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/secondary_container">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_add_24"
+            android:layout_gravity="center"
+            app:tint="@color/on_secondary_container"
+            android:contentDescription="No reservations" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        style="@style/TextAppearance.SilkRoad.Headline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sin reservas"
+        android:layout_marginTop="24dp"
+        android:textAlignment="center" />
+
+    <TextView
+        style="@style/TextAppearance.SilkRoad.Body2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Aún no tienes reservas activas"
+        android:layout_marginTop="8dp"
+        android:textAlignment="center" />
+
+</LinearLayout>

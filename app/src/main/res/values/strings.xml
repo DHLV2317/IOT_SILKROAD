@@ -12,6 +12,23 @@
     <string name="register">Regístrate</string>
     <string name="continue_with">o continúa con</string>
 
+    <!-- New / Redesigned UI strings -->
+    <string name="welcome">Bienvenido</string>
+    <string name="welcome_subtitle">Ingresa con tu cuenta para continuar</string>
+    <string name="hero_logo_desc">Logotipo de SilkRoad</string>
+    <string name="create_account">Crear cuenta</string>
+
+    <!-- Badges and labels -->
+    <string name="badge_new">Nuevo</string>
+    <string name="badge_popular">Popular</string>
+    <string name="badge_offer">Oferta</string>
+    <string name="verified">Verificado</string>
+
+    <!-- Quick info -->
+    <string name="duration_desc">Duración del tour</string>
+    <string name="people_desc">Capacidad</string>
+    <string name="rating_desc">Valoración</string>
+
     <!-- 🔵 GOOGLE (de tu google-services.json) -->
     <string name="default_web_client_id">
         109695199773-qakegcv4b89vrna0apdg98amusa24fa5.apps.googleusercontent.com
@@ -42,5 +59,71 @@
     <string name="error_loading_stops">No se pudieron cargar las paradas</string>
     <string name="error_loading_tour">No se pudo cargar el tour</string>
     <string name="empty_guides">No hay guías registradas</string>
+
+    <!-- Client Home -->
+    <string name="hello_user">Hola, Usuario</string>
+    <string name="hello_sub">¿Qué quieres explorar hoy?</string>
+    <string name="search_hint">¿A dónde ir?</string>
+    <string name="action_explore">Explorar</string>
+    <string name="action_book">Reservar</string>
+    <string name="action_profile">Perfil</string>
+    <string name="action_explore_desc">Explorar destinos</string>
+    <string name="action_book_desc">Reservar tours</string>
+    <string name="action_profile_desc">Ver perfil</string>
+    <string name="departments">Departamentos</string>
+    <string name="companies">Empresas</string>
+    <string name="recommended_tours">Tours recomendados para ti</string>
+    <string name="search_icon_desc">Buscar</string>
+
+    <!-- Tour Detail -->
+    <string name="tour_title_placeholder">Tour 1</string>
+    <string name="label_duration">Duración</string>
+    <string name="duration_value">3 días</string>
+    <string name="label_capacity">Capacidad</string>
+    <string name="capacity_value">10 personas</string>
+    <string name="label_description">Descripción del tour</string>
+    <string name="label_map">Mapa de paradas</string>
+    <string name="label_reviews">Reseñas</string>
+    <string name="review_user_a">Usuario A</string>
+    <string name="review_sample">Excelente tour, muy recomendable</string>
+    <string name="price_sample">S/. 100</string>
+    <string name="book_now">Reservar ahora</string>
+
+    <!-- Guide Home -->
+    <string name="welcome_guide">¡Bienvenido, Guía!</string>
+    <string name="guide_status">Estado: Disponible</string>
+    <string name="on_label">ON</string>
+    <string name="label_tours">Tours</string>
+    <string name="label_rating">Rating</string>
+    <string name="notifications">Notificaciones</string>
+    <string name="notif_new_reservation">Nueva reserva: Tour A</string>
+    <string name="notif_review_details">Revisar detalles</string>
+
+    <!-- Admin Dashboard -->
+    <string name="dashboard_admin">Dashboard Admin</string>
+    <string name="label_reservations">Reservas</string>
+    <string name="label_revenue">Ingresos</string>
+    <string name="quick_actions">Quick actions</string>
+    <string name="action_export">Exportar</string>
+
+    <!-- Confirm Tour / Checkout -->
+    <string name="price_breakdown">Desglose de precios</string>
+    <string name="fee_base">Tarifa base</string>
+    <string name="taxes">Impuestos</string>
+    <string name="total_label">Total</string>
+    <string name="secure_payment">Pago seguro</string>
+    <string name="confirm_reservation">Confirmar reserva</string>
+
+    <!-- Prices -->
+    <string name="price_base_amount">S/. 80</string>
+    <string name="price_taxes_amount">S/. 10</string>
+    <string name="price_total_amount">S/. 90</string>
+
+    <!-- Accessibility / Icon descriptions -->
+    <string name="desc_offers">Ver ofertas de tours</string>
+    <string name="desc_register_location">Registrar ubicación</string>
+    <string name="desc_qr_finish">Escanear QR</string>
+    <string name="desc_my_profile">Mi perfil</string>
+    <string name="desc_card_arrow">Ver detalles</string>
 
 </resources>

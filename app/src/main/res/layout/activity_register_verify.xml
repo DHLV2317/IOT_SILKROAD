@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:title="Verificar código"
-        app:backgroundTint="@color/brand_celeste"
+        app:backgroundTint="@color/primary"
         app:titleTextColor="@color/white" />
 
     <TextView
@@ -41,13 +41,13 @@
         android:layout_height="wrap_content"
         android:text="Reenviar código"
         android:textStyle="bold"
-        android:textColor="@color/brand_celeste"
+        android:textColor="@color/primary"
         android:layout_marginTop="10dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnContinue"
         android:text="Confirmar código"
-        android:backgroundTint="@color/brand_celeste"
+        android:backgroundTint="@color/primary"
         android:textColor="@color/white"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

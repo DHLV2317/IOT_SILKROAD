@@ -13,11 +13,11 @@
             android:title="Verifica tus datos"
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:titleTextColor="@color/white"
-            app:backgroundTint="@color/brand_celeste"/>
+            app:backgroundTint="@color/primary"/>
 
         <!-- Cabecera celeste tipo tarjeta -->
         <LinearLayout
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             android:padding="20dp"
             android:layout_marginTop="12dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/white"
-                android:textColor="@color/brand_celeste"/>
+                android:textColor="@color/primary"/>
         </LinearLayout>
 
         <TextView
@@ -81,7 +81,7 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnConfirm"
             android:text="Confirmar"
-            android:backgroundTint="@color/brand_celeste" android:textColor="@color/white"
+            android:backgroundTint="@color/primary" android:textColor="@color/white"
             android:layout_marginTop="14dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
     </LinearLayout>

@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/brand_celeste"
+            android:background="@color/primary"
             android:titleTextColor="@android:color/white"
             app:title="Nuevo Tour (1/4)"
             app:navigationIcon="@drawable/ic_arrow_back_24"
@@ -66,7 +66,7 @@
                     android:layout_height="wrap_content"
                     android:text="Siguiente ➜"
                     android:textColor="@android:color/white"
-                    app:backgroundTint="@color/brand_celeste" />
+                    app:backgroundTint="@color/primary" />
             </LinearLayout>
 
         </LinearLayout>

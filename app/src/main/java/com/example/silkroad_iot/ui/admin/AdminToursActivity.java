@@ -76,7 +76,7 @@ public class AdminToursActivity extends BaseDrawerActivity {
         if (reg != null) { reg.remove(); reg = null; }
 
         c.progress.setVisibility(View.VISIBLE);
-        c.empty.setVisibility(View.GONE);
+        c.empty.getRoot().setVisibility(View.GONE);
 
         String uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
         if (uid == null) {
@@ -138,7 +138,7 @@ public class AdminToursActivity extends BaseDrawerActivity {
             adapter.replace(new ArrayList<>());
             showEmpty("Aún no has creado tours.");
         } else {
-            c.empty.setVisibility(View.GONE);
+            c.empty.getRoot().setVisibility(View.GONE);
             adapter.replace(new ArrayList<>(allTours));
             filter(c.inputSearch.getText());
         }
@@ -161,12 +161,12 @@ public class AdminToursActivity extends BaseDrawerActivity {
         adapter.replace(filtered);
 
         if (filtered.isEmpty()) showEmpty("Sin resultados para \"" + q + "\"");
-        else c.empty.setVisibility(View.GONE);
+        else c.empty.getRoot().setVisibility(View.GONE);
     }
 
     private void showEmpty(String msg) {
-        c.empty.setText(msg);
-        c.empty.setVisibility(View.VISIBLE);
+        // El empty state es estático, no se puede cambiar el mensaje dinámicamente
+        c.empty.getRoot().setVisibility(View.VISIBLE);
     }
 
     private static String safe(String s) { return s == null ? "" : s; }

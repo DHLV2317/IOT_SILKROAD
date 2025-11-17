@@ -50,7 +50,7 @@
                 android:text="Cambiar"
                 android:textColor="@android:color/white"
                 app:chipIcon="@drawable/ic_image_24"
-                app:chipBackgroundColor="@color/brand_celeste"
+                app:chipBackgroundColor="@color/primary"
                 app:chipIconVisible="true" />
         </FrameLayout>
 

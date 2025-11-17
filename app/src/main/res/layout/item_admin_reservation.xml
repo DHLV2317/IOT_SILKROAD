@@ -1,84 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modern Admin Reservation Item: premium card with status badge and gradient accent -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Card.SilkRoad"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
-        android:padding="12dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Left Accent Bar -->
+        <View
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/gradient_cool" />
 
         <!-- IMAGEN DEL TOUR -->
-        <ImageView
-            android:id="@+id/aImg"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:src="@drawable/ic_menu_24"
-            android:background="#EEEEEE" />
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <ImageView
+                android:id="@+id/aImg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/placeholder_image_cool"
+                android:scaleType="centerCrop"
+                android:contentDescription="Tour image" />
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- CONTENEDOR DEL TEXTO -->
         <LinearLayout
             android:orientation="vertical"
-            android:layout_marginStart="12dp"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp">
 
             <TextView
+                style="@style/TextAppearance.SilkRoad.TitleMedium"
                 android:id="@+id/aTitle"
                 android:text="Tour"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <TextView
+                style="@style/TextAppearance.SilkRoad.Body2"
                 android:id="@+id/aSubtitle"
                 android:text="Cliente · 1 pax · S/ 0.00"
-                android:textSize="12sp"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="4dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/aDate"
-                android:text="12 Ene 2025"
-                android:textSize="12sp"
-                android:layout_marginTop="2dp"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/location_on_24px"
+                    app:tint="@color/on_surface_variant"
+                    android:contentDescription="Date" />
+
+                <TextView
+                    style="@style/TextAppearance.SilkRoad.Caption"
+                    android:id="@+id/aDate"
+                    android:text="12 Ene 2025"
+                    android:layout_marginStart="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- ESTADO -->
-        <TextView
+        <!-- ESTADO (Chip Style) -->
+        <com.google.android.material.chip.Chip
+            style="@style/Chip.SilkRoad"
             android:id="@+id/aStatus"
-            android:text="pendiente"
-            android:padding="4dp"
-            android:background="@color/pill_gray"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:layout_marginStart="4dp"
-            android:backgroundTintMode="src_over"
+            android:text="Pendiente"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:chipBackgroundColor="@color/warning_container"
+            android:textColor="@color/on_warning" />
 
         <!-- BOTÓN VER DETALLE -->
-        <TextView
+        <ImageView
             android:id="@+id/btnDetail"
-            android:text="Ver"
-            android:textStyle="bold"
-            android:textColor="@color/brand_celeste"
-            android:layout_marginStart="12dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_arrow_back_24"
+            android:rotation="180"
+            app:tint="@color/primary"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="Ver detalle" />
 
     </LinearLayout>
 
