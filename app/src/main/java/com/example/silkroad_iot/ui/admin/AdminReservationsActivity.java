@@ -88,7 +88,7 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
         // Botón generar PDF
         b.btnReport.setOnClickListener(v -> {
             List<Object> items = new ArrayList<>();
-            items.addAll(fullList);     // usamos todas las reservas de la empresa
+            items.addAll(fullList);     // usamos todas las reservas de la empresa (o de todo)
             PdfReportUtil.createReservationsPdf(this, items);
         });
 
@@ -106,15 +106,71 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
     @Override
     protected int defaultMenuId() { return R.id.m_reservations; }
 
+    // =========================================================
+    // CARGA DE DATOS
+    // =========================================================
     private void loadData() {
         String empresaId = getSharedPreferences(PREFS, MODE_PRIVATE)
                 .getString(KEY_EMPRESA_ID, null);
 
-        if (empresaId == null) {
-            adapter.replace(new ArrayList<>());
-            fullList.clear();
-            return;
+        if (empresaId == null || empresaId.isEmpty()) {
+            // 🔁 SIN empresa asociada → mostrar TODAS las reservas (todas las empresas)
+            loadAllReservations();
+        } else {
+            // 🔒 Con empresa asociada → solo reservas de esa empresa
+            loadReservationsByEmpresa(empresaId);
         }
+    }
+
+    /**
+     * Carga TODAS las reservas de tours_history, usando todos los tours existentes.
+     */
+    private void loadAllReservations() {
+        // 1) Traer TODOS los tours
+        db.collection("tours")
+                .get()
+                .addOnSuccessListener(tourSnap -> {
+                    Map<String, TourFB> tourMap = new HashMap<>();
+
+                    for (QueryDocumentSnapshot d : tourSnap) {
+                        TourFB t = d.toObject(TourFB.class);
+                        t.setId(d.getId());
+                        tourMap.put(d.getId(), t);
+                    }
+
+                    // 2) Traer todas las reservas
+                    db.collection("tours_history")
+                            .get()
+                            .addOnSuccessListener(hSnap -> {
+                                fullList.clear();
+
+                                for (QueryDocumentSnapshot h : hSnap) {
+                                    TourHistorialFB r = h.toObject(TourHistorialFB.class);
+                                    r.setId(h.getId());
+
+                                    TourFB tour = tourMap.get(r.getIdTour());
+                                    if (tour == null) {
+                                        // Si el tour se borró o no existe, igual podrías decidir
+                                        // mostrarlo con un "Tour eliminado", pero por ahora lo omitimos.
+                                        continue;
+                                    }
+
+                                    fullList.add(new ReservaWithTour(r, tour));
+                                }
+
+                                adapter.replace(fullList);
+
+                                String q = b.inputSearch.getText() == null
+                                        ? "" : b.inputSearch.getText().toString();
+                                adapter.filter(q, adapter.getStatusFilter());
+                            });
+                });
+    }
+
+    /**
+     * Carga solo las reservas de tours pertenecientes a una empresa específica.
+     */
+    private void loadReservationsByEmpresa(String empresaId) {
 
         // 1) Obtener tours de la empresa
         db.collection("tours")
@@ -149,7 +205,8 @@ public class AdminReservationsActivity extends BaseDrawerActivity {
 
                                     TourFB tour = tourMap.get(r.getIdTour());
                                     if (tour == null) {
-                                        continue; // reserva de otra empresa
+                                        // reserva de otro tour/empresa
+                                        continue;
                                     }
 
                                     fullList.add(new ReservaWithTour(r, tour));
