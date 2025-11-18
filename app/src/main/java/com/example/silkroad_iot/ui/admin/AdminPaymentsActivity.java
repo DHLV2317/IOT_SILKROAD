@@ -1,26 +1,33 @@
 package com.example.silkroad_iot.ui.admin;
 
 import android.os.Bundle;
+import android.widget.FrameLayout;
 
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.annotation.Nullable;
 
 import com.example.silkroad_iot.R;
+import com.example.silkroad_iot.databinding.ContentAdminPaymentsBinding;
+import com.example.silkroad_iot.ui.common.BaseDrawerActivity;
 
-public class AdminPaymentsActivity extends AppCompatActivity {
+public class AdminPaymentsActivity extends BaseDrawerActivity {
+
+    private ContentAdminPaymentsBinding b;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_admin_payments);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        setupDrawer(R.layout.content_admin_payments, R.menu.menu_drawer_admin, "Pagos");
+
+        FrameLayout container = findViewById(R.id.contentContainer);
+        b = ContentAdminPaymentsBinding.bind(container.getChildAt(0));
+
+        // Más adelante aquí metes tu lógica de pagos/liquidaciones
+        // (Recycler de pagos, filtros, etc.)
+    }
+
+    @Override
+    protected int defaultMenuId() {
+        return R.id.m_payments;
     }
 }

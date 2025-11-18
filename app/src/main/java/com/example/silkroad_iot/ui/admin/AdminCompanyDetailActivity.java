@@ -24,6 +24,8 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
     // Preferencias
     private static final String PREFS = "app_prefs";
     private static final String KEY_COMPANY_DONE = "admin_company_done";
+    // 🔗 Usado también en AdminReservationsActivity para filtrar por empresa
+    private static final String KEY_EMPRESA_ID   = "empresa_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,8 +133,13 @@ public class AdminCompanyDetailActivity extends AppCompatActivity {
     private void onSaveSuccess(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 
-        getSharedPreferences(PREFS, MODE_PRIVATE)
-                .edit().putBoolean(KEY_COMPANY_DONE, true).apply();
+        // ✅ Guardamos tanto que ya configuró empresa como el ID de la empresa
+        var editor = getSharedPreferences(PREFS, MODE_PRIVATE).edit();
+        editor.putBoolean(KEY_COMPANY_DONE, true);
+        if (!TextUtils.isEmpty(empresa.getId())) {
+            editor.putString(KEY_EMPRESA_ID, empresa.getId());
+        }
+        editor.apply();
 
         if (firstRun) {
             startActivity(new Intent(this, AdminToursActivity.class)

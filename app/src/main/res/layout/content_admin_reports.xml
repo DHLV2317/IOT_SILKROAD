@@ -46,6 +46,16 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <!-- Fecha dinámica del reporte -->
+        <TextView
+            android:id="@+id/tReportDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Generado: —"
+            android:textSize="12sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="4dp" />
+
         <TextView
             android:id="@+id/tChartTitle"
             android:layout_width="match_parent"

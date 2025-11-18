@@ -2,15 +2,15 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="match_parent" android:layout_height="match_parent">
-
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/brand_celeste"
-        android:title="Tours"
+        android:title="Tour"
         android:titleTextColor="@android:color/white" />
 
     <ImageView
@@ -34,65 +34,54 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tTourName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tour 1"
-        android:padding="8dp"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_marginBottom="8dp"/>
+            <TextView
+                android:id="@+id/tTourName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tour 1"
+                android:padding="8dp"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:id="@+id/tTourDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Descripción del tour"
-        android:padding="8dp"
-        />
+            <TextView
+                android:id="@+id/tTourDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Descripción del tour"
+                android:padding="8dp" />
 
-            <!--
-    <TextView
-        android:id="@+id/tTourLangs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Idiomas: Inglés"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"/>
--->
-    <TextView
-        android:id="@+id/tTourPeople"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cupo: 10 personas"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"/>
+            <TextView
+                android:id="@+id/tTourPeople"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cupo: 10 personas"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:id="@+id/tTourDateFrom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Inicio: 20/10/2025"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"/>
+            <TextView
+                android:id="@+id/tTourDateFrom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Inicio: 20/10/2025"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:id="@+id/tTourDateTo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Fin: 22/10/2025"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"/>
+            <TextView
+                android:id="@+id/tTourDateTo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fin: 22/10/2025"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"/>
 
-    <TextView
-        android:id="@+id/tTourDuration"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Duración: 3 días"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"/>
-
+            <TextView
+                android:id="@+id/tTourDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Duración: 3 días"
+                android:padding="8dp"
+                android:layout_marginBottom="8dp"/>
         </LinearLayout>
     </ScrollView>
 
@@ -106,7 +95,8 @@
             android:id="@+id/btnAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Agregar S/. 100"
+            android:text="Reservar S/. 100"
+            android:textColor="@android:color/white"
             android:backgroundTint="@color/brand_celeste" />
     </LinearLayout>
 </LinearLayout>

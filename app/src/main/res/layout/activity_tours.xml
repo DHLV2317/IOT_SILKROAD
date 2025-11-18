@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
+    android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <com.google.android.material.appbar.MaterialToolbar
@@ -9,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/brand_celeste"
-        android:title=""
+        android:title="Tours disponibles"
         android:titleTextColor="@android:color/white" />
 
     <!-- 🏢 Imagen de la empresa -->
@@ -21,7 +20,6 @@
         android:layout_marginTop="16dp"
         android:src="@drawable/ic_launcher_foreground"
         android:scaleType="centerCrop"
-        android:background="@drawable/logo_silkroad"
         android:contentDescription="Logo Empresa" />
 
     <!-- 🏢 Nombre de la empresa -->
@@ -43,5 +41,4 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="16dp" />
-
 </LinearLayout>

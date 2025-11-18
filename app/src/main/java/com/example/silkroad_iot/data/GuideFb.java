@@ -1,17 +1,21 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.PropertyName;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
 
+@IgnoreExtraProperties
 public class GuideFb implements Serializable {
 
     private String id;
 
     private String nombre;
     private String apellidos;
-    private String langs;
+    private String langs;      // campo interno
     private String estado;
     private String email;
     private String telefono;
@@ -19,8 +23,8 @@ public class GuideFb implements Serializable {
 
     private String fotoUrl;
 
-    private String tourActual;
-    private String tourIdAsignado;
+    private String tourActual;     // texto legible tipo "Tour X"
+    private String tourIdAsignado; // id de tour si está ocupado
 
     private List<String> historial;
 
@@ -29,8 +33,16 @@ public class GuideFb implements Serializable {
     private Double lngActual;
     private Long lastUpdate;
 
+    // Aprobación en módulo admin
     private boolean guideApproved;
     private String guideApprovalStatus;
+
+    // 🔵 Campos que usamos en Firestore en colección "guias"
+    // aprobado / activo / ocupado / tourActualId
+    private Boolean aprobado;
+    private Boolean activo;
+    private Boolean ocupado;
+    private String tourActualId;
 
     public GuideFb() {}
 
@@ -49,10 +61,17 @@ public class GuideFb implements Serializable {
     @PropertyName("apellidos")
     public void setApellidos(String apellidos) { this.apellidos = apellidos; }
 
+    // ===== idiomas / langs / idiomas (compatibilidad) =====
     @PropertyName("langs")
     public String getLangs() { return langs; }
     @PropertyName("langs")
     public void setLangs(String langs) { this.langs = langs; }
+
+    // Firestore puede guardar "idiomas": lo mapeamos al mismo campo
+    @PropertyName("idiomas")
+    public String getIdiomas() { return langs; }
+    @PropertyName("idiomas")
+    public void setIdiomas(String idiomas) { this.langs = idiomas; }
 
     @PropertyName("estado")
     public String getEstado() { return estado; }
@@ -119,4 +138,65 @@ public class GuideFb implements Serializable {
     public String getGuideApprovalStatus() { return guideApprovalStatus; }
     @PropertyName("guideApprovalStatus")
     public void setGuideApprovalStatus(String guideApprovalStatus) { this.guideApprovalStatus = guideApprovalStatus; }
+
+    // ====== flags simples que usamos en queries (aprobado / activo / ocupado) ======
+
+    @PropertyName("aprobado")
+    public Boolean getAprobado() { return aprobado; }
+    @PropertyName("aprobado")
+    public void setAprobado(Boolean aprobado) { this.aprobado = aprobado; }
+
+    @PropertyName("activo")
+    public Boolean getActivo() { return activo; }
+    @PropertyName("activo")
+    public void setActivo(Boolean activo) { this.activo = activo; }
+
+    @PropertyName("ocupado")
+    public Boolean getOcupado() { return ocupado; }
+    @PropertyName("ocupado")
+    public void setOcupado(Boolean ocupado) { this.ocupado = ocupado; }
+
+    @PropertyName("tourActualId")
+    public String getTourActualId() { return tourActualId; }
+    @PropertyName("tourActualId")
+    public void setTourActualId(String tourActualId) { this.tourActualId = tourActualId; }
+
+    // ===== Helpers para UI =====
+
+    @Exclude
+    public String getDisplayName() {
+        String n = nombre == null ? "" : nombre.trim();
+        String a = apellidos == null ? "" : apellidos.trim();
+        String full = (n + " " + a).trim();
+        return full.isEmpty() ? "Guía" : full;
+    }
+
+    @Exclude
+    public String getDisplayLangs() {
+        if (langs != null && !langs.trim().isEmpty()) return langs;
+        return "—";
+    }
+
+    @Exclude
+    public boolean isAprobadoSafe() {
+        if (aprobado != null) return aprobado;
+        return guideApproved;
+    }
+
+    @Exclude
+    public boolean isActivoSafe() {
+        return activo == null || activo; // si es null asumimos activo
+    }
+
+    @Exclude
+    public boolean isOcupadoSafe() {
+        return ocupado != null && ocupado;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(Locale.getDefault(),
+                "GuideFb{id='%s', nombre='%s', estados=%s, aprobado=%s}",
+                id, getDisplayName(), estado, isAprobadoSafe());
+    }
 }

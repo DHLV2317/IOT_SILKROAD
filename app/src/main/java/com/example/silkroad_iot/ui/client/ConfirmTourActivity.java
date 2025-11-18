@@ -1,18 +1,18 @@
 package com.example.silkroad_iot.ui.client;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.silkroad_iot.data.TourFB;
-import com.example.silkroad_iot.data.TourHistorialFB;
-import com.example.silkroad_iot.data.User;
-import com.example.silkroad_iot.data.UserStore;
 import com.example.silkroad_iot.databinding.ActivityConfirmTourBinding;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 public class ConfirmTourActivity extends AppCompatActivity {
@@ -20,35 +20,65 @@ public class ConfirmTourActivity extends AppCompatActivity {
     private TourFB tour;
     private ActivityConfirmTourBinding b;
 
+    private int selectedPax = 1;
+    private int maxCupos = 1;
+    private double unitPrice = 0.0;
+
+    private final SimpleDateFormat sdf =
+            new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private final DecimalFormat moneyFormat =
+            new DecimalFormat("#0.00");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         b = ActivityConfirmTourBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
+        // Toolbar
         setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Reservas");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        b.toolbar.setNavigationOnClickListener(v -> finish());
 
         // Obtener tour desde el intent
         tour = (TourFB) getIntent().getSerializableExtra("tour");
         if (tour == null) {
+            Toast.makeText(this, "No se pudo cargar el tour", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        // Precio unitario seguro
+        unitPrice = tour.getDisplayPrice();
+        if (unitPrice <= 0) {
+            Toast.makeText(this, "Precio del tour no definido", Toast.LENGTH_SHORT).show();
+        }
+
+        // Cupos disponibles seguros
+        maxCupos = tour.getCuposDisponiblesSafe();
+        if (maxCupos <= 0) {
+            // Fallback: usar capacidad declarada
+            maxCupos = tour.getDisplayPeople();
+        }
+        if (maxCupos <= 0) {
+            Toast.makeText(this, "Este tour no tiene cupos disponibles.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        selectedPax = 1;
+
         // Mostrar nombre del tour
         b.tTourName.setText(tour.getDisplayName());
 
-        // Cantidad de personas usando helper (cae a 0 si no hay)
-        int pax = tour.getDisplayPeople();
-        if (pax <= 0) pax = 1;
-        b.tTourPeople.setText("Cantidad de personas: " + pax);
+        // Mostrar capacidad / cupos
+        b.tTourPeople.setText("Cupos disponibles: " + maxCupos + " personas");
 
         // Mostrar fechas del tour (inicio - fin)
         if (tour.getDateFrom() != null && tour.getDateTo() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             String inicio = sdf.format(tour.getDateFrom());
             String fin    = sdf.format(tour.getDateTo());
             b.tTourDates.setText("Fechas: " + inicio + " hasta " + fin);
@@ -56,55 +86,52 @@ public class ConfirmTourActivity extends AppCompatActivity {
             b.tTourDates.setText("Fechas: No definidas");
         }
 
-        // Mostrar precio total por defecto (por ahora: solo precio base)
+        // Precio unitario visible
+        b.tUnitPrice.setText("Precio por persona: S/. " + moneyFormat.format(unitPrice));
+
+        // Inicializar selector de pax
+        TextView tPaxValue = b.tPaxValue;
+        Button btnMinus    = b.btnMinus;
+        Button btnPlus     = b.btnPlus;
+
+        tPaxValue.setText(String.valueOf(selectedPax));
+
+        btnMinus.setOnClickListener(v -> {
+            if (selectedPax > 1) {
+                selectedPax--;
+                tPaxValue.setText(String.valueOf(selectedPax));
+                updateTotal();
+            }
+        });
+
+        btnPlus.setOnClickListener(v -> {
+            if (selectedPax < maxCupos) {
+                selectedPax++;
+                tPaxValue.setText(String.valueOf(selectedPax));
+                updateTotal();
+            } else {
+                Toast.makeText(this,
+                        "No hay más cupos disponibles",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Mostrar total inicial
         updateTotal();
 
-        // Confirmar reserva
+        // Confirmar -> ir a PaymentActivity
         b.btnConfirm.setOnClickListener(v -> {
-            User user = UserStore.get().getLogged();
-            if (user == null) {
-                Toast.makeText(this, "Inicia sesión para reservar", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // --------- Datos base de la reserva ----------
-            Date ahora     = new Date();          // fecha de reserva
-            String estado  = "pendiente";        // estado inicial
-            int paxReserva = tour.getDisplayPeople();
-            if (paxReserva <= 0) paxReserva = 1;
-
-            // Cadena que irá dentro del QR (misma que verá el guía al escanear)
-            // Formato: RESERVA|<id_tour>|<id_usuario>|PAX:<pax>
-            String qrData = "RESERVA|" +
-                    (tour.getId() == null ? "-" : tour.getId()) + "|" +
-                    user.getEmail() + "|PAX:" + paxReserva;
-
-            // Crear objeto historial (se guardará en 'tours_history')
-            TourHistorialFB historial = new TourHistorialFB(
-                    null,                   // id (lo genera Firestore)
-                    tour.getId(),           // id_tour
-                    user.getEmail(),        // id_usuario
-                    ahora,                  // fechaReserva
-                    paxReserva,             // pax
-                    estado,                 // estado inicial: pendiente
-                    qrData                  // datos que se codifican en el QR
-            );
-
-            // Fecha de realización (si ya tienes dateFrom la guardamos también)
-            if (tour.getDateFrom() != null) {
-                historial.setFechaRealizado(tour.getDateFrom());
-            }
-
-            // Guardar en tu store / Firestore
-            OrderStore.addOrder(historial);
-
-            Toast.makeText(this, "Tour reservado con éxito", Toast.LENGTH_SHORT).show();
-            finish();
+            double total = unitPrice * selectedPax;
+            Intent i = new Intent(this, PaymentActivity.class);
+            i.putExtra("tour", tour);
+            i.putExtra("pax", selectedPax);   // cantidad de personas reservadas
+            i.putExtra("total", total);
+            startActivity(i);
         });
     }
 
     private void updateTotal() {
-        double total = tour.getDisplayPrice();  // usa helper que combina precio/price
-        b.tTotal.setText("Total: S/. " + total);
+        double total = unitPrice * selectedPax;
+        b.tTotal.setText("Total: S/. " + moneyFormat.format(total));
     }
 }

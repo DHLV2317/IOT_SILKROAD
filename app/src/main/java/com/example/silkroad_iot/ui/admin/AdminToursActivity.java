@@ -38,9 +38,15 @@ public class AdminToursActivity extends BaseDrawerActivity {
     // Empresa actual del admin (se obtiene desde usuarios/{uid})
     private String empresaId;
 
+    // Preferencias compartidas para que otros módulos reutilicen empresaId
+    private static final String PREFS = "app_prefs";
+    private static final String KEY_EMPRESA_ID = "empresa_id";
+
     @Override
     protected void onCreate(@Nullable Bundle s) {
         super.onCreate(s);
+
+        // Drawer + toolbar
         setupDrawer(R.layout.content_admin_tours, R.menu.menu_drawer_admin, "Mis Tours");
 
         FrameLayout container = findViewById(R.id.contentContainer);
@@ -129,6 +135,12 @@ public class AdminToursActivity extends BaseDrawerActivity {
             showEmpty("Tu usuario no tiene empresa asignada.");
             return;
         }
+
+        // Guardamos también en SharedPreferences para que otros módulos lo reutilicen
+        getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_EMPRESA_ID, empresaId)
+                .apply();
 
         // 2) Cargar tours según empresaId en tiempo real
         if (reg != null) { reg.remove(); }

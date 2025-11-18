@@ -30,6 +30,10 @@ public class TourFB implements Serializable {
     private int cantidad_personas;
     private Integer people;
 
+    // 🔹 CUPOS
+    private Integer cuposTotales;
+    private Integer cuposDisponibles;
+
     // Metadatos
     private String empresaId;
     private String ownerUid;
@@ -42,19 +46,15 @@ public class TourFB implements Serializable {
     private String assignedGuideId;
     private Double paymentProposal;
 
-    // 🔹 CAMPOS DE ESTADO / PUBLICACIÓN
-    // status: capa lógica (PENDING / EN_CURSO / FINALIZADO)
+    // 🔹 ESTADO / PUBLICACIÓN
     private String status;
-
-    // estado: texto legacy / almacenado en minúsculas (pendiente / en_curso / finalizado)
     private String estado;
-
-    // publicado: true = visible para todos los guías en "Ofertas"
     private Boolean publicado;
 
     // Fechas
     private Date dateFrom;
     private Date dateTo;
+    private Date createdAt;   // agregado
 
     // Paradas embebidas
     private List<ParadaFB> paradas;
@@ -158,8 +158,6 @@ public class TourFB implements Serializable {
     @PropertyName("paymentProposal")
     public void setPaymentProposal(Double paymentProposal) { this.paymentProposal = paymentProposal; }
 
-    /* ================== CAMPOS DE ESTADO / PUBLICACIÓN ================== */
-
     @PropertyName("status")
     public String getStatus() { return status; }
     @PropertyName("status")
@@ -175,8 +173,6 @@ public class TourFB implements Serializable {
     @PropertyName("publicado")
     public void setPublicado(Boolean publicado) { this.publicado = publicado; }
 
-    /* ================== Fechas ================== */
-
     @PropertyName("dateFrom")
     public Date getDateFrom() { return dateFrom; }
     @PropertyName("dateFrom")
@@ -187,7 +183,10 @@ public class TourFB implements Serializable {
     @PropertyName("dateTo")
     public void setDateTo(Date dateTo) { this.dateTo = dateTo; }
 
-    /* ================== Paradas ================== */
+    @PropertyName("createdAt")
+    public Date getCreatedAt() { return createdAt; }
+    @PropertyName("createdAt")
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
 
     @PropertyName("paradas")
     public List<ParadaFB> getParadas() { return paradas; }
@@ -199,12 +198,20 @@ public class TourFB implements Serializable {
     @PropertyName("id_paradas")
     public void setIdParadasRaw(Object raw) { this.idParadasRaw = raw; }
 
-    /* ================== Servicios ================== */
-
     @PropertyName("services")
     public List<ServiceFB> getServices() { return services; }
     @PropertyName("services")
     public void setServices(List<ServiceFB> services) { this.services = services; }
+
+    @PropertyName("cupos_totales")
+    public Integer getCuposTotales() { return cuposTotales; }
+    @PropertyName("cupos_totales")
+    public void setCuposTotales(Integer cuposTotales) { this.cuposTotales = cuposTotales; }
+
+    @PropertyName("cupos_disponibles")
+    public Integer getCuposDisponibles() { return cuposDisponibles; }
+    @PropertyName("cupos_disponibles")
+    public void setCuposDisponibles(Integer cuposDisponibles) { this.cuposDisponibles = cuposDisponibles; }
 
     /* ================== HELPERS ================== */
 
@@ -253,8 +260,30 @@ public class TourFB implements Serializable {
         return price != null ? price : 0.0;
     }
 
-    /* ======== Helpers de estado para UI y lógica de ofertas ======== */
+    // CUPOS
+    @Exclude
+    public int getCuposTotalesSafe() {
+        if (cuposTotales != null && cuposTotales > 0) {
+            return cuposTotales;
+        }
+        int base = getDisplayPeople();
+        return Math.max(base, 0);
+    }
 
+    @Exclude
+    public int getCuposDisponiblesSafe() {
+        if (cuposDisponibles != null && cuposDisponibles >= 0) {
+            return cuposDisponibles;
+        }
+        return getCuposTotalesSafe();
+    }
+
+    @Exclude
+    public void setCuposDisponiblesSafe(int nuevosCupos) {
+        this.cuposDisponibles = nuevosCupos;
+    }
+
+    // ESTADO
     @Exclude
     public boolean isPublicadoSafe() {
         return publicado != null && publicado;
@@ -262,7 +291,6 @@ public class TourFB implements Serializable {
 
     @Exclude
     public String getSafeStatus() {
-        // Prioriza status; si no existe, trata de mapear estado
         if (status != null && !status.isEmpty()) {
             return status;
         }
@@ -297,26 +325,14 @@ public class TourFB implements Serializable {
     }
 
     @Exclude
-    public boolean isPending() {
-        return "PENDING".equals(getSafeStatus());
-    }
+    public boolean isPending() { return "PENDING".equals(getSafeStatus()); }
 
     @Exclude
-    public boolean isEnCurso() {
-        return "EN_CURSO".equals(getSafeStatus());
-    }
+    public boolean isEnCurso() { return "EN_CURSO".equals(getSafeStatus()); }
 
     @Exclude
-    public boolean isFinalizado() {
-        return "FINALIZADO".equals(getSafeStatus());
-    }
+    public boolean isFinalizado() { return "FINALIZADO".equals(getSafeStatus()); }
 
-    /**
-     * Disponible para aparecer en la lista de "Ofertas para guías":
-     *  - sin guía asignado
-     *  - en estado pendiente
-     *  - publicado == true
-     */
     @Exclude
     public boolean isAvailableForOffers() {
         return isPending()

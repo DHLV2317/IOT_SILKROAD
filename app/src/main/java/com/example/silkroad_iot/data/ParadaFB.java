@@ -1,5 +1,6 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.PropertyName;
 
 import java.io.Serializable;
@@ -9,6 +10,7 @@ import java.io.Serializable;
  * Cada parada puede tener nombre, descripción, coordenadas, orden, etc.
  * Incluye campos opcionales "address" y "minutes" para facilitar el render en chips.
  */
+@IgnoreExtraProperties
 public class ParadaFB implements Serializable {
 
     private String id;              // ID del documento (Firestore)

@@ -1,9 +1,13 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.PropertyName;
+
 import java.io.Serializable;
 
 /** Representa una empresa en Firestore (cliente + admin). */
+@IgnoreExtraProperties
 public class EmpresaFb implements Serializable {
 
     private String id;
@@ -88,6 +92,20 @@ public class EmpresaFb implements Serializable {
     public double getLng() { return lng; }
     @PropertyName("lng")
     public void setLng(double lng) { this.lng = lng; }
+
+    // ===== Helpers para la UI =====
+    @Exclude
+    public String getDisplayLogo() {
+        if (logoUrl != null && !logoUrl.isEmpty()) return logoUrl;
+        if (imagen != null && !imagen.isEmpty()) return imagen;
+        return null;
+    }
+
+    @Exclude
+    public String getDisplayBanner() {
+        if (bannerUrl != null && !bannerUrl.isEmpty()) return bannerUrl;
+        return null;
+    }
 
     @Override
     public String toString() {

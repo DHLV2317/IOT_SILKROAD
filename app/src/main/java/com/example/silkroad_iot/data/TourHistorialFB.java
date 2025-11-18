@@ -1,5 +1,7 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.PropertyName;
 
 import java.io.Serializable;
@@ -7,32 +9,30 @@ import java.util.Date;
 
 /**
  * Modelo Firestore para historial de tours realizados.
- * Guarda qué tour, quién lo reservó, fechas, estado, datos del QR
- * y rating/comentario del cliente (si califica).
  *
  * Formato sugerido de qrData:
  *   RESERVA|<id_reserva>|<id_tour>|<id_usuario>|PAX:<pax>
  */
+@IgnoreExtraProperties
 public class TourHistorialFB implements Serializable {
 
     private String id;            // ID del documento en Firestore
     private String id_tour;       // Referencia al tour original
-    private String id_usuario;    // Usuario que realizó la reserva (email o uid)
+    private String id_usuario;    // Usuario que realizó la reserva
 
     private Date fechaReserva;    // Fecha en la que se hizo la reserva
-    private Date fecha_realizado; // Fecha de realización del tour (si aplica)
+    private Date fecha_realizado; // Fecha de realización del tour
 
     private String estado;        // pendiente, aceptado, rechazado, check-in, check-out, finalizada, cancelado
     private int pax;              // cantidad de personas reservadas
 
     /**
-     * Cadena que se codifica en el código QR.
-     * Formato:
+     * Cadena que se codifica en el código QR:
      * RESERVA|<id_reserva>|<id_tour>|<id_usuario>|PAX:<pax>
      */
     private String qrData;
 
-    // ⭐ Nuevo: rating del cliente (0–5) y comentario
+    // Rating del cliente (0–5) y comentario
     private Float rating;
     private String comentario;
 
@@ -97,6 +97,21 @@ public class TourHistorialFB implements Serializable {
 
     public String getComentario() { return comentario; }
     public void setComentario(String comentario) { this.comentario = comentario; }
+
+    @Exclude
+    public String getDisplayEstado() {
+        if (estado == null) return "pendiente";
+        switch (estado.toLowerCase()) {
+            case "aceptado":   return "Aceptado";
+            case "rechazado":  return "Rechazado";
+            case "check-in":   return "Check-in";
+            case "check-out":  return "Check-out";
+            case "finalizada":
+            case "finalizado": return "Finalizada";
+            case "cancelado":  return "Cancelado";
+            default:           return "Pendiente";
+        }
+    }
 
     @Override
     public String toString() {

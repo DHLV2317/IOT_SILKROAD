@@ -1,12 +1,9 @@
 package com.example.silkroad_iot.ui.client;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.PopupMenu;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -18,12 +15,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TourHistoryActivity extends AppCompatActivity {
-    private ActivityTourHistoryBinding b;
-    private ActivityResultLauncher<Intent> detailLauncher;
 
+    private ActivityTourHistoryBinding b;
     private final List<TourHistorialFB> historialList = new ArrayList<>();
     private TourHistorialAdapter adapter;
 
@@ -35,33 +32,20 @@ public class TourHistoryActivity extends AppCompatActivity {
 
         // 🧭 Toolbar
         setSupportActionBar(b.toolbar);
-        getSupportActionBar().setTitle("Historial de Tours");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Historial de Tours");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        b.toolbar.setNavigationOnClickListener(v -> finish());
 
         // 🧑 Usuario actual
         User u = UserStore.get().getLogged();
-        if (u == null) return;
+        if (u == null) {
+            finish();
+            return;
+        }
 
-        // 🎯 Inicializar launcher para resultados
-        detailLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK) {
-                        Intent data = result.getData();
-                        if (data != null && data.hasExtra("updatedOrder")) {
-                            TourHistorialFB updated = (TourHistorialFB) data.getSerializableExtra("updatedOrder");
-                            for (int i = 0; i < historialList.size(); i++) {
-                                if (historialList.get(i).getId().equals(updated.getId())) {
-                                    historialList.set(i, updated);
-                                    adapter.notifyItemChanged(i);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-        );
-
-        // 🔄 Configurar botón de filtro
+        // 🔄 Botón de filtro
         b.btnFiltrar.setOnClickListener(view -> {
             if (historialList.isEmpty()) return;
 
@@ -73,9 +57,9 @@ public class TourHistoryActivity extends AppCompatActivity {
                 String selected = item.getTitle().toString();
 
                 if (selected.equals("Fecha de inicio del tour")) {
-                    historialList.sort((a, b) -> a.getFechaRealizado().compareTo(b.getFechaRealizado()));
+                    historialList.sort((a, c) -> compareDates(a.getFechaRealizado(), c.getFechaRealizado()));
                 } else if (selected.equals("Fecha de reserva")) {
-                    historialList.sort((a, b) -> a.getFechaReserva().compareTo(b.getFechaReserva()));
+                    historialList.sort((a, c) -> compareDates(a.getFechaReserva(), c.getFechaReserva()));
                 }
 
                 adapter.notifyDataSetChanged();
@@ -85,13 +69,23 @@ public class TourHistoryActivity extends AppCompatActivity {
             popup.show();
         });
 
-        // 🔄 Cargar historial desde Firestore
+        // Recycler
+        b.rvHistory.setLayoutManager(new LinearLayoutManager(this));
+
+        // 🔄 Cargar historial
         cargarHistorialDesdeFirestore(u.getEmail());
+    }
+
+    private int compareDates(Date d1, Date d2) {
+        if (d1 == null && d2 == null) return 0;
+        if (d1 == null) return 1;  // null al final
+        if (d2 == null) return -1;
+        return d1.compareTo(d2);
     }
 
     private void cargarHistorialDesdeFirestore(String email) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        historialList.clear(); // ✅ Limpiar la lista global antes de llenarla
+        historialList.clear();
 
         db.collection("tours_history")
                 .whereEqualTo("id_usuario", email)
@@ -103,21 +97,15 @@ public class TourHistoryActivity extends AppCompatActivity {
                         historialList.add(historial);
                     }
 
-                    // ✅ Configurar adapter solo una vez
                     if (adapter == null) {
-                        adapter = new TourHistorialAdapter(historialList, order -> {
-                            Intent intent = new Intent(TourHistoryActivity.this, OrderDetailActivity.class);
-                            intent.putExtra("historialFB", order);
-                            intent.putExtra("historialId", order.getId());
-                            detailLauncher.launch(intent);
-                        });
-                        b.rvHistory.setLayoutManager(new LinearLayoutManager(this));
+                        adapter = new TourHistorialAdapter(historialList);
                         b.rvHistory.setAdapter(adapter);
                     } else {
                         adapter.notifyDataSetChanged();
                     }
 
-
+                    // Mostrar u ocultar mensaje vacío si quieres
+                    b.rvHistory.setVisibility(historialList.isEmpty() ? View.GONE : View.VISIBLE);
                 })
                 .addOnFailureListener(Throwable::printStackTrace);
     }

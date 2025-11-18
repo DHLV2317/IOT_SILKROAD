@@ -1,7 +1,11 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.IgnoreExtraProperties;
+import com.google.firebase.firestore.PropertyName;
+
 import java.io.Serializable;
 
+@IgnoreExtraProperties
 public class User implements Serializable {
 
     // ---------------- ENUM ROL ----------------
@@ -17,6 +21,8 @@ public class User implements Serializable {
 
     // IDs externos (Firebase / Firestore)
     private String uid;         // ID del usuario en Firebase Auth
+
+    // en Firestore solemos guardar "empresaId"
     private String companyId;   // para admins/empresas
     private String guideId;     // para guías
 
@@ -67,8 +73,15 @@ public class User implements Serializable {
     public String getUid() { return uid; }
     public void setUid(String uid) { this.uid = uid; }
 
+    // ===== empresaId <-> companyId =====
+
     public String getCompanyId() { return companyId; }
     public void setCompanyId(String companyId) { this.companyId = companyId; }
+
+    @PropertyName("empresaId")
+    public String getEmpresaId() { return companyId; }
+    @PropertyName("empresaId")
+    public void setEmpresaId(String empresaId) { this.companyId = empresaId; }
 
     public String getGuideId() { return guideId; }
     public void setGuideId(String guideId) { this.guideId = guideId; }
@@ -120,6 +133,9 @@ public class User implements Serializable {
     public boolean isClient() { return role == Role.CLIENT; }
     public boolean isSuperAdmin() { return role == Role.SUPERADMIN; }
 
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
     @Override
     public String toString() {
         return "User{" +
@@ -130,13 +146,5 @@ public class User implements Serializable {
                 ", guideApproved=" + guideApproved +
                 ", guideApprovalStatus='" + guideApprovalStatus + '\'' +
                 '}';
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 }

@@ -35,7 +35,6 @@ public class ToursActivity extends AppCompatActivity {
         b = ActivityToursBinding.inflate(getLayoutInflater());
         setContentView(b.getRoot());
 
-        // 🔧 Configuración base
         db = FirebaseFirestore.getInstance();
         tourList = new ArrayList<>();
         adapter = new TourAdapter(tourList);
@@ -44,13 +43,15 @@ public class ToursActivity extends AppCompatActivity {
         setSupportActionBar(b.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Tours Disponibles");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+        b.toolbar.setNavigationOnClickListener(v -> finish());
 
         // RecyclerView
         b.rvTours.setLayoutManager(new LinearLayoutManager(this));
         b.rvTours.setAdapter(adapter);
 
-        // 📦 Recibir datos de la empresa seleccionada
+        // Empresa seleccionada
         EmpresaFb empresa = (EmpresaFb) getIntent().getSerializableExtra("company");
         if (empresa == null) {
             Toast.makeText(this, "No se recibió la empresa", Toast.LENGTH_SHORT).show();
@@ -58,7 +59,7 @@ public class ToursActivity extends AppCompatActivity {
             return;
         }
 
-        // 🏢 Mostrar imagen y nombre de empresa
+        // Imagen + nombre
         ImageView imgCompanyLogo = b.imgCompanyLogo;
         TextView tvCompanyName = b.tvCompanyName;
 
@@ -72,7 +73,7 @@ public class ToursActivity extends AppCompatActivity {
 
         Log.d("TOURS_ACTIVITY", "Cargando tours de empresa: " + empresa.getNombre());
 
-        // 🔥 Cargar tours desde Firebase
+        // Cargar tours
         cargarToursDesdeFirebase(empresa.getId());
     }
 
@@ -86,19 +87,17 @@ public class ToursActivity extends AppCompatActivity {
 
                     for (DocumentSnapshot document : querySnapshot) {
                         TourFB tour = new TourFB();
-
-                        // ----- ID -----
                         tour.setId(document.getId());
 
-                        // ----- Nombre / descripción -----
+                        // Nombre / descripción
                         tour.setNombre(document.getString("nombre"));
-                        tour.setName(document.getString("name")); // por si usas ambos
+                        tour.setName(document.getString("name"));
                         tour.setDescription(document.getString("description"));
 
-                        // ----- Empresa -----
+                        // Empresa
                         tour.setEmpresaId(document.getString("empresaId"));
 
-                        // ----- Imagen (imagen / imageUrl) -----
+                        // Imagen
                         String img1 = document.getString("imagen");
                         String img2 = document.getString("imageUrl");
                         if (img1 != null && !img1.isEmpty()) {
@@ -109,21 +108,19 @@ public class ToursActivity extends AppCompatActivity {
                             tour.setImageUrl(img2);
                         }
 
-                        // ----- Precio seguro (price / precio) -----
+                        // Precio
                         Double priceField = document.getDouble("price");
                         Double precioField = document.getDouble("precio");
-
                         double safePrice = 0.0;
                         if (priceField != null) {
                             safePrice = priceField;
                         } else if (precioField != null) {
                             safePrice = precioField;
                         }
+                        tour.setPrecio(safePrice);
+                        tour.setPrice(safePrice);
 
-                        tour.setPrecio(safePrice); // double
-                        tour.setPrice(safePrice);  // Double
-
-                        // ----- Cantidad de personas segura -----
+                        // Personas
                         Long peopleField = document.getLong("people");
                         Long cantidad = document.getLong("cantidad_personas");
                         int safePeople = 0;
@@ -135,12 +132,12 @@ public class ToursActivity extends AppCompatActivity {
                         tour.setCantidad_personas(safePeople);
                         tour.setPeople(safePeople);
 
-                        // ----- Otros campos opcionales -----
+                        // Ciudad / idiomas / duración
                         tour.setCiudad(document.getString("ciudad"));
                         tour.setLangs(document.getString("langs"));
                         tour.setDuration(document.getString("duration"));
 
-                        // guía asignado (si lo manejas así)
+                        // Guía asignado
                         tour.setAssignedGuideName(document.getString("assignedGuideName"));
                         tour.setAssignedGuideId(document.getString("assignedGuideId"));
 
@@ -148,7 +145,17 @@ public class ToursActivity extends AppCompatActivity {
                         tour.setDateFrom(document.getDate("dateFrom"));
                         tour.setDateTo(document.getDate("dateTo"));
 
-                        // ✅ Manejo seguro de id_paradas
+                        // Cupos (si existen)
+                        Long cuposTotales = document.getLong("cupos_totales");
+                        Long cuposDisp = document.getLong("cupos_disponibles");
+                        if (cuposTotales != null) {
+                            tour.setCuposTotales(cuposTotales.intValue());
+                        }
+                        if (cuposDisp != null) {
+                            tour.setCuposDisponibles(cuposDisp.intValue());
+                        }
+
+                        // id_paradas
                         Object idParadasObj = document.get("id_paradas");
                         if (idParadasObj instanceof List) {
                             //noinspection unchecked
@@ -177,7 +184,6 @@ public class ToursActivity extends AppCompatActivity {
 
                     Log.d("TOURS_FIREBASE", "✅ Total tours encontrados: " + tourList.size());
                     adapter.notifyDataSetChanged();
-                    Log.d("TOURS_FIREBASE", "✅ Adapter notificado. tours.size=" + adapter.getItemCount());
                 })
                 .addOnFailureListener(e -> {
                     Log.e("TOURS_FIREBASE", "❌ Error al cargar tours", e);

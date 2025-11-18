@@ -1,2 +1,14 @@
 package com.example.silkroad_iot.data;
-public class Department { public String name; public Department(String n){name=n;} }
+
+public class Department {
+
+    private String nombre;
+
+    public Department(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+}

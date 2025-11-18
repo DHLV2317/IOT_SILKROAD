@@ -26,6 +26,8 @@ import com.example.silkroad_iot.ui.admin.AdminProfileActivity;
 import com.example.silkroad_iot.ui.admin.AdminReportsActivity;
 import com.example.silkroad_iot.ui.admin.AdminReservationsActivity;
 import com.example.silkroad_iot.ui.admin.AdminToursActivity;
+import com.example.silkroad_iot.ui.admin.AdminPaymentsActivity;
+import com.example.silkroad_iot.ui.admin.AdminSupportChatActivity;
 import com.google.android.material.navigation.NavigationView;
 
 public abstract class BaseDrawerActivity extends AppCompatActivity
@@ -117,13 +119,25 @@ public abstract class BaseDrawerActivity extends AppCompatActivity
 
         if (id == R.id.m_tours) {
             startActivity(new Intent(this, AdminToursActivity.class));
+
         } else if (id == R.id.m_reservations) {
             startActivity(new Intent(this, AdminReservationsActivity.class));
+
         } else if (id == R.id.m_guides) {
             startActivity(new Intent(this, AdminGuidesActivity.class));
+
         } else if (id == R.id.m_reports) {
             startActivity(new Intent(this, AdminReportsActivity.class));
+
+        } else if (id == R.id.m_payments) {
+            // Nuevo: pantalla de pagos
+            startActivity(new Intent(this, AdminPaymentsActivity.class));
+
+        } else if (id == R.id.m_support) {
+            // Nuevo: pantalla de soporte / chat
+            startActivity(new Intent(this, AdminSupportChatActivity.class));
         }
+
         b.drawer.closeDrawers();
         return true;
     }

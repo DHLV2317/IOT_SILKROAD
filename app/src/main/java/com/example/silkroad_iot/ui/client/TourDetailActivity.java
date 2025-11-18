@@ -11,9 +11,13 @@ import com.bumptech.glide.Glide;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.databinding.ActivityTourDetailBinding;
 
-public class TourDetailActivity extends AppCompatActivity {
-    ActivityTourDetailBinding b;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
+public class TourDetailActivity extends AppCompatActivity {
+
+    private ActivityTourDetailBinding b;
+    private final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,51 +26,71 @@ public class TourDetailActivity extends AppCompatActivity {
         setContentView(b.getRoot());
 
         setSupportActionBar(b.toolbar);
-        getSupportActionBar().setTitle("Detalles del Tour");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Detalles del tour");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        b.toolbar.setNavigationOnClickListener(v -> finish());
 
         TourFB tour = (TourFB) getIntent().getSerializableExtra("tour");
-
         if (tour == null) {
             Toast.makeText(this, "No se recibió el tour", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        Log.d("TOUR_DETAIL", "Mostrando detalles de: " + tour.getNombre());
+        Log.d("TOUR_DETAIL", "Mostrando detalles de: " + tour.getDisplayName());
 
-        // Mostrar datos básicos
-        b.tTourName.setText(tour.getNombre());
-        b.btnAdd.setText("Agregar S/. " + tour.getPrecio());
+        // Nombre
+        b.tTourName.setText(tour.getDisplayName());
 
+        // Imagen
+        String imgUrl = tour.getDisplayImageUrl();
         Glide.with(this)
-                .load(tour.getImagen())
+                .load(imgUrl)
+                .placeholder(com.example.silkroad_iot.R.drawable.ic_launcher_foreground)
+                .error(com.example.silkroad_iot.R.drawable.ic_launcher_foreground)
                 .into(b.imgTour);
 
-        // Mostrar descripción
-        b.tTourDescription.setText(tour.getDescription() != null ? tour.getDescription() : "Bug?");
+        // Descripción
+        String desc = tour.getDescription();
+        b.tTourDescription.setText(desc != null && !desc.isEmpty() ? desc : "Sin descripción.");
 
-        // Mostrar campos adicionales
-       // b.tTourLangs.setText("Idiomas: " + (tour.getLangs() != null ? tour.getLangs() : "No especificado"));
-        b.tTourPeople.setText("Personas: " + tour.getCantidad_personas() + " personas");
+        // Cupo / personas
+        int cupo = tour.getCuposTotalesSafe();
+        if (cupo <= 0) cupo = tour.getDisplayPeople();
+        b.tTourPeople.setText("Cupo: " + (cupo > 0 ? cupo : 0) + " personas");
 
-        if (tour.getDateFrom() != null)
-            b.tTourDateFrom.setText("Inicio: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateFrom()));
-        else
+        // Fechas
+        if (tour.getDateFrom() != null) {
+            b.tTourDateFrom.setText("Inicio: " + sdf.format(tour.getDateFrom()));
+        } else {
             b.tTourDateFrom.setText("Inicio: -");
+        }
 
-        if (tour.getDateTo() != null)
-            b.tTourDateTo.setText("Fin: " + new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a").format(tour.getDateTo()));
-        else
+        if (tour.getDateTo() != null) {
+            b.tTourDateTo.setText("Fin: " + sdf.format(tour.getDateTo()));
+        } else {
             b.tTourDateTo.setText("Fin: -");
+        }
 
-        //b.tTourDuration.setText("Duración: " + (tour.getDuration() != null ? tour.getDuration() : "-"));
-        b.tTourDuration.setText("Paradas: " + (tour.getIdParadasList() != null ? tour.getIdParadasList() : "-"));
-        // Acción del botón
+        // Duración / Paradas (texto básico)
+        if (tour.getDuration() != null && !tour.getDuration().isEmpty()) {
+            b.tTourDuration.setText("Duración: " + tour.getDuration());
+        } else if (tour.getIdParadasList() != null && !tour.getIdParadasList().isEmpty()) {
+            b.tTourDuration.setText("Paradas: " + tour.getIdParadasList().size());
+        } else {
+            b.tTourDuration.setText("Duración: -");
+        }
+
+        // Botón → Confirmar tour (reservar)
+        double price = tour.getDisplayPrice();
+        b.btnAdd.setText("Reservar S/. " + price);
+
         b.btnAdd.setOnClickListener(v -> {
             Intent i = new Intent(this, ConfirmTourActivity.class);
             i.putExtra("tour", tour);
             startActivity(i);
         });
     }
-
 }

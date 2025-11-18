@@ -14,6 +14,8 @@ import com.example.silkroad_iot.data.ParadaFB;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.TourHistorialFB;
 import com.example.silkroad_iot.databinding.ActivityOrderDetailBinding;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
@@ -80,6 +82,21 @@ public class OrderDetailActivity extends AppCompatActivity {
         String estado = (historial.getEstado() == null ? "desconocido" : historial.getEstado());
         b.tvStatus.setText("Estado: " + estado);
 
+        // Normalizar estado para lógicas de UI
+        String estadoLower = estado.toLowerCase(Locale.ROOT);
+        boolean esFinalizado =
+                estadoLower.contains("finalizada") ||
+                        estadoLower.contains("finalizado") ||
+                        estadoLower.contains("check-out") ||
+                        estadoLower.contains("checkout");
+
+        // 👉 Si el tour está finalizado, ocultamos el botón de cancelar
+        if (esFinalizado) {
+            b.btnCancelar.setVisibility(View.GONE);
+        } else {
+            b.btnCancelar.setVisibility(View.VISIBLE);
+        }
+
         // ========= GENERAR / MOSTRAR QR =========
         String qrData = historial.getQrData();
         if ((qrData == null || qrData.isEmpty()) && finalHistorialId != null && !finalHistorialId.isEmpty()) {
@@ -103,8 +120,8 @@ public class OrderDetailActivity extends AppCompatActivity {
             b.imgQrCode.setImageResource(R.drawable.qr_code_24);
         }
 
-        // ========= SECCIÓN DE CALIFICACIÓN =========
-        setupRatingSection(historial, finalHistorialId);
+        // ========= SECCIÓN DE CALIFICACIÓN / RESULTADO =========
+        setupRatingSection(historial, finalHistorialId, esFinalizado);
 
         // ========= VER PARADAS =========
         b.btnPlaces.setOnClickListener(v -> {
@@ -136,29 +153,71 @@ public class OrderDetailActivity extends AppCompatActivity {
                     });
         });
 
-        // ========= CANCELAR RESERVA =========
+        // ========= CANCELAR RESERVA (con devolución de cupos) =========
         b.btnCancelar.setOnClickListener(v -> {
+            if (finalHistorialId == null || finalHistorialId.isEmpty() || tour.getId() == null) {
+                Toast.makeText(this, "No se puede cancelar: falta información de la reserva.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             new AlertDialog.Builder(this)
                     .setTitle("Confirmar cancelación")
                     .setMessage("¿Estás seguro de que quieres cancelar esta reserva?")
                     .setPositiveButton("Sí, cancelar", (dialog, which) -> {
-                        b.tvStatus.setText("Estado: CANCELADO");
-                        if (finalHistorialId == null || finalHistorialId.isEmpty()) {
+
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        DocumentReference histRef = db.collection("tours_history").document(finalHistorialId);
+                        DocumentReference tourRef = db.collection("tours").document(tour.getId());
+
+                        db.runTransaction(transaction -> {
+                            // Leer historial
+                            DocumentSnapshot histSnap = transaction.get(histRef);
+                            String estadoActual = histSnap.getString("estado");
+                            if (estadoActual != null && estadoActual.equalsIgnoreCase("cancelado")) {
+                                return null; // ya estaba cancelado
+                            }
+
+                            int paxReserva = 1;
+                            if (histSnap.getLong("pax") != null) {
+                                paxReserva = histSnap.getLong("pax").intValue();
+                            } else if (historial.getPax() > 0) {
+                                paxReserva = historial.getPax();
+                            }
+
+                            // Leer tour para cupos
+                            DocumentSnapshot tourSnap = transaction.get(tourRef);
+                            Integer cuposDisp = null;
+
+                            if (tourSnap.getLong("cupos_disponibles") != null) {
+                                cuposDisp = tourSnap.getLong("cupos_disponibles").intValue();
+                            } else if (tourSnap.getLong("cuposDisponibles") != null) {
+                                cuposDisp = tourSnap.getLong("cuposDisponibles").intValue();
+                            } else if (tourSnap.getLong("capacidadTotal") != null) {
+                                cuposDisp = tourSnap.getLong("capacidadTotal").intValue();
+                            }
+
+                            if (cuposDisp == null) {
+                                cuposDisp = tour.getCuposDisponiblesSafe();
+                            }
+
+                            int nuevosCupos = cuposDisp + paxReserva;
+
+                            // Actualizar estado y cupos
+                            transaction.update(histRef, "estado", "cancelado");
+                            transaction.update(tourRef, "cupos_disponibles", nuevosCupos);
+
+                            return null;
+                        }).addOnSuccessListener(aVoid -> {
+                            b.tvStatus.setText("Estado: cancelado");
+                            Toast.makeText(this, "Reserva cancelada y cupos liberados", Toast.LENGTH_LONG).show();
+
+                            Intent it = new Intent(this, ClientHomeActivity.class);
+                            it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(it);
                             finish();
-                            return;
-                        }
-                        FirebaseFirestore.getInstance()
-                                .collection("tours_history")
-                                .document(finalHistorialId)
-                                .update("estado", "cancelado")
-                                .addOnSuccessListener(aVoid -> {
-                                    Intent it = new Intent(this, ClientHomeActivity.class);
-                                    it.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    startActivity(it);
-                                    finish();
-                                })
-                                .addOnFailureListener(e ->
-                                        b.tvStatus.setText("Estado: " + (historial.getEstado() == null ? "desconocido" : historial.getEstado())));
+                        }).addOnFailureListener(e ->
+                                Toast.makeText(this, "Error al cancelar: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                        );
                     })
                     .setNegativeButton("No", null)
                     .show();
@@ -167,32 +226,45 @@ public class OrderDetailActivity extends AppCompatActivity {
 
     /**
      * Sección de calificación:
-     * - Solo tours finalizados (o check-out)
-     * - Si ya tiene rating en Firestore, no se vuelve a mostrar el formulario
+     *  - Solo tours finalizados
+     *  - Si ya tiene rating/comentario en Firestore, NO se muestra el formulario
+     *    y se muestra el resultado (rating + comentario) en modo solo lectura.
      */
-    private void setupRatingSection(TourHistorialFB historial, String historialId) {
-        // Estado normalizado
-        String estado = historial.getEstado() != null
-                ? historial.getEstado().toLowerCase(Locale.ROOT)
-                : "";
+    private void setupRatingSection(TourHistorialFB historial,
+                                    String historialId,
+                                    boolean esFinalizado) {
 
-        boolean esFinalizado =
-                estado.contains("finalizada") ||
-                        estado.contains("finalizado") ||
-                        estado.contains("check-out") ||
-                        estado.contains("checkout");
+        Float rating = historial.getRating();
+        String comentario = historial.getComentario();
 
-        // Ya calificado si rating != null
-        boolean yaCalificado = historial.getRating() != null;
-
-        if (!esFinalizado || yaCalificado) {
+        // Si el tour NO está finalizado → no mostramos nada de rating
+        if (!esFinalizado) {
             b.layoutRating.setVisibility(View.GONE);
+            b.layoutRatingResult.setVisibility(View.GONE);
             return;
         }
 
-        // Mostrar UI de calificación
+        // Si YA está calificado → mostramos solo el resultado
+        if (rating != null) {
+            b.layoutRating.setVisibility(View.GONE);
+            b.layoutRatingResult.setVisibility(View.VISIBLE);
+
+            b.tvRatingResult.setText(String.format(Locale.getDefault(),
+                    "Tu calificación: %.1f / 5", rating));
+
+            if (comentario != null && !comentario.trim().isEmpty()) {
+                b.tvCommentResult.setText("Tu comentario: " + comentario);
+            } else {
+                b.tvCommentResult.setText("Sin comentario.");
+            }
+            return;
+        }
+
+        // Si está finalizado y aún NO tiene rating → mostramos solo el formulario
         b.layoutRating.setVisibility(View.VISIBLE);
+        b.layoutRatingResult.setVisibility(View.GONE);
         b.rbRating.setRating(0f);
+        b.etComment.setText("");
 
         b.btnCalificar.setOnClickListener(v -> {
             if (historialId == null || historialId.isEmpty()) {
@@ -206,15 +278,30 @@ public class OrderDetailActivity extends AppCompatActivity {
                 return;
             }
 
+            String commentValue = b.etComment.getText().toString().trim();
+
             FirebaseFirestore.getInstance()
                     .collection("tours_history")
                     .document(historialId)
-                    .update("rating", ratingValue)
+                    .update("rating", ratingValue, "comentario", commentValue)
                     .addOnSuccessListener(aVoid -> {
                         historial.setRating(ratingValue);
+                        historial.setComentario(commentValue);
+
                         Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show();
-                        // Ocultamos sección para evitar nueva calificación
+
+                        // Ocultamos el formulario y mostramos el resultado en la vista
                         b.layoutRating.setVisibility(View.GONE);
+                        b.layoutRatingResult.setVisibility(View.VISIBLE);
+
+                        b.tvRatingResult.setText(String.format(Locale.getDefault(),
+                                "Tu calificación: %.1f / 5", ratingValue));
+
+                        if (!commentValue.isEmpty()) {
+                            b.tvCommentResult.setText("Tu comentario: " + commentValue);
+                        } else {
+                            b.tvCommentResult.setText("Sin comentario.");
+                        }
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, "Error al guardar la calificación: " + e.getMessage(), Toast.LENGTH_SHORT).show();
