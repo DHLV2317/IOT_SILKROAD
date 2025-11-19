@@ -33,6 +33,9 @@ public class User implements Serializable {
     private String photoUri;
     private boolean clientProfileCompleted;
 
+    // NUEVO: DNI
+    private String dni;
+
     // ---------------- PERFIL GUÍA ----------------
     private String documentType;
     private String documentNumber;
@@ -74,7 +77,6 @@ public class User implements Serializable {
     public void setUid(String uid) { this.uid = uid; }
 
     // ===== empresaId <-> companyId =====
-
     public String getCompanyId() { return companyId; }
     public void setCompanyId(String companyId) { this.companyId = companyId; }
 
@@ -101,6 +103,9 @@ public class User implements Serializable {
 
     public boolean isClientProfileCompleted() { return clientProfileCompleted; }
     public void setClientProfileCompleted(boolean v) { this.clientProfileCompleted = v; }
+
+    public String getDni() { return dni; }
+    public void setDni(String dni) { this.dni = dni; }
 
     // -------- Guía --------
     public String getDocumentType() { return documentType; }

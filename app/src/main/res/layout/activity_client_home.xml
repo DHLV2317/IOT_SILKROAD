@@ -67,10 +67,10 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- CIUDADES -->
+            <!-- DEPARTAMENTOS -->
             <TextView
                 android:id="@+id/tvCitiesTitle"
-                android:text="Ciudades"
+                android:text="Departamentos"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"
                 android:layout_width="wrap_content"

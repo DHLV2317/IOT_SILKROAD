@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         //Reinicia Superadmin DX
-
     }
 
     // --------------------------
@@ -322,6 +321,15 @@ public class MainActivity extends AppCompatActivity {
                     boolean ap = d.getBoolean("aprobado") != null && d.getBoolean("aprobado");
                     u.setGuideApproved(ap);
                     u.setGuideApprovalStatus(ap ? "APPROVED" : "PENDING");
+
+                    // Datos de perfil cliente
+                    u.setPhone(nz(d.getString("telefono")));
+                    u.setAddress(nz(d.getString("direccion")));
+                    u.setDni(nz(d.getString("dni")));
+                    u.setPhotoUri(nz(d.getString("photoUri")));
+
+                    Boolean cpc = d.getBoolean("clientProfileCompleted");
+                    u.setClientProfileCompleted(cpc != null && cpc);
 
                     store.setLogged(u);
                     setLoading(false);

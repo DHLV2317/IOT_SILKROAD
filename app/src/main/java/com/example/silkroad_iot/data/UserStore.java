@@ -4,8 +4,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -292,6 +290,19 @@ public class UserStore {
         // cliente opcional
         if (d.contains("address")) u.setAddress(String.valueOf(d.get("address")));
         if (d.contains("phone"))   u.setPhone(String.valueOf(d.get("phone")));
+
+        // NUEVO: dni
+        if (d.contains("dni")) {
+            u.setDni(String.valueOf(d.get("dni")));
+        }
+
+        // NUEVO: clientProfileCompleted
+        if (d.contains("clientProfileCompleted")) {
+            Object cpc = d.get("clientProfileCompleted");
+            if (cpc instanceof Boolean) {
+                u.setClientProfileCompleted((Boolean) cpc);
+            }
+        }
 
         return u;
     }

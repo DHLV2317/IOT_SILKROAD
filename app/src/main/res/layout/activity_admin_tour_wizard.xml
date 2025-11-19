@@ -17,7 +17,6 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/brand_celeste"
             android:titleTextColor="@android:color/white"
-            app:title="Nuevo Tour (1/4)"
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:navigationIconTint="@android:color/white" />
 

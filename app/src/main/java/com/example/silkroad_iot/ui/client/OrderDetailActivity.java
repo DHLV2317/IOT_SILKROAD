@@ -3,7 +3,6 @@ package com.example.silkroad_iot.ui.client;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -63,8 +62,13 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         int pax = historial.getPax() > 0 ? historial.getPax() : 1;
         b.tvQuantity.setText("Cantidad de usuarios: " + pax);
+
+        // Inicialmente mostramos 0 como servicios extra (luego se actualizará con Firestore)
         b.tvServices.setText("Servicios adicionales :     S./0.00");
+
+        // Total inicial sin considerar extras (luego se sobreescribe con totalPagado si existe)
         b.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", tour.getDisplayPrice() * pax));
+
         b.tvDepartment.setText("Departamento por definir");
         b.tvDuration.setText("Tiempo: " + (tour.getDuration() == null ? "Por definir" : tour.getDuration()));
 
@@ -82,19 +86,13 @@ public class OrderDetailActivity extends AppCompatActivity {
         String estado = (historial.getEstado() == null ? "desconocido" : historial.getEstado());
         b.tvStatus.setText("Estado: " + estado);
 
-        // Normalizar estado para lógicas de UI
-        String estadoLower = estado.toLowerCase(Locale.ROOT);
-        boolean esFinalizado =
-                estadoLower.contains("finalizada") ||
-                        estadoLower.contains("finalizado") ||
-                        estadoLower.contains("check-out") ||
-                        estadoLower.contains("checkout");
+        boolean esFinalizado = isFinalizadoEstado(estado);
 
         // 👉 Si el tour está finalizado, ocultamos el botón de cancelar
         if (esFinalizado) {
-            b.btnCancelar.setVisibility(View.GONE);
+            b.btnCancelar.setVisibility(android.view.View.GONE);
         } else {
-            b.btnCancelar.setVisibility(View.VISIBLE);
+            b.btnCancelar.setVisibility(android.view.View.VISIBLE);
         }
 
         // ========= GENERAR / MOSTRAR QR =========
@@ -120,15 +118,54 @@ public class OrderDetailActivity extends AppCompatActivity {
             b.imgQrCode.setImageResource(R.drawable.qr_code_24);
         }
 
-        // ========= SECCIÓN DE CALIFICACIÓN / RESULTADO =========
-        setupRatingSection(historial, finalHistorialId, esFinalizado);
+        // ========= CARGAR DATOS ACTUALIZADOS DEL HISTORIAL (rating, extras, totalPagado) =========
+        if (finalHistorialId != null && !finalHistorialId.isEmpty()) {
+            FirebaseFirestore.getInstance()
+                    .collection("tours_history")
+                    .document(finalHistorialId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            // Actualizar totalPagado y extras (si existen)
+                            applyExtrasAndTotalFromSnapshot(doc);
 
-        // ========= VER PARADAS =========
+                            // Refrescar rating/comentario desde Firestore para que el rating sea de 1 sola vez
+                            TourHistorialFB fresh = doc.toObject(TourHistorialFB.class);
+                            if (fresh != null) {
+                                fresh.setId(finalHistorialId);
+                                String estFresh = fresh.getEstado() == null ? estado : fresh.getEstado();
+                                boolean finalFresh = isFinalizadoEstado(estFresh);
+                                setupRatingSection(fresh, finalHistorialId, finalFresh);
+                                return;
+                            }
+                        }
+                        // Fallback: si algo falla, usamos el historial que vino por Intent
+                        setupRatingSection(historial, finalHistorialId, esFinalizado);
+                    })
+                    .addOnFailureListener(e -> {
+                        setupRatingSection(historial, finalHistorialId, esFinalizado);
+                    });
+        } else {
+            // No hay ID de historial → usamos directamente el objeto recibido
+            setupRatingSection(historial, finalHistorialId, esFinalizado);
+        }
+
+        // ========= VER PARADAS (Lugares a visitar) =========
         b.btnPlaces.setOnClickListener(v -> {
+            // 1) Si el TourFB ya trae paradas en memoria, las usamos directamente
+            if (tour.getParadas() != null && !tour.getParadas().isEmpty()) {
+                Intent it = new Intent(this, StopsActivity.class);
+                it.putExtra("tour", tour);
+                startActivity(it);
+                return;
+            }
+
+            // 2) Si no hay paradas cargadas, las leemos de Firestore (fallback)
             if (tour.getId() == null || tour.getId().isEmpty()) {
                 Toast.makeText(this, "Tour sin ID", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             FirebaseFirestore.getInstance()
                     .collection("tours")
                     .document(tour.getId())
@@ -224,6 +261,66 @@ public class OrderDetailActivity extends AppCompatActivity {
         });
     }
 
+    /** Lógica para saber si el estado significa "finalizado" */
+    private boolean isFinalizadoEstado(String estado) {
+        if (estado == null) return false;
+        String e = estado.toLowerCase(Locale.ROOT);
+        return e.contains("finalizada")
+                || e.contains("finalizado")
+                || e.contains("check-out")
+                || e.contains("checkout");
+    }
+
+    /**
+     * Aplica el totalPagado y el detalle de extras (si existen) a la UI.
+     * Lee los campos "totalPagado" y "extras" del documento de Firestore.
+     */
+    private void applyExtrasAndTotalFromSnapshot(DocumentSnapshot doc) {
+        // Total pagado (incluye extras)
+        Double totalPagado = doc.getDouble("totalPagado");
+        if (totalPagado != null) {
+            b.tvTotalPrice.setText(String.format(Locale.getDefault(), "S/. %.2f", totalPagado));
+        }
+
+        Object extrasObj = doc.get("extras");
+        if (extrasObj instanceof List) {
+            double extrasTotal = 0.0;
+            StringBuilder extrasLabel = new StringBuilder();
+
+            for (Object o : (List<?>) extrasObj) {
+                if (!(o instanceof java.util.Map)) continue;
+                java.util.Map<?, ?> m = (java.util.Map<?, ?>) o;
+
+                String nombre = m.get("nombre") == null ? "Extra" : String.valueOf(m.get("nombre"));
+                Number cantN = (Number) m.get("cantidad");
+                Number precioN = (Number) m.get("precioPorPersona");
+
+                int cant = cantN == null ? 0 : cantN.intValue();
+                double precio = precioN == null ? 0.0 : precioN.doubleValue();
+
+                if (cant <= 0 || precio <= 0) continue;
+
+                extrasTotal += cant * precio;
+
+                if (extrasLabel.length() > 0) extrasLabel.append(" · ");
+                extrasLabel.append(nombre).append(" x").append(cant);
+            }
+
+            if (extrasTotal > 0) {
+                b.tvServices.setText(
+                        String.format(
+                                Locale.getDefault(),
+                                "Servicios adicionales: %s (S/. %.2f)",
+                                extrasLabel.toString(),
+                                extrasTotal
+                        )
+                );
+            } else {
+                b.tvServices.setText("Servicios adicionales :     S./0.00");
+            }
+        }
+    }
+
     /**
      * Sección de calificación:
      *  - Solo tours finalizados
@@ -239,15 +336,15 @@ public class OrderDetailActivity extends AppCompatActivity {
 
         // Si el tour NO está finalizado → no mostramos nada de rating
         if (!esFinalizado) {
-            b.layoutRating.setVisibility(View.GONE);
-            b.layoutRatingResult.setVisibility(View.GONE);
+            b.layoutRating.setVisibility(android.view.View.GONE);
+            b.layoutRatingResult.setVisibility(android.view.View.GONE);
             return;
         }
 
-        // Si YA está calificado → mostramos solo el resultado
+        // Si YA está calificado → mostramos solo el resultado (una sola vez)
         if (rating != null) {
-            b.layoutRating.setVisibility(View.GONE);
-            b.layoutRatingResult.setVisibility(View.VISIBLE);
+            b.layoutRating.setVisibility(android.view.View.GONE);
+            b.layoutRatingResult.setVisibility(android.view.View.VISIBLE);
 
             b.tvRatingResult.setText(String.format(Locale.getDefault(),
                     "Tu calificación: %.1f / 5", rating));
@@ -261,8 +358,8 @@ public class OrderDetailActivity extends AppCompatActivity {
         }
 
         // Si está finalizado y aún NO tiene rating → mostramos solo el formulario
-        b.layoutRating.setVisibility(View.VISIBLE);
-        b.layoutRatingResult.setVisibility(View.GONE);
+        b.layoutRating.setVisibility(android.view.View.VISIBLE);
+        b.layoutRatingResult.setVisibility(android.view.View.GONE);
         b.rbRating.setRating(0f);
         b.etComment.setText("");
 
@@ -291,8 +388,8 @@ public class OrderDetailActivity extends AppCompatActivity {
                         Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show();
 
                         // Ocultamos el formulario y mostramos el resultado en la vista
-                        b.layoutRating.setVisibility(View.GONE);
-                        b.layoutRatingResult.setVisibility(View.VISIBLE);
+                        b.layoutRating.setVisibility(android.view.View.GONE);
+                        b.layoutRatingResult.setVisibility(android.view.View.VISIBLE);
 
                         b.tvRatingResult.setText(String.format(Locale.getDefault(),
                                 "Tu calificación: %.1f / 5", ratingValue));

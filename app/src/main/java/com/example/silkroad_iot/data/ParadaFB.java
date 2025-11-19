@@ -1,5 +1,6 @@
 package com.example.silkroad_iot.data;
 
+import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.PropertyName;
 
@@ -15,6 +16,7 @@ public class ParadaFB implements Serializable {
 
     private String id;              // ID del documento (Firestore)
     private String nombre;          // Ej: "Plaza de Armas"
+    private String name;            // compatibilidad si Firestore usa "name"
     private String descripcion;     // breve texto
     private double lat;             // coordenadas
     private double lng;
@@ -38,35 +40,67 @@ public class ParadaFB implements Serializable {
         this.tourId = tourId;
     }
 
-    @PropertyName("id") public String getId() { return id; }
-    @PropertyName("id") public void setId(String id) { this.id = id; }
+    @PropertyName("id")
+    public String getId() { return id; }
+    @PropertyName("id")
+    public void setId(String id) { this.id = id; }
 
-    @PropertyName("nombre") public String getNombre() { return nombre; }
-    @PropertyName("nombre") public void setNombre(String nombre) { this.nombre = nombre; }
+    @PropertyName("nombre")
+    public String getNombre() { return nombre; }
+    @PropertyName("nombre")
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    @PropertyName("descripcion") public String getDescripcion() { return descripcion; }
-    @PropertyName("descripcion") public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    // 🔹 Compatibilidad si en Firestore guardaste "name"
+    @PropertyName("name")
+    public String getName() { return name; }
+    @PropertyName("name")
+    public void setName(String name) { this.name = name; }
 
-    @PropertyName("lat") public double getLat() { return lat; }
-    @PropertyName("lat") public void setLat(double lat) { this.lat = lat; }
+    @PropertyName("descripcion")
+    public String getDescripcion() { return descripcion; }
+    @PropertyName("descripcion")
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    @PropertyName("lng") public double getLng() { return lng; }
-    @PropertyName("lng") public void setLng(double lng) { this.lng = lng; }
+    @PropertyName("lat")
+    public double getLat() { return lat; }
+    @PropertyName("lat")
+    public void setLat(double lat) { this.lat = lat; }
 
-    @PropertyName("orden") public int getOrden() { return orden; }
-    @PropertyName("orden") public void setOrden(int orden) { this.orden = orden; }
+    @PropertyName("lng")
+    public double getLng() { return lng; }
+    @PropertyName("lng")
+    public void setLng(double lng) { this.lng = lng; }
 
-    @PropertyName("tourId") public String getTourId() { return tourId; }
-    @PropertyName("tourId") public void setTourId(String tourId) { this.tourId = tourId; }
+    @PropertyName("orden")
+    public int getOrden() { return orden; }
+    @PropertyName("orden")
+    public void setOrden(int orden) { this.orden = orden; }
 
-    @PropertyName("address") public String getAddress() { return address; }
-    @PropertyName("address") public void setAddress(String address) { this.address = address; }
+    @PropertyName("tourId")
+    public String getTourId() { return tourId; }
+    @PropertyName("tourId")
+    public void setTourId(String tourId) { this.tourId = tourId; }
 
-    @PropertyName("minutes") public Integer getMinutes() { return minutes; }
-    @PropertyName("minutes") public void setMinutes(Integer minutes) { this.minutes = minutes; }
+    @PropertyName("address")
+    public String getAddress() { return address; }
+    @PropertyName("address")
+    public void setAddress(String address) { this.address = address; }
+
+    @PropertyName("minutes")
+    public Integer getMinutes() { return minutes; }
+    @PropertyName("minutes")
+    public void setMinutes(Integer minutes) { this.minutes = minutes; }
+
+    // 🔹 Helper para mostrar nombre seguro en la UI
+    @Exclude
+    public String getDisplayName() {
+        if (nombre != null && !nombre.trim().isEmpty()) return nombre.trim();
+        if (name != null && !name.trim().isEmpty()) return name.trim();
+        return "Parada";
+    }
 
     @Override
     public String toString() {
-        return (nombre != null ? nombre : "Parada") + " (" + lat + ", " + lng + ")";
+        return getDisplayName() + " (" + lat + ", " + lng + ")";
     }
 }

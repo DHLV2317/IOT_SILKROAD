@@ -13,6 +13,7 @@ import com.example.silkroad_iot.databinding.ActivityConfirmTourBinding;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 public class ConfirmTourActivity extends AppCompatActivity {
@@ -28,6 +29,9 @@ public class ConfirmTourActivity extends AppCompatActivity {
             new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     private final DecimalFormat moneyFormat =
             new DecimalFormat("#0.00");
+
+    private Date selectedDate;       // día elegido
+    private long selectedDateMillis; // para pasarlo por Intent
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +53,12 @@ public class ConfirmTourActivity extends AppCompatActivity {
             Toast.makeText(this, "No se pudo cargar el tour", Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+
+        // Día seleccionado desde detalle (si lo hay)
+        selectedDateMillis = getIntent().getLongExtra("selectedDate", -1);
+        if (selectedDateMillis > 0) {
+            selectedDate = new Date(selectedDateMillis);
         }
 
         // Precio unitario seguro
@@ -77,13 +87,21 @@ public class ConfirmTourActivity extends AppCompatActivity {
         // Mostrar capacidad / cupos
         b.tTourPeople.setText("Cupos disponibles: " + maxCupos + " personas");
 
-        // Mostrar fechas del tour (inicio - fin)
+        // Mostrar fechas del tour (inicio - fin) y día elegido
         if (tour.getDateFrom() != null && tour.getDateTo() != null) {
             String inicio = sdf.format(tour.getDateFrom());
             String fin    = sdf.format(tour.getDateTo());
-            b.tTourDates.setText("Fechas: " + inicio + " hasta " + fin);
+            String rango  = "Fechas: " + inicio + " hasta " + fin;
+            if (selectedDate != null) {
+                rango += "\nDía elegido: " + sdf.format(selectedDate);
+            }
+            b.tTourDates.setText(rango);
         } else {
-            b.tTourDates.setText("Fechas: No definidas");
+            String txt = "Fechas: No definidas";
+            if (selectedDate != null) {
+                txt += "\nDía elegido: " + sdf.format(selectedDate);
+            }
+            b.tTourDates.setText(txt);
         }
 
         // Precio unitario visible
@@ -121,11 +139,14 @@ public class ConfirmTourActivity extends AppCompatActivity {
 
         // Confirmar -> ir a PaymentActivity
         b.btnConfirm.setOnClickListener(v -> {
-            double total = unitPrice * selectedPax;
+            double totalBase = unitPrice * selectedPax;
             Intent i = new Intent(this, PaymentActivity.class);
             i.putExtra("tour", tour);
-            i.putExtra("pax", selectedPax);   // cantidad de personas reservadas
-            i.putExtra("total", total);
+            i.putExtra("pax", selectedPax);     // cantidad de personas reservadas
+            i.putExtra("totalBase", totalBase); // base sin adicionales
+            if (selectedDateMillis > 0) {
+                i.putExtra("selectedDate", selectedDateMillis);
+            }
             startActivity(i);
         });
     }

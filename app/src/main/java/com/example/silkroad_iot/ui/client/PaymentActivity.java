@@ -2,12 +2,18 @@ package com.example.silkroad_iot.ui.client;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Toast;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.silkroad_iot.R;
 import com.example.silkroad_iot.data.CardFB;
+import com.example.silkroad_iot.data.ServiceFB;
 import com.example.silkroad_iot.data.TourFB;
 import com.example.silkroad_iot.data.User;
 import com.example.silkroad_iot.data.UserStore;
@@ -34,10 +40,21 @@ public class PaymentActivity extends AppCompatActivity {
 
     private TourFB tour;
     private int pax;
-    private double total;
+    private double totalBase;     // base = precio * pax
+    private double totalToCharge; // base + extras
 
     private final DecimalFormat moneyFormat = new DecimalFormat("#0.00");
     private String userEmail;
+
+    // Día elegido
+    private long selectedDateMillis = -1L;
+
+    // ===== Extras =====
+    private static class ExtraSelection {
+        ServiceFB service;
+        int quantity; // 0..pax
+    }
+    private final List<ExtraSelection> extraSelections = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +71,10 @@ public class PaymentActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        tour = (TourFB) getIntent().getSerializableExtra("tour");
-        pax  = getIntent().getIntExtra("pax", 1);
-        total = getIntent().getDoubleExtra("total", 0.0);
+        tour      = (TourFB) getIntent().getSerializableExtra("tour");
+        pax       = getIntent().getIntExtra("pax", 1);
+        totalBase = getIntent().getDoubleExtra("totalBase", 0.0);
+        selectedDateMillis = getIntent().getLongExtra("selectedDate", -1L);
 
         if (tour == null) {
             Toast.makeText(this, "Tour inválido", Toast.LENGTH_SHORT).show();
@@ -76,7 +94,8 @@ public class PaymentActivity extends AppCompatActivity {
                 "Vas a reservar: " + tour.getDisplayName() +
                         "\nPersonas: " + pax
         );
-        b.tMonto.setText("Total a pagar: S/. " + moneyFormat.format(total));
+        totalToCharge = totalBase;
+        updateMontoLabel();
 
         // Recycler de tarjetas
         b.rvTarjetas.setLayoutManager(new LinearLayoutManager(this));
@@ -85,6 +104,9 @@ public class PaymentActivity extends AppCompatActivity {
 
         // Cargar tarjetas del usuario
         cargarTarjetas();
+
+        // Extras (servicios adicionales)
+        setupExtrasUI();
 
         // Ir a agregar tarjeta
         b.btnAddCard.setOnClickListener(v -> {
@@ -98,12 +120,13 @@ public class PaymentActivity extends AppCompatActivity {
                 Toast.makeText(this, "Selecciona una tarjeta", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (total <= 0) {
+            if (totalToCharge <= 0) {
                 Toast.makeText(this, "Monto inválido", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            realizarPagoConTransaccion(UserStore.get().getLogged(), selectedCard, tour, pax, total);
+            realizarPagoConTransaccion(UserStore.get().getLogged(),
+                    selectedCard, tour, pax, totalToCharge);
         });
     }
 
@@ -140,6 +163,100 @@ public class PaymentActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Error cargando tarjetas", Toast.LENGTH_SHORT).show());
     }
+
+    // ================= EXTRAS ==================
+
+    private void setupExtrasUI() {
+        List<ServiceFB> services = tour.getServices();
+        if (services == null || services.isEmpty()) {
+            b.tExtrasTitle.setVisibility(View.GONE);
+            b.containerExtras.setVisibility(View.GONE);
+            return;
+        }
+
+        // Filtramos solo los que tienen precio (>0) y son opcionales
+        List<ServiceFB> extrasPagos = new ArrayList<>();
+        for (ServiceFB s : services) {
+            double p = s.getPricePerPersonSafe();
+            if (!s.isIncludedSafe() && p > 0) {
+                extrasPagos.add(s);
+            }
+        }
+
+        if (extrasPagos.isEmpty()) {
+            b.tExtrasTitle.setVisibility(View.GONE);
+            b.containerExtras.setVisibility(View.GONE);
+            return;
+        }
+
+        b.tExtrasTitle.setVisibility(View.VISIBLE);
+        b.containerExtras.setVisibility(View.VISIBLE);
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        extraSelections.clear();
+        b.containerExtras.removeAllViews();
+
+        for (ServiceFB s : extrasPagos) {
+            View itemView = inflater.inflate(R.layout.item_extra_selector, b.containerExtras, false);
+
+            TextView tName  = itemView.findViewById(R.id.tExtraName);
+            TextView tPrice = itemView.findViewById(R.id.tExtraPrice);
+            TextView tQty   = itemView.findViewById(R.id.tExtraQty);
+            Button btnMinus = itemView.findViewById(R.id.btnMinusExtra);
+            Button btnPlus  = itemView.findViewById(R.id.btnPlusExtra);
+
+            String name = s.getDisplayName();
+            double price = s.getPricePerPersonSafe();
+
+            tName.setText(name);
+            tPrice.setText("S/. " + moneyFormat.format(price) + " por persona");
+
+            ExtraSelection sel = new ExtraSelection();
+            sel.service = s;
+            sel.quantity = 0;
+            extraSelections.add(sel);
+
+            tQty.setText(String.valueOf(sel.quantity));
+
+            btnMinus.setOnClickListener(v -> {
+                if (sel.quantity > 0) {
+                    sel.quantity--;
+                    tQty.setText(String.valueOf(sel.quantity));
+                    recalcTotal();
+                }
+            });
+
+            btnPlus.setOnClickListener(v -> {
+                if (sel.quantity < pax) { // máximo una unidad por persona
+                    sel.quantity++;
+                    tQty.setText(String.valueOf(sel.quantity));
+                    recalcTotal();
+                } else {
+                    Toast.makeText(this,
+                            "Solo puedes agregar hasta " + pax + " unidades de este adicional",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            b.containerExtras.addView(itemView);
+        }
+    }
+
+    private void recalcTotal() {
+        double extrasTotal = 0.0;
+        for (ExtraSelection sel : extraSelections) {
+            double p = sel.service.getPricePerPersonSafe();
+            extrasTotal += p * sel.quantity;
+        }
+        totalToCharge = totalBase + extrasTotal;
+        updateMontoLabel();
+    }
+
+    private void updateMontoLabel() {
+        b.tMonto.setText("Total a pagar: S/. " + moneyFormat.format(totalToCharge));
+    }
+
+    // ================= PAGO CON TRANSACCIÓN ==================
 
     private void realizarPagoConTransaccion(User user, CardFB card,
                                             TourFB tour, int pax, double total) {
@@ -214,9 +331,27 @@ public class PaymentActivity extends AppCompatActivity {
             histMap.put("pax", pax);
             histMap.put("estado", estado);
             histMap.put("qrData", qrData);
+            histMap.put("totalPagado", total);
 
             if (tour.getDateFrom() != null) {
                 histMap.put("fecha_realizado", tour.getDateFrom());
+            }
+            if (selectedDateMillis > 0) {
+                histMap.put("fechaElegida", new Date(selectedDateMillis));
+            }
+
+            // Guardamos también el detalle de extras seleccionados
+            List<HashMap<String, Object>> extrasHist = new ArrayList<>();
+            for (ExtraSelection sel : extraSelections) {
+                if (sel.quantity <= 0) continue;
+                HashMap<String, Object> ex = new HashMap<>();
+                ex.put("nombre", sel.service.getDisplayName());
+                ex.put("cantidad", sel.quantity);
+                ex.put("precioPorPersona", sel.service.getPricePerPersonSafe());
+                extrasHist.add(ex);
+            }
+            if (!extrasHist.isEmpty()) {
+                histMap.put("extras", extrasHist);
             }
 
             transaction.set(historyRef, histMap);
@@ -226,6 +361,11 @@ public class PaymentActivity extends AppCompatActivity {
             Toast.makeText(this,
                     "Pago realizado y reserva aceptada 🎉",
                     Toast.LENGTH_LONG).show();
+
+            // Volver a la lista de tours del cliente
+            Intent i = new Intent(this, ClientHomeActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
             finish();
         }).addOnFailureListener(e -> {
             Toast.makeText(this,

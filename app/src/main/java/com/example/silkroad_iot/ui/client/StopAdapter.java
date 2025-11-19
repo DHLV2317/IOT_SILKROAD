@@ -50,18 +50,18 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int position) {
         ParadaFB p = paradas.get(position);
 
-        // Nombre (requerido en ParadaFB)
+        // Nombre
         String nombre = nz(p.getNombre());
         if (nombre.isEmpty()) nombre = "(Sin nombre)";
         h.tvName.setText(String.format(Locale.getDefault(), "%d° Parada: %s", position + 1, nombre));
 
-        // Dirección/Descripción (ParadaFB tiene 'descripcion'; si tuvieses 'address' la priorizamos)
+        // Dirección / descripción
         String address = nz(safeGetString(p, "getAddress"));
         if (address.isEmpty()) address = nz(p.getDescripcion());
         if (address.isEmpty()) address = "—";
         h.tvAddress.setText("Dirección: " + address);
 
-        // Tiempo (si en el futuro agregas getMinutes o getTime)
+        // Tiempo
         String time = nz(safeGetString(p, "getTime"));
         if (time.isEmpty()) {
             Integer minutes = safeGetInt(p, "getMinutes");
@@ -69,7 +69,7 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
         }
         h.tvTime.setText("Tiempo: " + time);
 
-        // Costo (opcional; si no existe mostramos —)
+        // Costo
         String costText = "—";
         Double cost = safeGetDouble(p, "getCost");
         if (cost != null) {
@@ -77,7 +77,7 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
         }
         h.tvCost.setText("Costo: " + costText);
 
-        // Imagen opcional (si existiera getImageUrl() en ParadaFB)
+        // Imagen (si existiera getImageUrl en ParadaFB)
         String imageUrl = nz(safeGetString(p, "getImageUrl"));
         if (!imageUrl.isEmpty()) {
             Glide.with(h.itemView.getContext())
@@ -95,7 +95,7 @@ public class StopAdapter extends RecyclerView.Adapter<StopAdapter.VH> {
         return paradas == null ? 0 : paradas.size();
     }
 
-    /* ===== Helpers seguros (reflexión opcional) ===== */
+    /* ===== Helpers ===== */
     private static String nz(String s){ return s == null ? "" : s.trim(); }
 
     private static String safeGetString(Object target, String getter) {

@@ -31,8 +31,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ClientHomeActivity extends AppCompatActivity {
@@ -47,11 +49,14 @@ public class ClientHomeActivity extends AppCompatActivity {
 
     // Empresas
     private CompanyAdapter companyAdapter;
-    private List<EmpresaFb> empresasFB = new ArrayList<>();
+    private final List<EmpresaFb> empresasFB = new ArrayList<>();
 
-    // Ciudades
+    // Departamentos
     private DepartmentAdapter departmentAdapter;
     private final List<Department> departamentos = new ArrayList<>();
+
+    // Mapa: departamento -> IDs de empresas que tienen tours ahí
+    private final Map<String, Set<String>> deptToCompanyIds = new LinkedHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,8 +94,9 @@ public class ClientHomeActivity extends AppCompatActivity {
 
         tvHeaderName.setText(name);
         tvHeaderEmail.setText(email);
-        // Si tienes URL de foto en User, la puedes cargar con Glide:
-        // Glide.with(this).load(u.getPhotoUrl()).into(imgAvatarHeader);
+        if (u != null && u.getPhotoUri() != null && !u.getPhotoUri().isEmpty()) {
+            Glide.with(this).load(u.getPhotoUri()).into(imgAvatarHeader);
+        }
 
         // Listener del menú lateral
         b.navViewClient.setNavigationItemSelectedListener(
@@ -120,16 +126,6 @@ public class ClientHomeActivity extends AppCompatActivity {
                 }
         );
 
-        // Recycler CIUDADES
-        departmentAdapter = new DepartmentAdapter(departamentos, d -> {
-            Log.d("CIUDAD_CLICK", "Ciudad seleccionada: " + d.getNombre());
-            // Aquí luego podrías filtrar empresas por ciudad
-        });
-        b.rvDepartments.setLayoutManager(
-                new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
-        );
-        b.rvDepartments.setAdapter(departmentAdapter);
-
         // Firestore
         db = FirebaseFirestore.getInstance();
 
@@ -138,11 +134,22 @@ public class ClientHomeActivity extends AppCompatActivity {
         b.rvCompanies.setLayoutManager(new LinearLayoutManager(this));
         b.rvCompanies.setAdapter(companyAdapter);
 
-        // Cargar empresas y ciudades
+        // Recycler DEPARTAMENTOS
+        departmentAdapter = new DepartmentAdapter(departamentos, d -> {
+            String ciudad = d.getNombre();
+            Log.d("CIUDAD_CLICK", "Departamento seleccionado: " + ciudad);
+            aplicarFiltroPorCiudad(ciudad);
+        });
+        b.rvDepartments.setLayoutManager(
+                new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+        );
+        b.rvDepartments.setAdapter(departmentAdapter);
+
+        // Cargar empresas y departamentos
         cargarEmpresasDesdeFirebase();
         cargarCiudadesDesdeToursFirebase();
 
-        // Filtro búsqueda empresas
+        // Filtro búsqueda empresas (por nombre)
         b.inputSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -194,19 +201,30 @@ public class ClientHomeActivity extends AppCompatActivity {
     }
 
     private void cargarCiudadesDesdeToursFirebase() {
-        Log.d("CIUDADES_FIREBASE", "Cargando ciudades desde tours...");
+        Log.d("CIUDADES_FIREBASE", "Cargando departamentos desde tours...");
 
         db.collection("tours")
                 .get()
                 .addOnSuccessListener(query -> {
                     Set<String> ciudadesSet = new LinkedHashSet<>();
+                    deptToCompanyIds.clear();
 
                     for (DocumentSnapshot doc : query) {
                         TourFB tour = doc.toObject(TourFB.class);
                         if (tour != null) {
+                            // Usamos el departamento guardado en TourFB
                             String ciudad = tour.getCiudad();
-                            if (ciudad != null && !ciudad.trim().isEmpty()) {
-                                ciudadesSet.add(ciudad.trim());
+                            String empresaId = tour.getEmpresaId(); // asumiendo que TourFB tiene este campo
+                            if (ciudad != null && !ciudad.trim().isEmpty() && empresaId != null) {
+                                ciudad = ciudad.trim();
+                                ciudadesSet.add(ciudad);
+
+                                Set<String> empresasDeCiudad =
+                                        deptToCompanyIds.containsKey(ciudad)
+                                                ? deptToCompanyIds.get(ciudad)
+                                                : new LinkedHashSet<>();
+                                empresasDeCiudad.add(empresaId);
+                                deptToCompanyIds.put(ciudad, empresasDeCiudad);
                             }
                         }
                     }
@@ -217,8 +235,28 @@ public class ClientHomeActivity extends AppCompatActivity {
                     }
                     departmentAdapter.notifyDataSetChanged();
 
-                    Log.d("CIUDADES_FIREBASE", "Ciudades encontradas: " + ciudadesSet.size());
+                    Log.d("CIUDADES_FIREBASE", "Departamentos encontrados: " + ciudadesSet.size());
                 })
-                .addOnFailureListener(e -> Log.e("CIUDADES_FIREBASE", "Error al cargar ciudades", e));
+                .addOnFailureListener(e -> Log.e("CIUDADES_FIREBASE", "Error al cargar departamentos", e));
+    }
+
+    private void aplicarFiltroPorCiudad(String ciudad) {
+        Set<String> empresasPermitidas = deptToCompanyIds.get(ciudad);
+        if (empresasPermitidas == null || empresasPermitidas.isEmpty()) {
+            // si no hay mapeo, mostramos todas pero cambiando título
+            companyAdapter.updateData(new ArrayList<>(empresasFB));
+            b.tvBestRatedTitle.setText("Mejores calificadas");
+            return;
+        }
+
+        List<EmpresaFb> filtradas = new ArrayList<>();
+        for (EmpresaFb e : empresasFB) {
+            if (empresasPermitidas.contains(e.getId())) {
+                filtradas.add(e);
+            }
+        }
+
+        companyAdapter.updateData(filtradas);
+        b.tvBestRatedTitle.setText("Mejores calificadas en " + ciudad);
     }
 }

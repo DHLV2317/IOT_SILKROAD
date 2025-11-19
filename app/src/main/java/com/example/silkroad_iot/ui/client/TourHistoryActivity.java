@@ -104,7 +104,6 @@ public class TourHistoryActivity extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
                     }
 
-                    // Mostrar u ocultar mensaje vacío si quieres
                     b.rvHistory.setVisibility(historialList.isEmpty() ? View.GONE : View.VISIBLE);
                 })
                 .addOnFailureListener(Throwable::printStackTrace);

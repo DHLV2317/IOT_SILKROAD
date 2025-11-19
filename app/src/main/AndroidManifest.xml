@@ -1,27 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- HARDWARE & PERMISOS -->
     <!-- Cámara (no obligatoria en todos los dispositivos) -->
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="false" />
-
-    <!-- Internet -->
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- MAPS & LOCATION -->
+        android:required="false" /> <!-- Internet -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- MAPS & LOCATION -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!--
     Si luego quisieras tracking en background:
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     -->
-
     <!-- QR / Cámara -->
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- WRITE STORAGE (para PDFs / descargas) -->
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- WRITE STORAGE (para PDFs / descargas) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -34,7 +26,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SILKROAD_IOT">
-
+        <activity
+            android:name=".ui.admin.AdminChangePasswordActivity"
+            android:exported="false" />
         <!-- ================= CLIENT (pagos, soporte cliente, etc.) ================= -->
         <activity
             android:name=".ui.client.AddCardActivity"
@@ -47,19 +41,13 @@
             android:exported="false" />
         <activity
             android:name=".ui.client.PaymentActivity"
-            android:exported="false" />
-
-        <!-- ⭐ Google Maps API KEY -->
+            android:exported="false" /> <!-- ⭐ Google Maps API KEY -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCVSbpXhCTRqLggm43VUePwvuNS0Pps6xY" />
-
-        <!-- Google Play Services (maps / location) -->
+            android:value="AIzaSyCVSbpXhCTRqLggm43VUePwvuNS0Pps6xY" /> <!-- Google Play Services (maps / location) -->
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-
-        <!-- ================= FACEBOOK ================= -->
+            android:value="@integer/google_play_services_version" /> <!-- ================= FACEBOOK ================= -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -82,9 +70,7 @@
 
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
-        </activity>
-
-        <!-- ================= ADMIN ================= -->
+        </activity> <!-- ================= ADMIN ================= -->
         <activity
             android:name=".ui.admin.AdminCompanyDetailActivity"
             android:exported="false" />
@@ -120,17 +106,13 @@
             android:exported="false" />
         <activity
             android:name=".ui.admin.AdminProfileActivity"
-            android:exported="false" />
-
-        <!-- 👇 NUEVAS PANTALLAS ADMIN -->
+            android:exported="false" /> <!-- 👇 NUEVAS PANTALLAS ADMIN -->
         <activity
             android:name=".ui.admin.AdminPaymentsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.admin.AdminSupportChatActivity"
-            android:exported="false" />
-
-        <!-- ================= SUPERADMIN ================= -->
+            android:exported="false" /> <!-- ================= SUPERADMIN ================= -->
         <activity
             android:name=".ui.superadmin.SuperAdminHomeActivity"
             android:exported="false" />
@@ -172,9 +154,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.superadmin.DetallesReporteActivity"
-            android:exported="false" />
-
-        <!-- ================= GUIDE ================= -->
+            android:exported="false" /> <!-- ================= GUIDE ================= -->
         <activity
             android:name=".ui.guide.GuideHomeActivity"
             android:exported="false" />
@@ -195,9 +175,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.guide.GuideHistoryActivity"
-            android:exported="false" />
-
-        <!-- ================= CLIENT (pantallas principales) ================= -->
+            android:exported="false" /> <!-- ================= CLIENT (pantallas principales) ================= -->
         <activity
             android:name=".ui.client.ClientHomeActivity"
             android:exported="false" />
@@ -221,9 +199,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.client.StopsActivity"
-            android:exported="false" />
-
-        <!-- ================= AUTH ================= -->
+            android:exported="false" /> <!-- ================= AUTH ================= -->
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:exported="false" />
@@ -238,9 +214,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.auth.ForgotPasswordVerifyActivity"
-            android:exported="false" />
-
-        <!-- LAUNCHER -->
+            android:exported="false" /> <!-- LAUNCHER -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -251,7 +225,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
